@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VAPORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;
+  --accent2:#ff9a2e;
+  --adim:rgba(232,130,10,0.18);
+  --glass:rgba(255,255,255,0.08);
+  --glass2:rgba(255,255,255,0.13);
+  --glass-border:rgba(255,255,255,0.18);
+  --glass-border2:rgba(255,255,255,0.28);
+  --text:#f0f4ff;
+  --text2:rgba(240,244,255,0.65);
+  --text3:rgba(240,244,255,0.35);
+  --green:#4ade80;
+  --green-dim:rgba(74,222,128,0.15);
+  --red:#f87171;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+
+/* ── CANVAS BG ── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── APP ── */
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;gap:16px;
+  background:rgba(8,12,24,0.6);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:0;z-index:20;
+}
+.logo{
+  font-family:'Instrument Serif',serif;
+  font-size:24px;letter-spacing:1px;color:var(--text);
+  flex-shrink:0;
+}
+.logo em{font-style:italic;color:var(--accent)}
+
+
+
+.btn-g{
+  padding:10px 22px;
+  background:var(--adim);
+  border:1.5px solid var(--accent);
+  border-radius:10px;color:var(--accent);
+  font-family:'Geist',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;
+  cursor:pointer;transition:all .2s;
+  backdrop-filter:blur(8px);white-space:nowrap;flex-shrink:0;
+  box-shadow:0 0 14px rgba(232,130,10,0.25);
+}
+.btn-g:hover,.btn-g:active{
+  background:rgba(232,130,10,0.28);
+  box-shadow:0 0 24px rgba(232,130,10,0.4);
+  transform:translateY(-1px);
+}
+
+/* ── MAIN ── */
+.main{
+  flex:1;padding:40px 24px 80px;
+  max-width:760px;width:100%;margin:0 auto;
+}
+
+/* intro */
+.intro{margin-bottom:36px;text-align:center}
+.intro-title{
+  font-family:'Instrument Serif',serif;font-size:clamp(32px,5vw,52px);
+  line-height:1.1;margin-bottom:10px;
+}
+.intro-title em{font-style:italic;color:var(--accent)}
+.intro-sub{font-size:14px;color:var(--text2);font-weight:300;letter-spacing:.3px}
+
+/* ── GRID ── */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+@media(max-width:480px){.grid{grid-template-columns:1fr;gap:10px}}
+
+/* ── CARD ── */
+.card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  padding:22px 20px 18px;
+  cursor:pointer;
+  transition:all .22s ease;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;
+  text-decoration:none;
+  animation:fadeUp .5s ease both;
+}
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.10s}
+.card:nth-child(3){animation-delay:.15s}
+.card:nth-child(4){animation-delay:.20s}
+.card:nth-child(5){animation-delay:.25s}
+.card:nth-child(6){animation-delay:.30s}
+.card:nth-child(7){animation-delay:.35s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* Glow top-left */
+.card::before{
+  content:'';position:absolute;top:-40px;left:-40px;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(232,130,10,0.12),transparent 70%);
+  pointer-events:none;transition:opacity .3s;opacity:0;
+}
+.card:hover::before{opacity:1}
+
+/* shine on hover */
+.card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 60%);
+  pointer-events:none;border-radius:18px;
+  opacity:0;transition:opacity .3s;
+}
+.card:hover::after{opacity:1}
+
+.card:hover{
+  border-color:var(--glass-border2);
+  background:var(--glass2);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,0,0,.3),0 0 0 1px rgba(232,130,10,.12);
+}
+.card:active{transform:translateY(0)}
+
+/* stato completato */
+.card.done{border-color:rgba(74,222,128,0.25)}
+.card.done::before{background:radial-gradient(circle,rgba(74,222,128,0.08),transparent 70%)}
+.card.done:hover{box-shadow:0 8px 32px rgba(0,0,0,.3),0 0 0 1px rgba(74,222,128,.15)}
+
+/* stato in corso */
+.card.wip{border-color:rgba(232,130,10,0.3)}
+
+/* top row */
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-emoji{font-size:28px;line-height:1;flex-shrink:0}
+.card-badge{
+  font-family:'Geist Mono',monospace;font-size:10px;font-weight:500;
+  color:var(--text3);letter-spacing:1px;
+  padding:3px 8px;border-radius:20px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+}
+.card.done .card-badge{color:var(--green);background:var(--green-dim);border-color:rgba(74,222,128,0.2)}
+.card.wip .card-badge{color:var(--accent);background:var(--adim);border-color:rgba(232,130,10,0.2)}
+
+/* titolo */
+.card-title{
+  font-family:'Instrument Serif',serif;
+  font-size:17px;line-height:1.25;color:var(--text);
+  flex:1;
+}
+
+/* barra progresso */
+.card-bar-wrap{display:flex;flex-direction:column;gap:5px}
+.card-bar-row{display:flex;align-items:center;gap:8px}
+.card-bar{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:hidden}
+.card-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .6s ease}
+.card.done .card-fill{background:var(--green)}
+.card-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text3);min-width:28px;text-align:right}
+.card-quiz{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* ── GLOSSARIO ── */
+.ov{position:fixed;inset:0;z-index:100;display:none}
+.ov.open{display:flex}
+.ovb{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+.ovp{
+  position:absolute;right:0;top:0;bottom:0;width:min(500px,100vw);
+  background:rgba(10,14,28,0.97);
+  border-left:1px solid var(--glass-border2);
+  display:flex;flex-direction:column;
+  animation:slin .28s ease;
+  backdrop-filter:blur(40px);
+}
+@keyframes slin{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.ovh{
+  padding:22px 24px 18px;border-bottom:1px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.ovt{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.ovc{
+  width:32px;height:32px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:8px;color:var(--text2);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.ovc:hover{border-color:var(--red);color:var(--red)}
+.ovs{padding:14px 24px;border-bottom:1px solid var(--glass-border);flex-shrink:0}
+.si2{
+  width:100%;padding:10px 14px;
+  background:var(--glass);border:1px solid var(--glass-border2);
+  border-radius:10px;color:var(--text);
+  font-family:'Geist',sans-serif;font-size:14px;outline:none;
+  transition:border .2s;backdrop-filter:blur(8px);
+}
+.si2::placeholder{color:var(--text3)}
+.si2:focus{border-color:var(--accent)}
+.ovf{padding:10px 24px;border-bottom:1px solid var(--glass-border);display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.fb{
+  padding:5px 12px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:20px;color:var(--text3);font-family:'Geist Mono',monospace;
+  font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .18s;text-transform:uppercase;
+}
+.fb.active,.fb:hover{border-color:var(--accent);color:var(--accent);background:var(--adim)}
+.ovl2{padding:8px 24px;border-bottom:1px solid var(--glass-border);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.lb{
+  width:24px;height:24px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:6px;color:var(--text3);font-family:'Geist Mono',monospace;font-size:9px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;
+}
+.lb.active,.lb:hover{border-color:var(--accent);color:var(--accent);background:var(--adim)}
+.ovlist{flex:1;overflow-y:auto;padding:14px 24px;display:flex;flex-direction:column;gap:10px}
+.ovlist::-webkit-scrollbar{width:3px}
+.ovlist::-webkit-scrollbar-thumb{background:var(--glass-border2);border-radius:2px}
+.tc{
+  padding:14px 16px;
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:12px;border-left:2px solid transparent;
+  transition:border-color .2s;
+}
+.tc:hover{border-left-color:var(--accent)}
+.tcr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px}
+.tcn{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text)}
+.tct{
+  font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.5px;
+  padding:2px 8px;border-radius:20px;text-transform:uppercase;flex-shrink:0;
+  background:var(--adim);color:var(--accent);border:1px solid rgba(232,130,10,.2);
+}
+.tct.acque{background:rgba(56,189,248,0.1);color:#38bdf8;border-color:rgba(56,189,248,.2)}
+.tct.normativa{background:rgba(167,139,250,0.1);color:#a78bfa;border-color:rgba(167,139,250,.2)}
+.tct.sicurezza{background:rgba(74,222,128,0.1);color:#4ade80;border-color:rgba(74,222,128,.2)}
+.tct.combustione{background:rgba(251,113,133,0.1);color:#fb7185;border-color:rgba(251,113,133,.2)}
+.tct.caldaie{background:rgba(251,191,36,0.1);color:#fbbf24;border-color:rgba(251,191,36,.2)}
+.tct.fisica{background:rgba(99,102,241,0.1);color:#818cf8;border-color:rgba(99,102,241,.2)}
+.tct.bruciatori{background:rgba(251,113,133,0.12);color:#f87171;border-color:rgba(251,113,133,.25)}
+.tct.conduzione{background:rgba(52,211,153,0.1);color:#34d399;border-color:rgba(52,211,153,.2)}
+.tcd{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:6px;font-weight:300}
+.tce{font-size:12px;color:var(--text3);border-left:2px solid var(--accent);padding-left:8px;line-height:1.5;font-style:italic}
+.nr{text-align:center;padding:40px;color:var(--text3);font-size:13px;font-family:'Geist Mono',monospace}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+
+<header class="header">
+  <div class="logo">Vap<em>o</em>re</div>
+
+  <button class="btn-g" onclick="openG()">⬡ Glossario</button>
+</header>
+
+<main class="main">
+  <div class="intro">
+    <h1 class="intro-title">Generatori<br>di <em>Vapore</em></h1>
+    <p class="intro-sub">Seleziona un modulo per iniziare — i progressi sono salvati automaticamente</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+</div>
+
+<!-- GLOSSARIO -->
+<div class="ov" id="gov">
+  <div class="ovb" onclick="closeG()"></div>
+  <div class="ovp">
+    <div class="ovh">
+      <span class="ovt">Glossario</span>
+      <button class="ovc" onclick="closeG()">✕</button>
+    </div>
+    <div class="ovs"><input class="si2" id="gsrch" placeholder="Cerca termine o definizione..." oninput="rg()"></div>
+    <div class="ovf">
+      <button class="fb active" onclick="sc('all',this)">Tutti</button>
+      <button class="fb" onclick="sc('termodinamica',this)">Termodin.</button>
+      <button class="fb" onclick="sc('combustione',this)">Combustione</button>
+      <button class="fb" onclick="sc('caldaie',this)">Caldaie</button>
+      <button class="fb" onclick="sc('sicurezza',this)">Sicurezza</button>
+      <button class="fb" onclick="sc('normativa',this)">Normativa</button>
+      <button class="fb" onclick="sc('acque',this)">Acque</button>
+      <button class="fb" onclick="sc('fisica',this)">Fisica</button>
+      <button class="fb" onclick="sc('bruciatori',this)">Bruciatori</button>
+      <button class="fb" onclick="sc('conduzione',this)">Conduzione</button>
+    </div>
+    <div class="ovl2" id="glets"></div>
+    <div class="ovlist" id="glist"></div>
+  </div>
+</div>
+
+<script>
+const MDS=[
+  {id:1,name:"Termodinamica del Vapore",icon:"🌡️",file:"modulo1_termodinamica.html"},
+  {id:2,name:"Combustione e Combustibili",icon:"🔥",file:"modulo2_combustione.html"},
+  {id:3,name:"Costruzione Caldaie",icon:"⚙️",file:"modulo3_costruzione.html"},
+  {id:4,name:"Sicurezze e Dispositivi",icon:"🛡️",file:"modulo4_sicurezze.html"},
+  {id:5,name:"Normativa e Patenti",icon:"📋",file:"modulo5_normativa.html"},
+  {id:6,name:"Trattamento Acque",icon:"💧",file:"modulo6_acque.html"},
+  {id:7,name:"Rendimento ed Efficienza",icon:"📈",file:"modulo7_rendimento.html"},
+  {id:8,name:"Fisica e Misure",icon:"📐",file:"modulo8_fisica.html"},
+  {id:9,name:"Bruciatori e Combustione Avanzata",icon:"🔆",file:"modulo9_bruciatori.html"},
+  {id:10,name:"Conduzione e Avviamento",icon:"🕹️",file:"modulo10_conduzione.html"},
+];
+
+function goTo(n){window.location.href=MDS[n-1].file;}
+function gm(n){try{const r=localStorage.getItem('vlm'+n);return r?JSON.parse(r):{stato:'non_iniziato',pct:0,quiz_punteggio:null};}catch{return{stato:'non_iniziato',pct:0,quiz_punteggio:null};}}
+
+function buildGrid(){
+  const html=MDS.map(m=>{
+    const d=gm(m.id);
+    const cls=d.stato==='completato'?'done':d.stato==='in_corso'?'wip':'';
+    const badgeT=d.stato==='completato'?'✓ Completato':d.stato==='in_corso'?'In corso':'0'+m.id;
+    const quizT=d.quiz_punteggio!==null?'Quiz '+d.quiz_punteggio+'/10':'Quiz non svolto';
+    return`<div class="card ${cls}" onclick="goTo(${m.id})">
+      <div class="card-top">
+        <span class="card-emoji">${m.icon}</span>
+        <span class="card-badge">${badgeT}</span>
+      </div>
+      <div class="card-title">${m.name}</div>
+      <div class="card-bar-wrap">
+        <div class="card-bar-row">
+          <div class="card-bar"><div class="card-fill" style="width:${d.pct}%"></div></div>
+          <span class="card-pct">${d.pct}%</span>
+        </div>
+        <div class="card-quiz">${quizT}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('grid').innerHTML=html;
+}
+
+// GLOSSARIO
+const GL=[
+  {term:"Addolcimento",cat:"acque",def:"Rimuove calcio e magnesio tramite resine a scambio ionico. Usato per caldaie fino a 30 bar. Non elimina la silice.",ex:"Acqua dura su caldaia 8 bar: incrostazioni calcaree in settimane riducono il rendimento del 5%."},
+  {term:"Aria stechiometrica",cat:"combustione",def:"Quantità minima teorica di aria per la combustione completa. Metano: ~17,2 kg/kg.",ex:"10 kg/h di metano richiedono ~172 kg/h di aria. In pratica si aggiunge 10-20% di eccesso."},
+  {term:"Art. 39 D.M. 74",cat:"normativa",def:"Esonero dalla presenza continua del conduttore per P≤1 bar, superficie≤100 m², producibilità≤2.000 kg/h.",ex:"Caldaia 0,8 bar e 500 kg/h: conduttore non obbligatorio in permanenza."},
+  {term:"Art. 43 D.M. 74",cat:"normativa",def:"Funzionamento automatico non presidiato per caldaie ≤15 bar e ≤3.000 kg/h. Richiede PSHH, LSHH, allarmi e registro giornaliero.",ex:"Caldaia 12 bar e 2.500 kg/h può funzionare di notte se i blocchi sono operativi."},
+  {term:"Calore latente",cat:"termodinamica",def:"Energia assorbita nel cambio di stato a temperatura costante. A 1 atm: 540 kcal/kg. Decresce all'aumentare della pressione.",ex:"A 10 bar il calore latente scende a ~478 kcal/kg."},
+  {term:"Calore sensibile",cat:"termodinamica",def:"Energia che varia la temperatura senza cambio di stato. Q = m·c·ΔT. Per l'acqua c = 1 kcal/kg·°C.",ex:"1 kg d'acqua da 0°C a 100°C richiede 100 kcal."},
+  {term:"Calore specifico",cat:"termodinamica",def:"Energia per alzare di 1°C 1 kg di sostanza. Acqua: 1 kcal/kg·°C. Nafta: 0,5 kcal/kg·°C.",ex:"La nafta si scalda il doppio più velocemente dell'acqua a parità di calore."},
+  {term:"Caldaia Cornovaglia",cat:"caldaie",def:"Generatore a grande volume (~200 L/m²), focolare interno, pressione max 15 bar, rendimento fino 80%. Elastica.",ex:"Il grande volume d'acqua la rende elastica nei picchi di domanda."},
+  {term:"Caldaia B&W",cat:"caldaie",def:"Babcock & Wilcox: tubi d'acqua, piccolo volume (~70 L/m²), pressioni >20 bar. Avviamento rapido.",ex:"La B&W raggiunge la pressione in 20 min contro le 2-3 ore della Cornovaglia."},
+  {term:"Degasatore termico",cat:"acque",def:"Rimuove ossigeno e CO₂ riscaldando l'acqua a ~100°C. Obbligatorio per uso alimentare.",ex:"A 100°C l'ossigeno disciolto passa da 8 mg/L a <0,02 mg/L."},
+  {term:"Demineralizzazione",cat:"acque",def:"Rimozione totale dei sali minerali. Obbligatoria per caldaie >30 bar e turbine. Elimina anche la silice.",ex:"Senza demineralizzazione la silice forma depositi vetrosi sulle palette delle turbine."},
+  {term:"D.M. 21.05.74",cat:"normativa",def:"Norma cardine italiana per esercizio e sicurezza dei generatori di vapore.",ex:"La violazione espone il responsabile a sanzioni penali."},
+  {term:"Duomo",cat:"caldaie",def:"Camera superiore per raccogliere il vapore più secco.",ex:"Senza duomo: titolo <1 e rischio colpi d'ariete nelle tubazioni."},
+  {term:"Durezza acqua",cat:"acque",def:"Concentrazione di calcio e magnesio. 1°F = 10 mg CaCO₃/L. Causa incrostazioni.",ex:"30°F forma 1 mm di calcare in pochi mesi: +20-30°C sulla parete."},
+  {term:"Eccesso d'aria",cat:"combustione",def:"Aria oltre la stechiometrica. e=(n-1)×100%.",ex:"Metano: 10-20% ottimale. Al 50% la T fumi cala di ~50°C."},
+  {term:"Economizzatore",cat:"caldaie",def:"Recupera calore dai fumi preriscaldando l'acqua. Opera in subcooling (-5°C dalla T ebollizione).",ex:"Da 60°C a 140°C: risparmio combustibile 6-8%."},
+  {term:"Entalpia",cat:"termodinamica",def:"Contenuto energetico per unità di massa (kJ/kg). h_u = (1-x)·h_l + x·h_v.",ex:"Vapore saturo secco a 10 bar: h≈2778 kJ/kg. Surriscaldato a 400°C: ~3264 kJ/kg."},
+  {term:"Flash evaporation",cat:"termodinamica",def:"Vaporizzazione istantanea quando la pressione crolla. Base degli scoppi di caldaia.",ex:"A 10 bar: ~15% dell'acqua flash-vaporizza espandendo 1725 volte in millisecondi."},
+  {term:"Focolare",cat:"caldaie",def:"Zona di combustione. Responsabile del 60-70% dello scambio termico.",ex:"Focolare ondulato: +10% superficie di scambio a parità di dimensioni."},
+  {term:"Idrazina",cat:"acque",def:"N₂H₄ per eliminare le tracce residue di ossigeno. N₂H₄ + O₂ → N₂ + 2H₂O.",ex:"Pochi ppb di ossigeno causano pitting microscopico progressivo."},
+  {term:"Indicatore di livello",cat:"sicurezza",def:"Obbligatorio (min. 2, uno a vetro). Altezza visibile ≥150 mm.",ex:"Livello minimo ≥8 cm sopra la superficie di riscaldamento."},
+  {term:"Indice d'aria",cat:"combustione",def:"n = aria effettiva / aria stechiometrica. Gas: n≈1,1. Solidi: fino a 1,5.",ex:"Bruciatore a metano moderno: n=1,05."},
+  {term:"Indice di vaporizzazione",cat:"caldaie",def:"kg vapore / kg combustibile. Metano: 10-11 kg/Nm³.",ex:"Sotto 9 kg/Nm³: stai perdendo il 20-25% di efficienza."},
+  {term:"Livellostato di blocco",cat:"sicurezza",def:"Blocca il bruciatore al livello minimo. Riarmo manuale obbligatorio.",ex:"Se il regolatore si guasta, il livellostato interviene autonomamente."},
+  {term:"Manometro",cat:"sicurezza",def:"Fondo scala 1,25-2× pressione di bollo. Pressione di bollo segnata in rosso.",ex:"Caldaia 10 bar: fondo scala 15-20 bar, segno rosso a 10 bar."},
+  {term:"Naso refrattario",cat:"caldaie",def:"Protegge i tubi del surriscaldatore dall'irraggiamento diretto della fiamma.",ex:"Senza il naso: tubi a 700°C+ → creep del metallo."},
+  {term:"Patente conduttore",cat:"normativa",def:"4 gradi: 4° (<1 t/h), 3° (<3 t/h), 2° (<20 t/h), 1° (illimitato).",ex:"Conduttore 3° grado su caldaia 500 m²: violazione di legge."},
+  {term:"PED",cat:"normativa",def:"Direttiva 97/23/CE recepita con D.Lgs. 93/2000. Marcatura CE obbligatoria.",ex:"Senza marcatura CE: non si può mettere in servizio in Europa."},
+  {term:"pH acqua",cat:"acque",def:"pH 7=neutro. <7=corrosione acida. >7=alcalina. In caldaia: pH 8-9.",ex:"pH 6: micro-crateri di corrosione invisibili fino alla rottura."},
+  {term:"Potere calorifico inferiore",cat:"combustione",def:"Calore per combustione completa con H₂O gassosa nei fumi. Usato per calcolo rendimento.",ex:"Usare Hs invece di Hi: rendimento 10% più alto del reale."},
+  {term:"Pressione assoluta",cat:"termodinamica",def:"P_ass = P_manometro + P_atm (1,033 bar).",ex:"Manometro 9 bar → P_ass = 10 bar → T ebollizione = 184°C."},
+  {term:"Pressione critica",cat:"termodinamica",def:"224 bar a 374°C: massima coesistenza liquido-vapore.",ex:"Le caldaie ipercritiche operano oltre questi valori."},
+  {term:"Pressostato di blocco",cat:"sicurezza",def:"PSHH: blocca il bruciatore al superamento della pressione massima. Riarmo manuale.",ex:"Regolazione 9,5 bar → PSHH 10,5 bar → valvola sicurezza 11 bar."},
+  {term:"Prova idraulica",cat:"normativa",def:"Collaudo obbligatorio a 1,5× pressione di bollo.",ex:"Caldaia 10 bar → prova a 15 bar per 30 minuti."},
+  {term:"Producibilità",cat:"caldaie",def:"kg di vapore in 1 ora. Specifica: kg/h per m² di superficie.",ex:"2.000 kg/h su 20 m² = 100 kg/m²h."},
+  {term:"Rendimento caldaia",cat:"caldaie",def:"η = 100% − perdite camino − irraggiamento − incombusti.",ex:"Fumi 250°C, eccesso 20%: perdita ~12% → η ≈ 87%."},
+  {term:"Scoppio caldaia",cat:"sicurezza",def:"Flash evaporation: 1 L a 10 bar si espande 1725 volte in millisecondi.",ex:"1 m³ a 10 bar ≈ energia equivalente a ~50 kg di esplosivo."},
+  {term:"Surriscaldatore",cat:"caldaie",def:"Porta il vapore oltre T saturazione. Protetto dal naso refrattario.",ex:"184°C → 400°C a 10 bar: +170 kJ/kg."},
+  {term:"Tiraggio",cat:"caldaie",def:"Differenza di pressione che muove i fumi. Naturale, aspirato, indotto, equilibrato.",ex:"Tiraggio equilibrato: ventilatore aria + ventilatore fumi."},
+  {term:"Titolo vapore",cat:"termodinamica",def:"Frazione di vapore secco in miscela satura. X=0: liquido. X=1: vapore secco. Turbine: X ≥ 0,92.",ex:"X=0,85: goccioline a 300 m/s erodono le pale in giorni."},
+  {term:"Turbolatori",cat:"caldaie",def:"Barre elicoidali nei tubi fumogeni per aumentare la turbolenza e lo scambio termico.",ex:"+20-30% scambio termico, ma aumentano le perdite di carico."},
+  {term:"Valvola di sicurezza",cat:"sicurezza",def:"Scarica il vapore al superamento della pressione. Min 2, diametro ≥25 mm.",ex:"Con 3 t/h: scarico esterno obbligatorio."},
+  {term:"Vapore saturo secco",cat:"termodinamica",def:"Titolo X=1. A 10 bar: T=184°C, densità ~5,1 kg/m³.",ex:"200 volte più denso del vapore a pressione atmosferica."},
+  {term:"Vapore surriscaldato",cat:"termodinamica",def:"Vapore oltre T_saturazione a pressione costante. Essenziale per turbine.",ex:"184°C → 400°C: +490 kJ/kg."},
+  {term:"Vapore saturo umido",cat:"termodinamica",def:"Miscela vapore+goccioline. Titolo X tra 0 e 1.",ex:"Uscita caldaia senza surriscaldatore: X=0,95-0,98."},
+  // MODULO 8 — Fisica e Misure
+  {term:"Forza",cat:"fisica",def:"Grandezza vettoriale che produce accelerazione su una massa. Unità: Newton (N). F = m·a. 1 kgf = 9,81 N.",ex:"Il peso di 100 kg di acqua esercita una forza di 981 N sul fondo del recipiente."},
+  {term:"Lavoro",cat:"fisica",def:"Prodotto di forza per spostamento nella direzione della forza. Unità: Joule (J) o kcal. 1 kcal = 4186 J.",ex:"Pompare 1000 kg di acqua a 10 m di altezza richiede un lavoro di circa 98.100 J."},
+  {term:"Potenza",cat:"fisica",def:"Lavoro compiuto nell'unità di tempo. Unità: Watt (W) o kW. 1 kW = 860 kcal/h.",ex:"Una caldaia da 1 MW produce 860.000 kcal/h — equivalente a riscaldare 8.600 kg d'acqua di 100°C in un'ora."},
+  {term:"Pressione",cat:"fisica",def:"Forza per unità di superficie. Unità: bar, atm, Pa. 1 bar = 10,2 mca = 0,987 atm = 100.000 Pa.",ex:"1 bar è la pressione esercitata da una colonna d'acqua alta circa 10,2 metri."},
+  {term:"Densità",cat:"fisica",def:"Massa per unità di volume (kg/m³). Il peso specifico è densità × g (N/m³). Acqua a 4°C: 1000 kg/m³.",ex:"Il vapore saturo a 10 bar ha densità ~5,1 kg/m³ — 200 volte meno denso dell'acqua liquida."},
+  {term:"Temperatura assoluta",cat:"fisica",def:"Scala Kelvin (K): T(K) = T(°C) + 273,15. Usata nei calcoli termodinamici rigorosi. Lo zero assoluto è -273,15°C.",ex:"Il vapore a 184°C corrisponde a 457,15 K — dato necessario per calcoli di efficienza del ciclo Rankine."},
+  {term:"Sistema metrico decimale",cat:"fisica",def:"Sistema internazionale di unità (SI) basato su multipli di 10. Unità base: metro (m), kg, secondo (s), Kelvin (K), Ampere (A).",ex:"1 m³ = 1000 litri = 1.000.000 cm³. Fondamentale per convertire correttamente portate e volumi in caldaia."},
+  {term:"Numero di Reynolds",cat:"fisica",def:"Re = (v·d·ρ)/μ. Indica il regime di moto: Re < 2300 = laminare, 2300-2500 = transitorio, > 2500 = turbolento.",ex:"Nei tubi fumogeni con turbolatori il regime è turbolento (Re alto): questo aumenta il coefficiente di scambio termico del 20-30%."},
+  // MODULO 9 — Bruciatori e Combustione Avanzata
+  {term:"Bruciatore",cat:"bruciatori",def:"Dispositivo che miscela combustibile e aria comburente e ne garantisce la combustione stabile. Può essere ad aria aspirata (civile) o ad aria soffiata (industriale).",ex:"Un bruciatore industriale a metano da 2 MW con aria soffiata mantiene n=1,05 con controllo elettronico della fiamma."},
+  {term:"Bruciatore ad aria soffiata",cat:"bruciatori",def:"Bruciatore industriale con ventilatore che forza l'aria nella camera di combustione. Permette controllo preciso dell'eccesso d'aria e usato in tutti i generatori di vapore industriali.",ex:"Il ventilatore del bruciatore mantiene la pressione nel focolare leggermente positiva, evitando infiltrazioni d'aria fredda dall'esterno."},
+  {term:"Atomizzazione",cat:"bruciatori",def:"Processo di suddivisione del combustibile liquido in goccioline finissime per massimizzare la superficie di contatto con l'aria. Può essere meccanica (pressione) o con fluido ausiliario (vapore/aria).",ex:"Nafta atomizzata a 30-50 bar produce goccioline di pochi micron: la combustione è quasi completa con eccesso d'aria minimo."},
+  {term:"Fotocellula UV",cat:"bruciatori",def:"Sensore di rilevamento fiamma che utilizza le radiazioni ultraviolette della fiamma. Adatta per metano (fiamma poco luminosa). Se non vede fiamma, chiude l'elettrovalvola del combustibile in sicurezza.",ex:"La fotocellula UV si ionizza con i raggi UV della fiamma. Se il bruciatore si spegne, entro pochi secondi il solenoide taglia il gas."},
+  {term:"Lavaggio camera",cat:"bruciatori",def:"Ventilazione della camera di combustione prima dell'accensione per eliminare residui di gas incombusti potenzialmente esplosivi. Obbligatorio per sicurezza. Durata minima: 20-30 secondi con portata aria ≥30%.",ex:"Prima di ogni accensione il ventilatore soffia aria per almeno 30 secondi: evita che residui di metano formino miscele esplosive con la scintilla di innesco."},
+  {term:"Elettrovalvola combustibile",cat:"bruciatori",def:"Valvola a comando elettrico che apre/chiude il flusso di combustibile al bruciatore. Normalmente chiusa: si apre solo su consenso della fotocellula e del quadro di controllo.",ex:"Se la fotocellula non rileva fiamma entro 10 secondi dall'accensione, l'elettrovalvola si richiude automaticamente e il sistema va in blocco."},
+  {term:"Modulazione bruciatore",cat:"bruciatori",def:"Regolazione continua della potenza del bruciatore in funzione della domanda. A due stadi (alto/basso) o modulante (0-100%). Migliora l'efficienza e riduce i cicli di on/off.",ex:"Un bruciatore modulante evita i picchi di pressione tipici dello start/stop continuo, stabilizzando la pressione in caldaia e riducendo il consumo del 5-8%."},
+  {term:"NOx",cat:"bruciatori",def:"Ossidi di azoto prodotti dalla combustione ad alta temperatura. La formazione aumenta esponenzialmente con T fiamma. Bruciatori Low-NOx riducono le emissioni sotto 70 mg/Nm³.",ex:"Abbassando T fiamma del 10% con ricircolo fumi si dimezzano le emissioni di NOx: tecnica standard nei moderni bruciatori industriali."},
+  {term:"Temperatura adiabica di combustione",cat:"bruciatori",def:"Temperatura massima teorica raggiungibile dai gas di combustione in assenza di perdite di calore. Per metano con aria stechiometrica: ~2000°C. Diminuisce con eccesso d'aria.",ex:"Con n=1,5 (50% eccesso d'aria) la temperatura adiabatica del metano scende da 2000°C a ~1600°C: meno NOx ma anche meno irraggiamento al focolare."},
+  // MODULO 10 — Conduzione e Avviamento
+  {term:"Avviamento da freddo",cat:"conduzione",def:"Procedura di messa in servizio di una caldaia ferma da lungo tempo. Richiede riscaldamento graduale (curva termica) per evitare shock termici alle strutture metalliche. Durata: 4-8 ore.",ex:"Una Cornovaglia fredda deve essere portata a pressione in 4-6 ore: accelerare causa dilatazioni differenziali che possono aprire fessure nelle saldature."},
+  {term:"Avviamento da caldo",cat:"conduzione",def:"Riavviamento di una caldaia fermata di recente (ancora calda). Tempi ridotti rispetto al freddo. Si verifica dopo un blocco automatico o fermata breve. Prevede sempre lavaggio camera prima dell'accensione.",ex:"Dopo un blocco per basso livello, prima di riaccendere: ripristinare il livello, verificare la causa del blocco, eseguire il lavaggio camera, riarmare manualmente i blocchi."},
+  {term:"Spurgo",cat:"conduzione",def:"Operazione di scarico parziale dell'acqua dal corpo cilindrico per eliminare fanghi, sali concentrati e sedimenti. Può essere di fondo (continuo o periodico) o di superficie (per schiume).",ex:"Lo spurgo di fondo periodico elimina i depositi che si accumulano nella parte bassa del corpo cilindrico. Senza spurgo regolare, i sali si concentrano fino a causare schiuma e trascinamento."},
+  {term:"Registro operativo",cat:"conduzione",def:"Documento obbligatorio in cui il conduttore registra giornalmente pressione, livello, temperatura fumi, analisi acque, spurgi, anomalie e test sicurezze. Deve essere firmato settimanalmente.",ex:"Per l'esonero Art.43 il registro deve essere aggiornato ogni giorno di funzionamento e firmato da un conduttore abilitato ogni settimana. L'ASL può richiederlo in qualsiasi momento."},
+  {term:"Blocco automatico",cat:"conduzione",def:"Arresto di emergenza del bruciatore attivato da PSHH (alta pressione), LSHH (basso livello), mancanza fiamma o mancanza tensione. Riarmo sempre manuale. Richiede indagine della causa prima del riavviamento.",ex:"Il blocco per basso livello non si resetta premendo un tasto: bisogna ripristinare il livello, trovare la causa (perdita? pompa guasta?), poi riarmare manualmente."},
+  {term:"Sorveglianza continua",cat:"conduzione",def:"Presenza costante del conduttore abilitato durante il funzionamento della caldaia. Obbligatoria salvo esonero Art.39 o Art.43. Il conduttore non può allontanarsi senza affidare la sorveglianza a persona idonea.",ex:"Un impianto a 20 bar senza esonero Art.43: il conduttore deve essere sempre presente in sala caldaia durante il funzionamento, 24 ore su 24."},
+  {term:"Esonero 72 ore",cat:"conduzione",def:"Regime di funzionamento automatico non presidiato fino a 72 ore consecutive, concesso dall'INAIL per generatori conformi PED con sistemi di sicurezza certificati. Più esteso dell'Art.43 del D.M. 74.",ex:"Un'azienda con caldaia 12 bar e sistemi automatici certificati può ottenere l'esonero 72 ore dall'INAIL: nessun conduttore necessario per 3 giorni consecutivi."},
+  {term:"Manutenzione preventiva",cat:"conduzione",def:"Insieme di interventi programmati (pulizia tubi, controllo guarnizioni, analisi acque, ispezione valvole) eseguiti a intervalli regolari per prevenire guasti e mantenere il rendimento ottimale.",ex:"1 mm di fuliggine sui tubi aumenta la T fumi di 20-30°C e riduce il rendimento del 2-3%. La pulizia annuale dei tubi fumogeni è la manutenzione con il miglior rapporto costo/beneficio."},
+  {term:"Colpo d'ariete",cat:"conduzione",def:"Urto violento provocato dalla condensazione rapida del vapore a contatto con acqua fredda nelle tubazioni, o da gocce d'acqua trasportate dal vapore. Può causare rotture di tubazioni e raccordi.",ex:"Una tubazione di vapore non drenata all'avviamento accumula condensa: quando il vapore caldo arriva, la condensa fredda si vaporizza istantaneamente creando onde d'urto devastanti."},
+];
+
+let gcat='all',glet='all';
+function sletup(){
+  const ls=[...new Set(GL.map(t=>t.term[0].toUpperCase()))].sort();
+  const el=document.getElementById('glets');
+  el.innerHTML='<button class="lb active" onclick="sl(\'all\',this)">A–Z</button>';
+  ls.forEach(l=>el.innerHTML+=`<button class="lb" onclick="sl('${l}',this)">${l}</button>`);
+}
+function sc(c,btn){gcat=c;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rg();}
+function sl(l,btn){glet=l;document.querySelectorAll('.lb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rg();}
+function rg(){
+  const q=(document.getElementById('gsrch').value||'').toLowerCase();
+  const list=GL.filter(t=>{
+    if(gcat!=='all'&&t.cat!==gcat)return false;
+    if(glet!=='all'&&t.term[0].toUpperCase()!==glet)return false;
+    if(q&&!t.term.toLowerCase().includes(q)&&!t.def.toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>a.term.localeCompare(b.term));
+  const el=document.getElementById('glist');
+  if(!list.length){el.innerHTML='<div class="nr">Nessun termine trovato</div>';return;}
+  el.innerHTML=list.map(t=>`<div class="tc">
+    <div class="tcr">
+      <span class="tcn">${t.term}</span>
+      <span class="tct ${t.cat}">${t.cat}</span>
+    </div>
+    <p class="tcd">${t.def}</p>
+    <p class="tce">${t.ex}</p>
+  </div>`).join('');
+}
+function openG(){document.getElementById('gov').classList.add('open');rg();}
+function closeG(){document.getElementById('gov').classList.remove('open');}
+
+// CANVAS: particelle acqua/vapore/condensa + linee flusso ambra
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');
+  const ctx=c.getContext('2d');
+  let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+
+  // Gradiente sfondo
+  function drawBg(){
+    const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);
+    g.addColorStop(0,'rgba(15,25,60,1)');
+    g.addColorStop(.5,'rgba(8,12,28,1)');
+    g.addColorStop(1,'rgba(4,6,14,1)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    const g2=ctx.createRadialGradient(W*.75,H*.7,0,W*.75,H*.7,W*.6);
+    g2.addColorStop(0,'rgba(20,10,40,0.6)');
+    g2.addColorStop(1,'transparent');
+    ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+  }
+
+  // Linee di flusso
+  const FLOWS=Array.from({length:14},()=>({
+    y:Math.random()*H,speed:Math.random()*.18+.05,
+    amp:Math.random()*22+5,freq:Math.random()*.004+.002,
+    phase:Math.random()*Math.PI*2,alpha:Math.random()*.05+.01
+  }));
+
+  // Particelle
+  const PARTS=[];
+  for(let i=0;i<140;i++){
+    PARTS.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.3,vy:-(Math.random()*.5+.07),
+      size:Math.random()*2.5+.5,
+      type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',
+      life:Math.random(),alpha:Math.random()*.6+.2
+    });
+  }
+
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    drawBg();
+    t+=.004;
+
+    // Linee flusso ambra
+    FLOWS.forEach(f=>{
+      ctx.beginPath();
+      ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.7;
+      for(let x=0;x<W;x+=2){
+        const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      f.y-=f.speed*.15;if(f.y<-60)f.y=H+60;
+    });
+
+    // Particelle
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){
+        p.x=Math.random()*W;p.y=H+10;p.life=0;
+        p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';
+        p.vy=-(Math.random()*.5+.07);p.vx=(Math.random()-.5)*.3;
+      }
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;
+      const a=p.alpha*fade;
+
+      if(p.type==='water'){
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);
+        ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();
+      } else if(p.type==='steam'){
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*3.5,0,Math.PI*2);
+        ctx.fillStyle=`rgba(200,210,240,${a*.06})`;ctx.fill();
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        ctx.fillStyle=`rgba(200,210,240,${a*.25})`;ctx.fill();
+      } else {
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);
+        ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{sletup();buildGrid();initCanvas();});
+</script>
+</body>
+</html>
