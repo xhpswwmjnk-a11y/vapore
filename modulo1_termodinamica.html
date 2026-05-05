@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 01 — Termodinamica del Vapore</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 01</div>
+    <div class="header-title">Termodinamica del Vapore</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="scrollToSection('#t1')">1. Temperatura vs Calore</div>
+    <div class="toc-item" onclick="scrollToSection('#t2')">2. Calore Specifico e Formula Q</div>
+    <div class="toc-item" onclick="scrollToSection('#t3')">3. Calore Sensibile vs Latente</div>
+    <div class="toc-item" onclick="scrollToSection('#t4')">4. Trasmissione del Calore</div>
+    <div class="toc-item" onclick="scrollToSection('#t5')">5. Conduttività Termica dei Materiali</div>
+    <div class="toc-item" onclick="scrollToSection('#t6')">6. Relazione Pressione-Temperatura</div>
+    <div class="toc-item" onclick="scrollToSection('#t7')">7. Stati del Vapore</div>
+    <div class="toc-item" onclick="scrollToSection('#t8')">8. Il Titolo del Vapore X</div>
+    <div class="toc-item" onclick="scrollToSection('#t9')">9. Entalpia e Contenuto Termico</div>
+    <div class="toc-item" onclick="scrollToSection('#t10')">10. Tabelle del Vapore Saturo</div>
+    <div class="toc-item" onclick="scrollToSection('#t11')">11. Densità e Volume Specifico</div>
+    <div class="toc-item" onclick="scrollToSection('#t12')">12. Pressione Assoluta vs Relativa</div>
+    <div class="toc-item" onclick="scrollToSection('#t13')">13. Legge di Boyle-Mariotte</div>
+    <div class="toc-item" onclick="scrollToSection('#t14')">14. Legge di Gay-Lussac e Charles</div>
+    <div class="toc-item" onclick="scrollToSection('#t15')">15. Equazione dei Gas Perfetti</div>
+    <div class="toc-item" onclick="scrollToSection('#t16')">16. Dilatazione Termica</div>
+    <div class="toc-item" onclick="scrollToSection('#t17')">17. Viscosità e Numero di Reynolds</div>
+    <div class="toc-item" onclick="scrollToSection('#t18')">18. Flash Evaporation e Scoppio</div>
+    <div class="toc-item" onclick="scrollToSection('#t19')">19. Il Ciclo Rankine</div>
+    <div class="toc-item" onclick="scrollToSection('#t20')">20. Ciclo dell'Acqua in Caldaia</div>
+    <div class="toc-item" onclick="scrollToSection('#t21')">21. Subcooling e Economizzatore</div>
+    <div class="toc-item" onclick="scrollToSection('#t22')">22. Vapore Flash nei Sistemi Condensa</div>
+    <div class="toc-item" onclick="scrollToSection('#t23')">23. Diagramma di Mollier (h-s)</div>
+    <div class="toc-item" onclick="scrollToSection('#t24')">24. Primo Principio della Termodinamica</div>
+    <div class="toc-item" onclick="scrollToSection('#t25')">25. Secondo Principio e Carnot</div>
+    <div class="toc-item" onclick="scrollToSection('#t26')">26. Entropia — concetto e diagramma T-S</div>
+    <div class="toc-item" onclick="scrollToSection('#t27')">27. Entalpia vs Energia Interna</div>
+    <div class="toc-item" onclick="scrollToSection('#t28')">28. Bilancio Energetico Scambiatore</div>
+    <div class="toc-item" onclick="scrollToSection('#t29')">29. Coefficiente di Scambio Termico</div>
+    <div class="toc-item" onclick="scrollToSection('#t30')">30. Numero di Nusselt e Prandtl</div>
+    <div class="toc-item" onclick="scrollToSection('#t31')">31. Ebullioscopia — effetto sali</div>
+    <div class="toc-item" onclick="scrollToSection('#t32')">32. Tensione Superficiale e Bolle</div>
+    <div class="toc-item" onclick="scrollToSection('#t33')">33. Cavitazione nelle Pompe</div>
+    <div class="toc-item" onclick="scrollToSection('#t34')">34. Effetto Joule-Thomson</div>
+    <div class="toc-item" onclick="scrollToSection('#t35')">35. Umidità Aria e Combustione</div>
+    <div class="toc-item" onclick="scrollToSection('#t36')">36. Legge di Dalton — Gas Parziali</div>
+    <div class="toc-item" onclick="scrollToSection('#t37')">37. Punto di Rugiada dei Fumi</div>
+    <div class="toc-item" onclick="scrollToSection('#t38')">38. Temperatura Adiabatica Combustione</div>
+    <div class="toc-item" onclick="scrollToSection('#t39')">39. Pressione Critica e Stato Supercritico</div>
+    <div class="toc-item" onclick="scrollToSection('#t40')">40. Equilibrio Termico — Principio Zero</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. Temperatura e Calore — due concetti distinti</h3>
+    <p>Il primo errore che un conduttore non deve mai fare è confondere la <strong>temperatura</strong> con il <strong>calore</strong>. Sono grandezze fisicamente diverse:</p>
+    <ul>
+      <li><strong>Temperatura</strong> — misura lo stato termico istantaneo di un corpo (°C o K). È quello che indica il termometro. È una grandezza <em>intensiva</em>: non dipende dalla quantità di materia.</li>
+      <li><strong>Calore</strong> — è energia termica in transito tra due corpi a temperature diverse (kcal o kJ). È una grandezza <em>estensiva</em>: dipende dalla massa coinvolta.</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Analogia pratica</div>
+      <p>La temperatura è come la velocità di un'auto, il calore è la distanza percorsa. Un'auto veloce (alta T) può aver percorso poca strada (poco calore ceduto). Due secchi d'acqua alla stessa temperatura hanno la stessa T ma il doppio del calore rispetto a uno solo.</p>
+    </div>
+    <p>Il flusso di calore avviene sempre dal corpo a temperatura più alta verso quello a temperatura più bassa, mai il contrario (secondo principio della termodinamica). Il calore continua a fluire finché le temperature si equalizzano — si raggiunge l'<strong>equilibrio termico</strong>.</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Calore Specifico e Formula del Calore Sensibile</h3>
+    <p>Il <strong>calore specifico (c)</strong> è la quantità di calore necessaria per alzare di 1°C la temperatura di 1 kg di una sostanza. Non è uguale per tutti i materiali:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Sostanza</th><th>c (kcal/kg·°C)</th><th>c (kJ/kg·°C)</th><th>Note</th></tr>
+        <tr><td>Acqua liquida</td><td>1,000</td><td>4,186</td><td>Riferimento universale</td></tr>
+        <tr><td>Vapore saturo</td><td>~0,480</td><td>~2,01</td><td>Varia con la pressione</td></tr>
+        <tr><td>Nafta</td><td>0,500</td><td>2,093</td><td>Si scalda il doppio più veloce</td></tr>
+        <tr><td>Acciaio al carbonio</td><td>0,115</td><td>0,481</td><td>Bassa inerzia termica</td></tr>
+        <tr><td>Ghisa</td><td>0,110</td><td>0,461</td><td>Componenti caldaia</td></tr>
+        <tr><td>Refrattario</td><td>0,200</td><td>0,837</td><td>Muratura caldaia</td></tr>
+        <tr><td>Aria</td><td>0,240</td><td>1,005</td><td>A pressione costante</td></tr>
+      </table>
+    </div>
+    <p>La <strong>Legge Fondamentale del Calore Sensibile</strong>:</p>
+    <div class="formula">
+      <span>Q = m · c · ΔT</span><br>
+      <small>Q = calore (kcal) | m = massa (kg) | c = calore specifico (kcal/kg·°C) | ΔT = variazione temperatura (°C)</small>
+    </div>
+    <p>Esempio: riscaldare 500 kg di nafta di 50°C richiede: Q = 500 × 0,5 × 50 = <strong>12.500 kcal</strong>. Con l'acqua ne servirebbero 25.000 kcal — esattamente il doppio, perché il calore specifico è doppio.</p>
+    <p>La <strong>capacità termica (C)</strong> di un corpo è il prodotto m·c: rappresenta quante kcal servono per alzare di 1°C l'intero corpo (non 1 kg ma tutta la massa). Un grande serbatoio d'acqua ha altissima capacità termica — è un "volano termico".</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Calore Sensibile vs Calore Latente</h3>
+    <p>Esistono due tipologie di calore con effetti radicalmente diversi:</p>
+    <ul>
+      <li><strong>Calore Sensibile</strong> — modifica la temperatura senza cambiare lo stato fisico. Il termometro si muove. Formula: Q = m·c·ΔT</li>
+      <li><strong>Calore Latente</strong> — cambia lo stato fisico (solido→liquido, liquido→vapore) mantenendo la temperatura costante. Il termometro si ferma durante la trasformazione.</li>
+    </ul>
+    <p>Il percorso energetico di 1 kg di acqua dalla temperatura di 0°C al vapore a pressione atmosferica:</p>
+    <div class="formula">
+      <span>[0°C liquido]</span> → +100 kcal (sensibile) → <span>[100°C liquido saturo]</span> → +540 kcal (latente) → <span>[100°C vapore saturo secco]</span><br><br>
+      Totale: <span>640 kcal/kg</span> per ottenere vapore saturo secco a 1,033 bar
+    </div>
+    <div class="callout">
+      <div class="callout-label">Perché il calore latente è così grande</div>
+      <p>Per scaldare l'acqua da 0°C a 100°C servono 100 kcal. Per trasformarla in vapore a 100°C ne servono altre 540 kcal — 5,4 volte di più! Queste calorie rompono i legami molecolari del liquido. È qui che si "nasconde" l'enorme energia degli scoppi di caldaia.</p>
+    </div>
+    <p>Il calore latente di fusione (ghiaccio→acqua) è circa 80 kcal/kg — molto minore del latente di vaporizzazione (540 kcal/kg). Questo perché trasformare un liquido in gas richiede rompere completamente i legami intermolecolari, mentre passare da solido a liquido li rompe solo parzialmente.</p>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Trasmissione del Calore — tre meccanismi</h3>
+    <p>Il calore si trasmette attraverso tre meccanismi fisicamente distinti, che operano contemporaneamente in una caldaia:</p>
+    <ul>
+      <li><strong>Conduzione</strong> — trasmissione attraverso un solido o fluido fermo, per contatto diretto tra molecole adiacenti. La velocità dipende dalla conduttività termica del materiale (λ). Nei metalli è molto elevata, nei gas molto bassa. Formula: Q = λ · A · ΔT / d (dove A = area, d = spessore)</li>
+      <li><strong>Convezione</strong> — trasmissione per movimento di masse fluide (liquidi o gas). Il fluido caldo sale (perché meno denso), quello freddo scende, creando circolazione naturale. Può essere naturale o forzata (con pompe/ventilatori). Formula: Q = h_c · A · ΔT</li>
+      <li><strong>Irraggiamento</strong> — trasmissione per onde elettromagnetiche (infrarosso). Non richiede contatto né mezzo materiale. Avviene anche nel vuoto. La potenza irradiata segue la Legge di Stefan-Boltzmann: P = ε · σ · A · T⁴ (T in Kelvin). Nel focolare di una caldaia, l'irraggiamento è responsabile del 60-70% dello scambio termico totale.</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">In caldaia</div>
+      <p>Il focolare trasmette calore principalmente per irraggiamento. Il fascio tubiero per convezione dei fumi e conduzione attraverso le pareti dei tubi. L'economizzatore quasi esclusivamente per convezione forzata dei fumi.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. Conduttività Termica dei Materiali</h3>
+    <p>La <strong>conduttività termica (λ)</strong> misura la capacità di un materiale di trasmettere calore per conduzione, espressa in kcal/m·h·°C o W/m·K:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Materiale</th><th>λ (W/m·K)</th><th>Effetto pratico</th></tr>
+        <tr><td>Rame</td><td>380</td><td>Eccellente conduttore — mai usato oggi per corrosione</td></tr>
+        <tr><td>Acciaio al carbonio</td><td>50</td><td>Standard costruttivo caldaie</td></tr>
+        <tr><td>Ghisa</td><td>45</td><td>Componenti a bassa pressione</td></tr>
+        <tr><td>Calcare (incrostazione)</td><td>0,9</td><td>Isolante! 1 mm riduce il rendimento del 3%</td></tr>
+        <tr><td>Fuliggine</td><td>0,1</td><td>Isolante potente — 1 mm = +20-30°C sulla parete</td></tr>
+        <tr><td>Acqua</td><td>0,6</td><td>Conduttore mediocre</td></tr>
+        <tr><td>Vapore</td><td>0,03</td><td>Isolante — bolle di vapore sulle pareti sono pericolose</td></tr>
+        <tr><td>Aria</td><td>0,025</td><td>Isolante — infiltrazioni d'aria abbassano il rendimento</td></tr>
+      </table>
+    </div>
+    <div class="callout">
+      <div class="callout-label">Perché le incrostazioni sono pericolose</div>
+      <p>Il calcare ha λ≈0,9 W/m·K contro λ≈50 del acciaio: è 55 volte più isolante. 3 mm di calcare su un tubo in pressione possono portare la temperatura della parete metallica a 600°C+ invece dei normali 300°C, causando deformazione strutturale e rottura.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Relazione Pressione-Temperatura di Ebollizione</h3>
+    <p>La temperatura di ebollizione dell'acqua <strong>non è fissa a 100°C</strong>. Dipende dalla pressione esercitata sulla sua superficie. Aumentando la pressione, le molecole devono avere più energia cinetica per vincere la pressione esterna e sfuggire in fase gassosa — quindi l'acqua bolle a temperature più elevate.</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>P assoluta (bar)</th><th>T ebollizione (°C)</th><th>Calore sensibile (kcal/kg)</th><th>Calore latente (kcal/kg)</th><th>Totale (kcal/kg)</th></tr>
+        <tr><td>1,033 (atm)</td><td>100</td><td>100</td><td>540</td><td>640</td></tr>
+        <tr><td>3</td><td>134</td><td>134</td><td>519</td><td>653</td></tr>
+        <tr><td>5</td><td>152</td><td>154</td><td>507</td><td>661</td></tr>
+        <tr><td>10</td><td>184</td><td>186</td><td>478</td><td>664</td></tr>
+        <tr><td>15</td><td>198</td><td>204</td><td>461</td><td>665</td></tr>
+        <tr><td>20</td><td>212</td><td>218</td><td>447</td><td>665</td></tr>
+        <tr><td>50</td><td>264</td><td>276</td><td>363</td><td>639</td></tr>
+        <tr><td>100</td><td>311</td><td>330</td><td>267</td><td>597</td></tr>
+      </table>
+    </div>
+    <div class="callout">
+      <div class="callout-label">Il segreto termodinamico chiave</div>
+      <p>All'aumentare della pressione: il calore sensibile <strong>aumenta</strong> (l'acqua è più calda), il calore latente <strong>diminuisce</strong> (serve meno energia per il salto di stato), il totale rimane quasi costante (~664 kcal/kg fino a ~20 bar). Le due componenti si scambiano energia: il "serbatoio sensibile" si riempie a scapito del "serbatoio latente".</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Gli Stati del Vapore</h3>
+    <p>Il vapore esiste in stati fisici distinti con proprietà molto diverse. Conoscerli è fondamentale per il conduttore:</p>
+    <ul>
+      <li><strong>Liquido Saturo</strong> (X=0) — acqua al punto esatto di ebollizione. Temperatura e pressione legate dalla curva di saturazione. Pronta a vaporizzare ma ancora tutta liquida.</li>
+      <li><strong>Vapore Saturo Umido</strong> (0 &lt; X &lt; 1) — miscela di vapore secco e goccioline d'acqua in equilibrio alla stessa T e P. Il titolo X definisce la percentuale di vapore secco in peso.</li>
+      <li><strong>Vapore Saturo Secco</strong> (X=1) — tutto il calore latente è stato assorbito. Nessuna goccia residua. Temperatura uguale alla T di saturazione. È il vapore "di qualità" prodotto dalla caldaia.</li>
+      <li><strong>Vapore Surriscaldato</strong> (T > T_sat) — vapore riscaldato oltre la temperatura di saturazione a pressione costante. Ha più entalpia disponibile. È quello che le turbine vogliono.</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Regola fondamentale di Bissolo</div>
+      <p><em>"Saturo vuol dire presenza contemporanea di liquido e vapore, con stessa temperatura e pressione, ovunque esso si trovi: in caldaia, nelle linee vapore, nelle utenze."</em> Questa coesistenza cessa solo quando tutto il liquido è evaporato (X=1) o tutto il vapore è condensato (X=0).</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Il Titolo del Vapore (X)</h3>
+    <p>Il <strong>titolo X</strong> definisce la qualità del vapore saturo umido. È il rapporto tra massa di vapore secco e massa totale della miscela:</p>
+    <div class="formula">
+      <span>X = m_vapore_secco / (m_vapore_secco + m_acqua)</span><br>
+      <small>X = 0: solo liquido saturo | X = 1: solo vapore saturo secco</small>
+    </div>
+    <p>Con il titolo si calcola l'entalpia della miscela:</p>
+    <div class="formula">
+      <span>h_u = (1 - X) · h_l + X · h_v</span><br>
+      <small>h_l = entalpia liquido saturo (kcal/kg) | h_v = entalpia vapore saturo secco (kcal/kg)</small>
+    </div>
+    <p><strong>Titolo nelle turbine — limite critico X = 0,92:</strong> nelle turbine a vapore, il titolo non deve mai scendere sotto 0,92. Con X &lt; 0,92 la percentuale di goccioline è troppo alta: queste colpiscono le palette a 200-400 m/s come proiettili, causando erosione rapida e irreversibile. Sotto X = 0,88 il danno diventa quasi istantaneo.</p>
+    <p>Per garantire X &gt; 0,92 durante tutta l'espansione in turbina si usa il <strong>vapore surriscaldato</strong>: partendo con T elevata, durante l'espansione il titolo scende progressivamente, ma rimane sopra il limite critico fino all'uscita.</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Entalpia e Contenuto Termico</h3>
+    <p>L'<strong>entalpia (h)</strong> è il contenuto energetico totale del fluido per unità di massa, espressa in kcal/kg o kJ/kg. È la grandezza di riferimento per tutti i calcoli termodinamici in caldaia.</p>
+    <ul>
+      <li><strong>Acqua di alimento (h_a)</strong>: h_a ≈ T_acqua (kcal/kg) — valida fino a ~120°C, dove la temperatura in °C coincide approssimativamente con il contenuto entalpico in kcal/kg</li>
+      <li><strong>Liquido saturo (h_l)</strong>: letta dalle tabelle del vapore alla pressione di esercizio</li>
+      <li><strong>Vapore saturo secco (h_v)</strong>: h_v = h_l + r (dove r = calore latente alla pressione considerata)</li>
+      <li><strong>Vapore surriscaldato (h_s)</strong>: letta dalle tabelle a T e P di surriscaldamento</li>
+    </ul>
+    <p><strong>Potenza utile della caldaia:</strong></p>
+    <div class="formula">
+      <span>P [kW] = W · (h_s - h_a) / 3600</span><br>
+      <small>W = portata vapore (kg/h) | h_s = entalpia vapore prodotto (kcal/kg) | h_a = entalpia acqua alimento (kcal/kg)</small>
+    </div>
+    <p>Esempio: caldaia produce 2.000 kg/h di vapore saturo secco a 10 bar (h_v = 664 kcal/kg) con acqua di alimento a 80°C (h_a ≈ 80 kcal/kg):<br>P = 2000 × (664 - 80) / 3600 = <strong>324 kW</strong></p>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Tabelle del Vapore Saturo — Come si Leggono</h3>
+    <p>Le <strong>tavole del vapore saturo</strong> riportano le proprietà termodinamiche dell'acqua in funzione della pressione (o temperatura). Sono lo strumento di calcolo fondamentale del conduttore.</p>
+    <p>Per ogni pressione riportano:</p>
+    <ul>
+      <li><strong>T_sat</strong> — temperatura di saturazione (°C)</li>
+      <li><strong>h_l</strong> — entalpia del liquido saturo (kcal/kg)</li>
+      <li><strong>r</strong> — calore latente di vaporizzazione (kcal/kg)</li>
+      <li><strong>h_v</strong> — entalpia del vapore saturo secco (kcal/kg) = h_l + r</li>
+      <li><strong>v_l</strong> — volume specifico del liquido saturo (m³/kg)</li>
+      <li><strong>v_v</strong> — volume specifico del vapore saturo secco (m³/kg)</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Attenzione fondamentale</div>
+      <p>Le tavole usano sempre la <strong>pressione assoluta</strong>. Se il manometro segna 9 bar, la pressione assoluta è 10 bar (9 + 1,033 ≈ 10). Usare la pressione sbagliata porta a errori nei calcoli di entalpia e portata.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Densità e Volume Specifico del Vapore</h3>
+    <p>La <strong>densità (ρ)</strong> è il rapporto massa/volume (kg/m³). Il <strong>volume specifico (v)</strong> è il suo reciproco (m³/kg). Per il vapore questi valori cambiano enormemente con la pressione:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Pressione (bar ass.)</th><th>Densità vapore (kg/m³)</th><th>Volume specifico (m³/kg)</th></tr>
+        <tr><td>1,033 (atm)</td><td>0,598</td><td>1,671</td></tr>
+        <tr><td>5</td><td>2,669</td><td>0,375</td></tr>
+        <tr><td>10</td><td>5,145</td><td>0,194</td></tr>
+        <tr><td>20</td><td>10,04</td><td>0,0996</td></tr>
+        <tr><td>50</td><td>25,36</td><td>0,0394</td></tr>
+      </table>
+    </div>
+    <p>La densità dell'acqua liquida a 100°C è ~958 kg/m³ — circa 1600 volte maggiore del vapore a pressione atmosferica. Questo rapporto di densità è alla base della <strong>circolazione naturale</strong> nelle caldaie: il vapore sale, l'acqua scende per differenza di densità, senza bisogno di pompe.</p>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Pressione Assoluta vs Pressione Relativa</h3>
+    <p>Distinzione fondamentale che l'esaminatore verifica sistematicamente:</p>
+    <ul>
+      <li><strong>Pressione relativa (manometrica)</strong> — quella indicata dal manometro. Il punto zero corrisponde alla pressione atmosferica, non al vuoto. È la pressione "in più" rispetto all'atmosfera.</li>
+      <li><strong>Pressione assoluta</strong> — pressione riferita al vuoto assoluto. È la somma della pressione relativa più quella atmosferica.</li>
+    </ul>
+    <div class="formula">
+      <span>P_assoluta = P_relativa (manometro) + P_atmosferica</span><br>
+      <small>P_atmosferica = 1,013 bar = 1,033 kg/cm² = 10,33 mH₂O = 760 mmHg</small>
+    </div>
+    <p>Esempio pratico: manometro segna <strong>9 bar</strong> → P_assoluta ≈ <strong>10 bar</strong>.<br>Le tavole del vapore, le leggi dei gas e tutti i calcoli termodinamici usano <strong>sempre la pressione assoluta</strong>. Sbagliare questo passaggio invalida tutti i calcoli successivi.</p>
+    <p>La <strong>pressione in bar</strong> vale anche in kg/cm² (approssimativamente): 1 bar ≈ 1,02 kg/cm² ≈ 10,2 m di colonna d'acqua. L'atmosfera normale è 1,013 bar = 760 mmHg (colonna di mercurio) — questa è l'esperienza di Torricelli.</p>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Legge di Boyle-Mariotte</h3>
+    <p>Per un gas a <strong>temperatura costante</strong> (processo isotermo), pressione e volume sono inversamente proporzionali:</p>
+    <div class="formula">
+      <span>P · V = costante</span><br>
+      <span>P₁ · V₁ = P₂ · V₂</span><br>
+      <small>P = pressione assoluta | V = volume | T = costante</small>
+    </div>
+    <p>Applicazione pratica: se raddoppio la pressione di un gas, il volume si dimezza. Se compresso a 10 bar assoluti, 1 m³ di vapore a pressione atmosferica diventa circa 0,1 m³.</p>
+    <div class="callout">
+      <div class="callout-label">Limite importante</div>
+      <p>La legge di Boyle vale per i <strong>gas perfetti</strong> e in modo approssimato per gas reali a basse pressioni e alte temperature. Il vapore saturo <strong>non segue</strong> questa legge perché condensando cambia di stato — occorre usare le tavole del vapore.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Legge di Gay-Lussac e Legge di Charles</h3>
+    <p><strong>Legge di Gay-Lussac</strong> — a volume costante (processo isocoro), pressione e temperatura assoluta sono direttamente proporzionali:</p>
+    <div class="formula">
+      <span>P / T = costante</span><br>
+      <span>P₁ / T₁ = P₂ / T₂</span><br>
+      <small>T deve essere in Kelvin! T(K) = T(°C) + 273,15</small>
+    </div>
+    <p><strong>Legge di Charles</strong> — a pressione costante (processo isobaro), volume e temperatura assoluta sono direttamente proporzionali:</p>
+    <div class="formula">
+      <span>V / T = costante</span><br>
+      <span>V₁ / T₁ = V₂ / T₂</span><br>
+      <small>T in Kelvin | P = costante</small>
+    </div>
+    <p>Applicazione pratica — Gay-Lussac: se un serbatoio chiuso (volume fisso) contiene gas a 1 bar e 20°C (293 K) e lo si scalda a 100°C (373 K), la pressione diventa: P₂ = 1 × 373/293 = <strong>1,27 bar</strong>. Questo spiega perché le caldaie chiuse con acqua che si riscalda sviluppano pressione automaticamente.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Equazione di Stato dei Gas Perfetti</h3>
+    <p>Unisce le tre leggi precedenti in un'unica equazione generale:</p>
+    <div class="formula">
+      <span>P · V = n · R · T</span><br>
+      <small>P = pressione (Pa) | V = volume (m³) | n = moli di gas | R = 8,314 J/mol·K | T = temperatura (K)</small>
+    </div>
+    <p>In forma più pratica per ingegneria:</p>
+    <div class="formula">
+      <span>P · V = m · R_specifico · T</span><br>
+      <small>m = massa (kg) | R_specifico = R / M_molare (J/kg·K)</small><br>
+      <small>Per vapore d'acqua: M = 18 g/mol → R_specifico = 461 J/kg·K</small>
+    </div>
+    <p>Il vapore surriscaldato si comporta in modo abbastanza simile a un gas perfetto, specialmente ad alta temperatura e bassa pressione. Il vapore saturo invece si discosta significativamente — le tavole del vapore sono necessarie.</p>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Dilatazione Termica</h3>
+    <p>Quasi tutti i materiali si espandono quando si riscaldano. Questo è critico nelle tubazioni a vapore che raggiungono 300-400°C:</p>
+    <div class="formula">
+      <span>ΔL = L₀ · α · ΔT</span><br>
+      <small>ΔL = allungamento (m) | L₀ = lunghezza iniziale (m) | α = coefficiente di dilatazione lineare (1/°C) | ΔT = variazione temperatura</small>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Materiale</th><th>α (×10⁻⁶ /°C)</th><th>Allungamento per 10 m e ΔT=200°C</th></tr>
+        <tr><td>Acciaio al carbonio</td><td>12</td><td>24 mm</td></tr>
+        <tr><td>Acciaio inossidabile</td><td>17</td><td>34 mm</td></tr>
+        <tr><td>Rame</td><td>17</td><td>34 mm</td></tr>
+        <tr><td>Ghisa</td><td>10</td><td>20 mm</td></tr>
+      </table>
+    </div>
+    <p>Una tubazione in acciaio di 10 m che passa da 20°C a 320°C si allunga di <strong>36 mm</strong>. Se bloccata alle estremità, genera forze enormi che possono deformare o rompere i supporti. Per questo negli impianti a vapore sono obbligatori <strong>giunti di dilatazione</strong> (a soffietto o a lira) e le tubazioni devono avere una pendenza dell'1% per il deflusso delle condense.</p>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Viscosità dei Fluidi e Numero di Reynolds</h3>
+    <p>La <strong>viscosità</strong> misura la resistenza di un fluido allo scorrimento. È critica per il dimensionamento delle pompe e delle tubazioni. Si misura in Pa·s o in gradi Engler (per i combustibili liquidi).</p>
+    <p>Il <strong>Numero di Reynolds (Re)</strong> determina il regime di moto di un fluido:</p>
+    <div class="formula">
+      <span>Re = ρ · v · D / μ</span><br>
+      <small>ρ = densità (kg/m³) | v = velocità (m/s) | D = diametro tubo (m) | μ = viscosità dinamica (Pa·s)</small>
+    </div>
+    <ul>
+      <li><strong>Re &lt; 2300</strong> — moto laminare: il fluido scorre in strati paralleli senza rimescolamento. Scambio termico scarso.</li>
+      <li><strong>2300 &lt; Re &lt; 4000</strong> — zona di transizione: moto instabile.</li>
+      <li><strong>Re &gt; 4000</strong> — moto turbolento: rimescolamento intenso, scambio termico molto migliore. È il regime desiderato negli scambiatori di calore e negli economizzatori.</li>
+    </ul>
+    <p>I <strong>turbolatori</strong> nei tubi fumogeni delle caldaie a tubi di fumo aumentano artificialmente la turbolenza (innalzano Re) migliorando lo scambio termico del 20-30%, a scapito di un aumento delle perdite di carico.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. Flash Evaporation — La Fisica dello Scoppio</h3>
+    <p>Lo scoppio di una caldaia è causato dalla <strong>flash evaporation</strong>: vaporizzazione istantanea di parte dell'acqua quando la pressione crolla bruscamente per una rottura strutturale.</p>
+    <p>Meccanismo fisico: acqua a 184°C (T_sat a 10 bar) → pressione crolla a 1 bar → T_sat a 1 bar è 100°C → l'acqua ha 84 kcal/kg di "eccesso" di calore sensibile → questo eccesso si trasforma istantaneamente in calore latente vaporizzando una frazione dell'acqua.</p>
+    <div class="formula">
+      <span>Vap. flash [kg_vap/kg_liq] = (h_l1 - h_l2) / r_medio</span><br>
+      <small>h_l1 = entalpia liquido alla pressione iniziale | h_l2 = entalpia liquido alla pressione finale | r_medio = calore latente medio tra le due pressioni</small>
+    </div>
+    <p>Esempio a 10 bar: (186 - 100) / ((478 + 540) / 2) = 86 / 509 = <strong>~0,17 kg di vapore per ogni kg di acqua</strong>. Il vapore prodotto occupa ~1725 volte il volume dell'acqua originale. La velocità di espansione è nell'ordine dei millisecondi — una detonazione.</p>
+    <div class="callout">
+      <div class="callout-label">Ordine di grandezza</div>
+      <p>Una caldaia da 1 m³ a 10 bar libera energia equivalente a ~50 kg di TNT. Per questo i locali caldaia hanno pareti di sfogo, porte che si aprono verso l'esterno, distanze di sicurezza obbligatorie e valvole di sicurezza tarate correttamente.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Il Ciclo Rankine</h3>
+    <p>Il <strong>ciclo Rankine</strong> è il ciclo termodinamico alla base di tutte le centrali a vapore e dei generatori industriali. Descrive come il vapore converte il calore in lavoro meccanico.</p>
+    <p>Le 4 fasi del ciclo ideale:</p>
+    <ul>
+      <li><strong>1→2: Compressione adiabatica (pompa)</strong> — l'acqua liquida viene compressa dalla pressione del condensatore alla pressione della caldaia. Lavoro minimo (liquidi sono quasi incomprimibili).</li>
+      <li><strong>2→3: Riscaldamento isobaro (caldaia)</strong> — l'acqua viene riscaldata a pressione costante: prima come liquido (economizzatore), poi vaporizzata (evaporatore), poi eventualmente surriscaldata (surriscaldatore).</li>
+      <li><strong>3→4: Espansione adiabatica (turbina)</strong> — il vapore si espande producendo lavoro meccanico. La pressione e la temperatura scendono, il titolo può scendere sotto 1.</li>
+      <li><strong>4→1: Condensazione isobara (condensatore)</strong> — il vapore esausto si condensa a pressione costante cedendo calore all'ambiente.</li>
+    </ul>
+    <div class="formula">
+      <span>η_Rankine = (W_turbina - W_pompa) / Q_caldaia</span><br>
+      <small>Rendimento tipico: 25-45% per impianti industriali, fino a 46% per grandi centrali moderne</small>
+    </div>
+    <p>Il rendimento migliora aumentando la pressione e la temperatura del vapore alla turbina e abbassando la pressione di condensazione. Per questo le centrali moderne usano vapore a 300+ bar e 600°C+.</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Il Ciclo dell'Acqua in Caldaia</h3>
+    <p>In un impianto reale, l'acqua percorre un circuito chiuso che ottimizza l'efficienza energetica:</p>
+    <ul>
+      <li><strong>Serbatoio condense</strong> — raccoglie l'acqua condensata dalle utenze a vapore. È già calda (60-80°C), recuperarla risparmia energia.</li>
+      <li><strong>Degasatore termico</strong> — porta l'acqua a ~105°C a pressione leggermente superiore all'atmosferica. A questa temperatura ossigeno e CO₂ disciolti vengono eliminati per strippaggio termico, evitando corrosioni.</li>
+      <li><strong>Pompa di alimento</strong> — comprime l'acqua alla pressione di caldaia. Prevalenza = pressione di bollo + perdite di carico + dislivello geodetico.</li>
+      <li><strong>Economizzatore</strong> — preriscalda l'acqua sfruttando il calore dei fumi in uscita. L'acqua esce a 5°C sotto la T di saturazione (subcooling).</li>
+      <li><strong>Corpo cilindrico/evaporatore</strong> — fornisce il calore latente di vaporizzazione. Avviene la separazione vapore/acqua.</li>
+      <li><strong>Surriscaldatore</strong> — porta il vapore oltre la T di saturazione. Posizionato nelle zone più calde del percorso fumi.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Subcooling e Ruolo dell'Economizzatore</h3>
+    <p>Il <strong>subcooling</strong> (sottoraffreddamento) è la condizione in cui l'acqua si trova a una temperatura inferiore alla temperatura di saturazione alla pressione di esercizio. È un concetto chiave per l'economizzatore.</p>
+    <p>L'acqua in ingresso all'economizzatore deve uscire a una temperatura inferiore di almeno 5°C rispetto alla temperatura di saturazione alla pressione di caldaia. Questo <strong>ΔT di subcooling &gt; 0</strong> è obbligatorio perché:</p>
+    <ul>
+      <li>Se l'acqua raggiungesse la T di saturazione dentro l'economizzatore, inizierebbe a vaporizzare parzialmente nei tubi.</li>
+      <li>Le bolle di vapore creare colpi d'ariete (water hammer) — urti violenti che possono rompere i tubi.</li>
+      <li>Il vapore ha conduttività termica molto bassa — la parete del tubo si surriscalderebbe localmente.</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Regola pratica</div>
+      <p>Economizzatore a 10 bar (T_sat = 184°C): l'acqua deve uscire a max 179°C. Un subcooling di 5°C garantisce che tutto il fluido rimanga liquido e che l'economizzatore funzioni come puro scambiatore di calore sensibile.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Vapore Flash nei Sistemi di Recupero Condense</h3>
+    <p>Il <strong>vapore flash</strong> non si produce solo negli scoppi. Avviene normalmente nei sistemi di recupero delle condense, ed è un fenomeno da gestire correttamente.</p>
+    <p>Quando la condensa calda (a 10 bar, ~184°C) viene scaricata da uno scaricatore di condensa verso il serbatoio a pressione atmosferica, parte di essa si vaporizza istantaneamente. Questa percentuale è:</p>
+    <div class="formula">
+      <span>% vapore flash = (h_l_alta - h_l_bassa) / r_bassa × 100</span><br>
+      <small>Esempio: condensa a 10 bar → scarico a 1 bar: (186 - 100) / 540 × 100 ≈ 16%</small>
+    </div>
+    <p>Il 16% della condensa si trasforma in vapore a bassa pressione. Questo vapore può essere recuperato e utilizzato per preriscaldare l'acqua o per utenze a bassa pressione — <strong>flash vessel</strong> — invece di essere disperso. Un sistema di recupero flash ben progettato può migliorare il rendimento globale dell'impianto del 3-5%.</p>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Diagramma di Mollier (h-s)</h3>
+    <p>Il <strong>diagramma di Mollier</strong> (o diagramma h-s) rappresenta l'entalpia (h) in funzione dell'entropia (s). È lo strumento grafico standard per l'analisi dei cicli a vapore.</p>
+    <p>Sul diagramma si distinguono tre zone:</p>
+    <ul>
+      <li><strong>Zona a sinistra della curva di saturazione sinistra</strong> — liquido sottoraffreddato (subcooled)</li>
+      <li><strong>Zona sotto la cupola</strong> — vapore saturo umido (le linee di titolo costante X corrono oblique)</li>
+      <li><strong>Zona a destra della curva di saturazione destra</strong> — vapore surriscaldato</li>
+    </ul>
+    <p>Sul diagramma si leggono direttamente: l'entalpia in ogni punto del ciclo, il lavoro della turbina (differenza di entalpia tra ingresso e uscita), il calore ceduto nel condensatore, il calore assorbito nella caldaia. Il punto critico si trova in cima alla cupola (374°C, 224 bar).</p>
+    <div class="callout">
+      <div class="callout-label">Uso pratico</div>
+      <p>L'espansione ideale in turbina è un processo a entropia costante (isentropico) — una linea verticale sul diagramma. L'espansione reale si inclina verso destra a causa delle irreversibilità (attrito, perdite). Il rendimento isentropico della turbina è il rapporto tra lavoro reale e lavoro ideale.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Primo Principio della Termodinamica applicato alle Caldaie</h3>
+    <p>Il <strong>primo principio</strong> afferma che l'energia si conserva: non si crea né si distrugge, si trasforma. In forma matematica per sistemi aperti (come la caldaia):</p>
+    <div class="formula">
+      <span>Q - W = ΔH + ΔKE + ΔPE</span><br>
+      <small>Q = calore scambiato | W = lavoro scambiato | ΔH = variazione entalpia | ΔKE = variazione energia cinetica | ΔPE = variazione energia potenziale</small>
+    </div>
+    <p>Per una caldaia in regime stazionario (ΔKE e ΔPE trascurabili):</p>
+    <div class="formula">
+      <span>Q_caldaia = W · (h_vapore - h_acqua_alimento)</span><br>
+      <small>Tutto il calore fornito dalla combustione serve ad aumentare l'entalpia del fluido</small>
+    </div>
+    <p>Il primo principio giustifica il calcolo del rendimento: η = calore assorbito dal fluido / calore liberato dal combustibile. La differenza (1 - η) va nelle perdite al camino, per irraggiamento, per incombusti.</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Secondo Principio della Termodinamica e Rendimento di Carnot</h3>
+    <p>Il <strong>secondo principio</strong> fissa un limite insuperabile all'efficienza delle macchine termiche: è impossibile convertire tutto il calore in lavoro. Parte del calore deve sempre essere ceduto alla sorgente fredda.</p>
+    <p>Il <strong>rendimento di Carnot</strong> è il massimo teorico raggiungibile tra due sorgenti a temperatura T_hot e T_cold (in Kelvin):</p>
+    <div class="formula">
+      <span>η_Carnot = 1 - T_cold / T_hot</span><br>
+      <small>T in Kelvin! T(K) = T(°C) + 273</small>
+    </div>
+    <p>Esempio: caldaia a 400°C (673 K), condensatore a 30°C (303 K): η_Carnot = 1 - 303/673 = <strong>0,55 = 55%</strong>. I cicli reali raggiungono al massimo il 40-46% a causa di irreversibilità. Il secondo principio spiega perché aumentare la temperatura del vapore migliora sempre il rendimento: aumenta T_hot, aumenta η_Carnot, aumenta η_reale.</p>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Entropia — Concetto e Diagramma T-S</h3>
+    <p>L'<strong>entropia (S)</strong> è una misura del "disordine" termodinamico di un sistema. Non si può misurare direttamente ma si calcola dalle variazioni:</p>
+    <div class="formula">
+      <span>ΔS = Q / T</span><br>
+      <small>ΔS = variazione entropia (kJ/K) | Q = calore scambiato (kJ) | T = temperatura assoluta (K)</small>
+    </div>
+    <p>Proprietà fondamentali dell'entropia:</p>
+    <ul>
+      <li>In un processo reversibile (ideale), l'entropia totale non cambia (ΔS = 0)</li>
+      <li>In qualsiasi processo reale (irreversibile), l'entropia aumenta sempre (ΔS &gt; 0)</li>
+      <li>Non può mai diminuire spontaneamente — questo è il secondo principio</li>
+    </ul>
+    <p>Sul <strong>diagramma T-S</strong> (temperatura vs entropia): l'area sotto il processo rappresenta il calore scambiato. Un ciclo reversibile è rappresentato da una curva chiusa. L'espansione isentropica (turbina ideale) è una linea verticale (S = costante).</p>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Entalpia vs Energia Interna</h3>
+    <p>Spesso confuse, sono due grandezze termodinamiche distinte:</p>
+    <ul>
+      <li><strong>Energia Interna (U)</strong> — energia totale contenuta nelle molecole del fluido (cinetica + potenziale molecolare). Si usa per sistemi chiusi (volume costante).</li>
+      <li><strong>Entalpia (H = U + P·V)</strong> — energia interna più il prodotto pressione×volume. Include il "lavoro di flusso" necessario per far scorrere il fluido nel sistema. Si usa per sistemi aperti (flusso continuo).</li>
+    </ul>
+    <div class="formula">
+      <span>H = U + P · V</span><br>
+      <span>h = u + P · v</span><br>
+      <small>h = entalpia specifica (per unità di massa) | u = energia interna specifica | P·v = lavoro di flusso specifico</small>
+    </div>
+    <p>Per le caldaie (sistemi a flusso continuo) si usa sempre l'<strong>entalpia</strong>. L'energia interna si usa nelle analisi di sistemi chiusi come i serbatoi in pressione. La differenza P·v è significativa per il vapore (gas) ma trascurabile per i liquidi.</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Bilancio Energetico di uno Scambiatore di Calore</h3>
+    <p>In ogni scambiatore (economizzatore, condensatore, preriscaldatore d'aria) vale la conservazione dell'energia:</p>
+    <div class="formula">
+      <span>Q_ceduto = Q_assorbito</span><br>
+      <span>ṁ_caldo · (h_in_caldo - h_out_caldo) = ṁ_freddo · (h_out_freddo - h_in_freddo)</span><br>
+      <small>ṁ = portata massica (kg/h) | h = entalpia specifica (kcal/kg)</small>
+    </div>
+    <p>In uno scambiatore reale si introduce l'<strong>efficienza dello scambiatore (ε)</strong> che tiene conto delle perdite per irraggiamento verso l'esterno (tipicamente 1-3%). La <strong>differenza media logaritmica di temperatura (LMTD)</strong> governa la potenza trasferita:</p>
+    <div class="formula">
+      <span>Q = U · A · LMTD</span><br>
+      <small>U = coefficiente globale di scambio (kcal/m²·h·°C) | A = area di scambio (m²)</small>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Coefficiente di Scambio Termico</h3>
+    <p>Il <strong>coefficiente globale di scambio termico (U)</strong> misura l'efficienza complessiva di trasferimento del calore attraverso una parete, tenendo conto di tutti gli strati resistenti:</p>
+    <div class="formula">
+      <span>1/U = 1/h_int + d/λ + 1/h_est + R_incrostazione</span><br>
+      <small>h_int, h_est = coefficienti convettivi interno ed esterno | d = spessore parete | λ = conduttività | R_incr = resistenza incrostazione</small>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Tipo di scambio</th><th>U tipico (W/m²·K)</th></tr>
+        <tr><td>Gas-Gas (fumi-aria)</td><td>20-50</td></tr>
+        <tr><td>Gas-Liquido (fumi-acqua)</td><td>50-200</td></tr>
+        <tr><td>Vapore condensante-acqua</td><td>1000-5000</td></tr>
+        <tr><td>Ebollizione-gas</td><td>500-2000</td></tr>
+      </table>
+    </div>
+    <p>L'incrostazione calcarea aumenta R_incrostazione riducendo drasticamente U: 1 mm di calcare riduce U di oltre il 30% in un tipico fascio tubiero. La pulizia periodica delle superfici è essenziale per il rendimento.</p>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Numero di Nusselt e Prandtl</h3>
+    <p>Due numeri adimensionali fondamentali per la convezione:</p>
+    <ul>
+      <li><strong>Numero di Prandtl (Pr)</strong> — rapporto tra diffusività cinematica (viscosità) e diffusività termica. Caratterizza il fluido: Pr &lt; 1 (metalli liquidi — ottimi conduttori), Pr ≈ 1 (gas), Pr &gt; 1 (liquidi viscosi).</li>
+      <li><strong>Numero di Nusselt (Nu)</strong> — rapporto tra scambio termico convettivo e conduttivo. Serve a calcolare il coefficiente convettivo h dalla conduttività del fluido:</li>
+    </ul>
+    <div class="formula">
+      <span>Nu = h · D / λ</span><br>
+      <span>Per convezione forzata in tubo: Nu = 0,023 · Re⁰·⁸ · Pr⁰·⁴ (equazione di Dittus-Boelter)</span><br>
+      <small>Valida per Re &gt; 10.000 e fluido che si scalda</small>
+    </div>
+    <p>In pratica, aumentare la velocità del fluido nel tubo (aumentare Re) aumenta Nu e quindi il coefficiente h — questo è il principio dei turbolatori. Raddoppiare la velocità aumenta Nu di circa 1,74 volte.</p>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Ebullioscopia — Effetto dei Sali Disciolti sul Punto di Ebollizione</h3>
+    <p>I sali disciolti nell'acqua innalzano il punto di ebollizione — fenomeno chiamato <strong>ebullioscopia</strong>. La formula generale:</p>
+    <div class="formula">
+      <span>ΔT_eb = K_b · m</span><br>
+      <small>ΔT_eb = innalzamento del punto di ebollizione (°C) | K_b = costante ebullioscopica dell'acqua = 0,512 °C·kg/mol | m = molalità del soluto (mol/kg)</small>
+    </div>
+    <p>In pratica, l'acqua di caldaia con alta salinità bolle a temperature leggermente superiori a quelle indicate nelle tavole del vapore. Questo causa:</p>
+    <ul>
+      <li>Formazione di incrostazioni più rapida alle superfici di scambio</li>
+      <li>Spumeggiamento e trascinamento di goccioline di acqua salina nel vapore (priming)</li>
+      <li>Aumento della pressione necessaria per raggiungere l'ebollizione</li>
+    </ul>
+    <p>Per questo motivo è obbligatorio effettuare <strong>spurghi</strong> periodici per mantenere la concentrazione di sali entro i limiti normativi. Lo spurgo di fondo rimuove i fanghi sedimentati, lo spurgo di superficie rimuove l'acqua salina concentrata in superficie.</p>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Tensione Superficiale e Formazione di Bolle</h3>
+    <p>La <strong>tensione superficiale</strong> è la forza che tende a minimizzare la superficie di separazione tra liquido e gas. Nell'ebollizione governa la formazione e il distacco delle bolle dalle superfici riscaldanti.</p>
+    <p>Una bolla di vapore si forma su un sito di nucleazione (microscopica asperità, punto di graffi, impurità). La bolla cresce finché la forza di spinta (pressione interna del vapore) supera la tensione superficiale. La dimensione critica di una bolla è:</p>
+    <div class="formula">
+      <span>r_critico = 2σ / (P_vapore - P_liquido)</span><br>
+      <small>σ = tensione superficiale (N/m) | P_vapore e P_liquido = pressioni interne ed esterne</small>
+    </div>
+    <p>La tensione superficiale dell'acqua <strong>diminuisce all'aumentare della temperatura</strong>: a 100°C è ~0,059 N/m, a 200°C è ~0,038 N/m. Questo significa che a pressioni elevate le bolle si formano più facilmente e sono più piccole — l'ebollizione è più "delicata" e lo scambio termico migliore.</p>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Cavitazione nelle Pompe</h3>
+    <p>La <strong>cavitazione</strong> è la formazione e il collasso violento di bolle di vapore all'interno di una pompa. È uno dei fenomeni più dannosi per le pompe di alimento delle caldaie.</p>
+    <p>Si verifica quando la pressione locale nel fluido scende sotto la pressione di vapore alla temperatura di esercizio. Le bolle si formano nella zona a bassa pressione (aspirazione della pompa) e collassano violentemente quando il fluido raggiunge zone a pressione maggiore.</p>
+    <p>Effetti della cavitazione:</p>
+    <ul>
+      <li>Erosione meccanica delle giranti — danni visibili come "bucherellatura"</li>
+      <li>Riduzione della portata e della prevalenza</li>
+      <li>Vibrazioni e rumore caratteristico (come ghiaia nel sistema)</li>
+      <li>Surriscaldamento dei cuscinetti</li>
+    </ul>
+    <p>Si previene garantendo una <strong>pressione netta di aspirazione disponibile (NPSH)</strong> superiore alla NPSH richiesta dalla pompa. In pratica: non aspirare acqua troppo calda, non avere tubazioni di aspirazione troppo lunghe o strozzate, posizionare il degasatore sopra le pompe.</p>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Effetto Joule-Thomson</h3>
+    <p>L'<strong>effetto Joule-Thomson</strong> descrive la variazione di temperatura di un gas reale quando si espande attraverso un diaframma o una valvola (processo isoentalpico — a entalpia costante).</p>
+    <p>Per i gas reali:</p>
+    <ul>
+      <li>Sopra la <strong>temperatura di inversione</strong>: il gas si <strong>raffredda</strong> espandendosi (comportamento dei gas reali alle condizioni normali — es. aria, azoto)</li>
+      <li>Sotto la temperatura di inversione: il gas si riscalda espandendosi</li>
+    </ul>
+    <p>Per il vapore surriscaldato ad alta pressione che viene laminato attraverso una valvola di riduzione, si ha un raffreddamento e parziale condensazione — per questo le valvole di riduzione della pressione devono essere seguite da desurriscaldatori o calcolate correttamente per non produrre vapore umido dove serve vapore secco.</p>
+    <div class="formula">
+      <span>μ_JT = (∂T/∂P)_H</span><br>
+      <small>μ_JT = coefficiente Joule-Thomson | positivo = raffreddamento | negativo = riscaldamento</small>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Umidità dell'Aria e suo Effetto sulla Combustione</h3>
+    <p>L'aria comburente contiene sempre vapore acqueo — la sua quantità varia con la temperatura e l'umidità relativa. Questo ha effetti pratici sul processo di combustione:</p>
+    <ul>
+      <li>L'umidità riduce la percentuale di ossigeno disponibile per unità di volume d'aria</li>
+      <li>Il vapore acqueo nei fumi aumenta il calore sensibile perso al camino</li>
+      <li>Ad alta umidità, serve più aria per la stessa combustione (più fumi da smaltire)</li>
+      <li>L'umidità abbassa la temperatura adiabatica di combustione</li>
+    </ul>
+    <p>La <strong>portata di aria umida</strong> si calcola come:</p>
+    <div class="formula">
+      <span>L_umida = L_secca · (1 + x)</span><br>
+      <small>x = titolo igrometrico (kg vapore acqueo / kg aria secca) | tipicamente 0,007-0,020 nelle condizioni europee</small>
+    </div>
+    <p>L'effetto dell'umidità sul rendimento è generalmente &lt;1% nelle condizioni tipiche, ma diventa significativo in ambienti molto umidi (stabilimenti con vasche, vetrerie, ecc.).</p>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Legge di Dalton — Pressioni Parziali nei Fumi</h3>
+    <p>La <strong>Legge di Dalton</strong> afferma che la pressione totale di una miscela di gas è uguale alla somma delle pressioni parziali di ciascun componente:</p>
+    <div class="formula">
+      <span>P_totale = P_N₂ + P_CO₂ + P_O₂ + P_H₂O + P_CO + ...</span>
+    </div>
+    <p>Nei fumi di combustione, i componenti principali sono:</p>
+    <ul>
+      <li><strong>N₂</strong> — azoto dall'aria (~70-75% in volume)</li>
+      <li><strong>CO₂</strong> — anidride carbonica dalla combustione del carbonio (~9-13%)</li>
+      <li><strong>H₂O</strong> — vapore acqueo dalla combustione dell'idrogeno (~10-12%)</li>
+      <li><strong>O₂</strong> — ossigeno in eccesso (~1-5% con eccesso d'aria normale)</li>
+      <li><strong>CO</strong> — ossido di carbonio se combustione incompleta (deve essere &lt;0,1%)</li>
+    </ul>
+    <p>L'analisi dei fumi con l'apparecchio di Orsat misura le percentuali volumetriche di CO₂, O₂ e CO. La percentuale di CO₂ è il miglior indicatore della qualità della combustione: alta CO₂ = buona combustione. Sapendo la percentuale di O₂, si risale all'eccesso d'aria: eccesso % = (O₂% / (21 - O₂%)) × 100.</p>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Punto di Rugiada dei Fumi — Corrosione e Temperatura Minima al Camino</h3>
+    <p>Il <strong>punto di rugiada</strong> è la temperatura alla quale il vapore acqueo nei fumi inizia a condensare. Per fumi normali è ~50-55°C, ma in presenza di anidride solforosa (SO₂) da combustibili con zolfo, il punto di rugiada dell'acido solforico (H₂SO₄) che si forma è molto più elevato:</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Combustibile</th><th>Tenore di zolfo</th><th>Punto di rugiada acido</th></tr>
+        <tr><td>Metano</td><td>~0%</td><td>~50°C (solo H₂O)</td></tr>
+        <tr><td>Gasolio BTZ</td><td>&lt;0,1%</td><td>~100°C</td></tr>
+        <tr><td>Nafta ATZ</td><td>1-3%</td><td>~130-150°C</td></tr>
+        <tr><td>Carbone</td><td>1-5%</td><td>~130-160°C</td></tr>
+      </table>
+    </div>
+    <p>Se i fumi scendono sotto il punto di rugiada nella zona del camino o dell'economizzatore, si forma acido solforico condensato che corrode rapidamente l'acciaio. Per questo la <strong>temperatura minima dei fumi al camino</strong> deve essere mantenuta almeno 20-30°C sopra il punto di rugiada del combustibile usato.</p>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Temperatura Adiabatica di Combustione</h3>
+    <p>La <strong>temperatura adiabatica di combustione</strong> è la temperatura massima teorica raggiungibile dai prodotti di combustione, assumendo che tutto il calore liberato rimanga nei gas (nessuna perdita termica):</p>
+    <div class="formula">
+      <span>T_ad = T_aria + H_i / (ṁ_fumi · c_p_fumi)</span><br>
+      <small>H_i = potere calorifico inferiore | ṁ_fumi = portata fumi | c_p_fumi = calore specifico fumi</small>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Combustibile</th><th>T adiabatica (°C)</th><th>In camera combustione reale</th></tr>
+        <tr><td>Metano</td><td>~2000</td><td>1200-1600°C</td></tr>
+        <tr><td>Gasolio</td><td>~2100</td><td>1300-1700°C</td></tr>
+        <tr><td>Idrogeno</td><td>~2210</td><td>Non usato in caldaia standard</td></tr>
+        <tr><td>Carbone</td><td>~1900</td><td>1100-1500°C</td></tr>
+      </table>
+    </div>
+    <p>La temperatura reale in camera di combustione è 30-50% inferiore alla temperatura adiabatica per: irraggiamento verso le pareti, raffreddamento dell'acqua nei tubi del focolare, eccesso d'aria. La formazione di NOx (ossidi di azoto) aumenta esponenzialmente oltre i 1300°C — per ridurre le emissioni si usa la combustione a bassa temperatura (bruciatori a basso NOx, ricircolo fumi).</p>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Pressione Critica e Stato Supercritico</h3>
+    <p>Al crescere della pressione, le differenze tra liquido e vapore si riducono progressivamente: il liquido diventa meno denso, il vapore più denso, finché al <strong>punto critico</strong> le due fasi diventano indistinguibili:</p>
+    <ul>
+      <li><strong>Pressione critica</strong>: 220,64 bar (≈221 bar)</li>
+      <li><strong>Temperatura critica</strong>: 374,12°C</li>
+      <li><strong>Densità critica</strong>: 322 kg/m³</li>
+    </ul>
+    <p>Oltre il punto critico esiste lo <strong>stato supercritico</strong>: il fluido non è né liquido né gas nel senso tradizionale. Non esiste calore latente — il passaggio avviene in modo continuo e graduale. Le caldaie supercritiche (oltre 221 bar) e ultra-supercritiche (oltre 250 bar, 600°C) delle grandi centrali moderne sfruttano questo principio per rendimenti superiori al 45%, contro il 38-40% dei cicli subcritici tradizionali.</p>
+    <div class="callout">
+      <div class="callout-label">Significato pratico</div>
+      <p>In una caldaia supercritica non esiste ebollizione visibile nel corpo cilindrico — non c'è separazione vapore/acqua, non c'è livello, non esistono i problemi di trascinamento. Tutto il fluido scorre continuamente da liquido ad alta pressione a vapore surriscaldato.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Equilibrio Termico — Principio Zero della Termodinamica</h3>
+    <p>Il <strong>principio zero</strong> (chiamato così perché fu formulato dopo il primo e il secondo principio, ma è ancora più fondamentale) afferma:</p>
+    <p><em>"Se due sistemi sono ciascuno in equilibrio termico con un terzo sistema, allora sono in equilibrio termico tra loro."</em></p>
+    <p>È la base logica della misurazione della temperatura: il termometro (terzo sistema) raggiunge l'equilibrio con il corpo da misurare, e la sua lettura (temperatura) vale per entrambi.</p>
+    <p>Applicazioni pratiche in caldaia:</p>
+    <ul>
+      <li>Un termometro inserito in un pozzetto raggiunge l'equilibrio con il fluido — misura accurata richiede buon contatto termico e sufficiente tempo di risposta</li>
+      <li>I termometri a termocoppia hanno risposta rapida ma richiedono compensazione della giunzione fredda</li>
+      <li>L'equilibrio termico nei diversi punti dell'impianto giustifica l'uso delle tavole del vapore: se conosco la temperatura di saturazione, conosco la pressione e viceversa</li>
+      <li>Variazioni di temperatura in un punto dell'impianto si propagano all'equilibrio termico dell'intero sistema — il conduttore deve anticipare queste propagazioni</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">Riepilogo dei 5 punti chiave del modulo</div>
+      <p>1. Calore sensibile cambia T, calore latente cambia stato<br>
+      2. Pressione e T di saturazione sono legate: P↑ → T_sat↑ → latente↓<br>
+      3. Titolo X ≥ 0,92 nelle turbine — limite assoluto<br>
+      4. Flash evaporation: 1 L acqua a 10 bar → ~1725 L vapore in millisecondi<br>
+      5. P_assoluta = P_manometro + 1,033 bar — sempre nei calcoli</p>
+    </div>
+  </div>
+
+  <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Termodinamica del Vapore</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function scrollToSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"Differenza fondamentale tra temperatura e calore",a:"Temperatura = stato termico istantaneo di un corpo (°C), grandezza intensiva. Calore = energia termica in transito (kcal), grandezza estensiva che dipende dalla massa."},
+  {q:"Formula del calore sensibile e significato di ogni termine",a:"Q = m · c · ΔT\nQ = calore (kcal), m = massa (kg), c = calore specifico (kcal/kg·°C), ΔT = variazione temperatura (°C)"},
+  {q:"Calore specifico dell'acqua e della nafta — e implicazione pratica",a:"Acqua: c = 1 kcal/kg·°C. Nafta: c = 0,5 kcal/kg·°C. La nafta si scalda il doppio più velocemente a parità di calore fornito."},
+  {q:"Quante kcal totali per ottenere 1 kg di vapore saturo secco da 0°C a pressione atmosferica?",a:"640 kcal totali: 100 kcal sensibile (da 0°C a 100°C) + 540 kcal latente (vaporizzazione a 100°C a pressione costante)."},
+  {q:"Cosa succede al calore latente e al calore sensibile quando la pressione aumenta?",a:"Il calore sensibile aumenta (T_sat più alta), il calore latente diminuisce. Il totale rimane quasi costante (~664 kcal/kg fino a 20 bar). Le due componenti si 'scambiano' energia."},
+  {q:"A che temperatura bolle l'acqua a 10 bar assoluti? E a 20 bar?",a:"A 10 bar: 184°C. A 20 bar: 212°C. La T di saturazione aumenta con la pressione secondo la curva di saturazione."},
+  {q:"Titolo del vapore X — definizione e formula",a:"X = massa vapore secco / massa totale. Varia da 0 (liquido saturo) a 1 (vapore saturo secco). Formula entalpia: h_u = (1-X)·h_l + X·h_v"},
+  {q:"Perché il titolo nelle turbine non deve scendere sotto X = 0,92?",a:"Le goccioline d'acqua colpiscono le palette a 200-400 m/s causando erosione rapida e irreversibile. Sotto X = 0,88 il danno è quasi istantaneo."},
+  {q:"Differenza tra pressione relativa e pressione assoluta",a:"P_relativa = pressione manometro (zero = 1 atm). P_assoluta = P_relativa + 1,033 bar. Le tavole del vapore e i calcoli usano sempre la pressione assoluta."},
+  {q:"Cos'è la flash evaporation? Quanto si espande l'acqua?",a:"Vaporizzazione istantanea quando la pressione crolla bruscamente. A 10 bar circa il 15% dell'acqua si vaporizza. 1 litro d'acqua diventa ~1725 litri di vapore — espansione di 1725 volte in millisecondi."},
+  {q:"I tre meccanismi di trasmissione del calore",a:"Conduzione (contatto diretto, governa la λ del materiale), Convezione (moto del fluido, naturale o forzata), Irraggiamento (onde EM, dominante nel focolare = 60-70% dello scambio)."},
+  {q:"Perché 1 mm di calcare è pericoloso? E 1 mm di fuliggine?",a:"Calcare: λ ≈ 0,9 W/m·K (55× più isolante dell'acciaio). 3 mm portano la parete a 600°C+. Fuliggine: λ ≈ 0,1 W/m·K, ancora più isolante. 1 mm = +20-30°C sulla parete, -2-3% rendimento."},
+  {q:"Legge di Boyle-Mariotte",a:"P·V = costante (a T fissa). Se raddoppio la pressione, il volume si dimezza. Vale per gas perfetti — il vapore saturo non la segue (usa le tavole)."},
+  {q:"Legge di Gay-Lussac (volume costante)",a:"P/T = costante (T in Kelvin!). Riscaldando un gas in serbatoio chiuso, la pressione aumenta proporzionalmente alla temperatura assoluta. Es: 1 bar a 20°C (293K) → scaldata a 100°C (373K) → P = 1,27 bar"},
+  {q:"Equazione di stato dei gas perfetti",a:"P·V = n·R·T (n = moli, R = 8,314 J/mol·K, T in Kelvin). Per il vapore surriscaldato è approssimativa ma utile. Il vapore saturo richiede le tavole."},
+  {q:"Dilatazione termica — formula e esempio pratico",a:"ΔL = L₀·α·ΔT. Acciaio: α = 12×10⁻⁶ /°C. Tubo 10 m da 20°C a 320°C → si allunga di 36 mm. Obbligatori giunti di dilatazione negli impianti a vapore."},
+  {q:"Numero di Reynolds — valori e significato",a:"Re = ρ·v·D/μ. Re<2300: laminare (scambio termico scarso). Re>4000: turbolento (scambio ottimo). I turbolatori aumentano Re artificialmente +20-30% scambio, ma aumentano le perdite di carico."},
+  {q:"Il ciclo Rankine — 4 fasi",a:"1→2: Pompa (compressione adiabatica). 2→3: Caldaia (riscaldamento isobaro). 3→4: Turbina (espansione adiabatica). 4→1: Condensatore (condensazione isobara). Rendimento tipico: 25-45%."},
+  {q:"Subcooling nell'economizzatore — perché è obbligatorio?",a:"L'acqua deve uscire dall'economizzatore a 5°C sotto la T di saturazione. Se raggiungesse T_sat, vaporizza parzialmente dentro i tubi → colpi d'ariete + surriscaldamento locale della parete."},
+  {q:"Pressione critica e temperatura critica dell'acqua — significato",a:"P_critica = 221 bar, T_critica = 374°C. Oltre questi valori non esiste distinzione liquido/vapore (stato supercritico). Non c'è calore latente né ebollizione visibile. Rendimento centrali supercritiche >45%."},
+];
+
+const QUESTIONS=[
+  {q:"Qual è la formula del calore sensibile?",opts:["Q = m · c · ΔT","Q = m · r","Q = P · V / T","Q = h · A · ΔT"],c:0,expl:"Q = m·c·ΔT dove m è la massa in kg, c è il calore specifico in kcal/kg·°C e ΔT è la variazione di temperatura in °C. Questa formula vale solo per il calore sensibile, non per il calore latente."},
+  {q:"A quale pressione assoluta bolle l'acqua a 184°C?",opts:["5 bar","10 bar","15 bar","20 bar"],c:1,expl:"A 10 bar assoluti l'acqua bolle a 184°C. È un valore fondamentale da ricordare: manometro a 9 bar = 10 bar assoluti = 184°C di saturazione."},
+  {q:"Quante kcal di calore latente servono per vaporizzare 1 kg d'acqua a pressione atmosferica?",opts:["100 kcal","440 kcal","540 kcal","640 kcal"],c:2,expl:"Il calore latente di vaporizzazione a pressione atmosferica (1,033 bar, 100°C) è 540 kcal/kg. I 640 kcal includono anche i 100 kcal sensibili da 0°C a 100°C."},
+  {q:"Come varia il calore latente di vaporizzazione all'aumentare della pressione?",opts:["Aumenta proporzionalmente","Rimane costante a 540 kcal/kg","Diminuisce","Prima aumenta poi diminuisce bruscamente"],c:2,expl:"Il calore latente diminuisce all'aumentare della pressione. A 10 bar è ~478 kcal/kg, a 20 bar ~447 kcal/kg, fino ad azzerarsi al punto critico (221 bar). L'acqua è già più energetica ad alta pressione e serve meno 'salto'."},
+  {q:"Il titolo del vapore X = 0,85 significa che:",opts:["L'efficienza della caldaia è 85%","La miscela contiene 85% di vapore secco e 15% di acqua in peso","La pressione è all'85% del massimo","Il vapore è surriscaldato dell'85%"],c:1,expl:"Il titolo X indica la frazione in peso di vapore secco. X=0,85 = 85% vapore secco + 15% acqua liquida. Un titolo di 0,85 è pericoloso per le turbine (limite minimo: 0,92)."},
+  {q:"Quale affermazione sulla pressione assoluta è corretta?",opts:["È uguale alla pressione del manometro","P_ass = P_manometro - P_atmosferica","P_ass = P_manometro + P_atmosferica (1,033 bar)","È sempre 1 bar in più della pressione relativa"],c:2,expl:"P_assoluta = P_relativa (manometro) + P_atmosferica. La pressione atmosferica normale è 1,013 bar ≈ 1,033 kg/cm². Le tavole del vapore usano SEMPRE la pressione assoluta."},
+  {q:"Di quante volte si espande 1 litro di acqua quando diventa vapore a pressione atmosferica?",opts:["100 volte","540 volte","1000 volte","1725 volte"],c:3,expl:"1 litro di acqua diventa circa 1725 litri di vapore a pressione atmosferica. Questo spiega la natura catastrofica degli scoppi: energia equivalente a ~50 kg di TNT per 1 m³ di caldaia a 10 bar."},
+  {q:"I tre meccanismi di trasmissione del calore sono:",opts:["Conduzione, Evaporazione, Irraggiamento","Conduzione, Convezione, Irraggiamento","Conduzione, Convezione, Condensazione","Diffusione, Convezione, Irraggiamento"],c:1,expl:"I tre meccanismi sono: Conduzione (contatto diretto nei solidi), Convezione (moto del fluido), Irraggiamento (onde elettromagnetiche). In caldaia l'irraggiamento nel focolare è responsabile del 60-70% dello scambio termico."},
+  {q:"Cosa dice la Legge di Boyle-Mariotte?",opts:["A volume costante, P/T = costante","A temperatura costante, P·V = costante","A pressione costante, V/T = costante","La pressione è proporzionale alla temperatura"],c:1,expl:"Boyle-Mariotte: a temperatura costante (processo isotermo), P·V = costante. Se raddoppio la pressione, il volume si dimezza. Vale per i gas perfetti, non per il vapore saturo che richiede le tavole."},
+  {q:"Il numero di Reynolds determina:",opts:["Il rendimento della caldaia","Il regime di moto di un fluido (laminare o turbolento)","La pressione di esercizio","La temperatura di saturazione"],c:1,expl:"Re = ρ·v·D/μ. Re<2300: laminare (scambio termico scarso). Re>4000: turbolento (scambio termico ottimo). I turbolatori nei tubi fumogeni aumentano artificialmente la turbolenza migliorando lo scambio del 20-30%."},
+  {q:"Cos'è il subcooling nell'economizzatore?",opts:["Il vapore viene raffreddato sotto la T ambiente","L'acqua esce dall'economizzatore a temperatura inferiore di almeno 5°C rispetto alla T di saturazione","L'acqua viene raffreddata prima di entrare in caldaia","Il processo di degasazione dell'acqua"],c:1,expl:"Il subcooling garantisce che l'acqua uscente dall'economizzatore sia ancora tutta liquida (5°C sotto T_sat). Se raggiungesse T_sat, il vapore formatosi causerebbe colpi d'ariete e surriscaldamento locale delle pareti."},
+  {q:"Qual è la pressione critica dell'acqua?",opts:["100 bar","184 bar","221 bar","374 bar"],c:2,expl:"La pressione critica dell'acqua è ~221 bar a 374°C (temperatura critica). Oltre questi valori non esiste distinzione tra liquido e vapore (stato supercritico). Le centrali supercritiche operano oltre questi valori per rendimenti >45%."},
+  {q:"Cos'è la flash evaporation?",opts:["L'evaporazione lenta per irraggiamento","La vaporizzazione istantanea causata da una caduta brusca di pressione","Il processo di surriscaldamento del vapore","La condensazione rapida nei condensatori"],c:1,expl:"La flash evaporation è la vaporizzazione istantanea di parte dell'acqua quando la pressione crolla bruscamente (rottura strutturale). Formula: Vap.flash = (h_l1 - h_l2) / r_medio. A 10 bar circa il 15% dell'acqua si vaporizza."},
+  {q:"La legge di Gay-Lussac (a volume costante) afferma che:",opts:["P·V = costante","P/T = costante (T in Kelvin)","V/T = costante","P = T · R / V"],c:1,expl:"Gay-Lussac: a volume costante, P/T = costante (T in Kelvin!). Riscaldando gas in contenitore chiuso, la pressione aumenta proporzionalmente alla temperatura assoluta. Esempio: gas a 1 bar e 20°C (293K) → riscaldato a 100°C (373K) → P diventa 1,27 bar."},
+  {q:"Qual è il rendimento teorico massimo (Carnot) tra sorgente a 400°C e condensatore a 30°C?",opts:["37%","45%","55%","62%"],c:2,expl:"η_Carnot = 1 - T_cold/T_hot = 1 - 303/673 = 0,55 = 55%. Le temperature sono in Kelvin (T+273). I cicli reali raggiungono al massimo 40-46% a causa delle irreversibilità (attrito, scambi non ideali)."},
+  {q:"Il punto di rugiada dei fumi è importante perché:",opts:["Indica la temperatura massima dei fumi","Sotto questo valore si forma acido solforico che corrode l'acciaio","È la temperatura di ebollizione dell'acqua nei fumi","Definisce il rendimento della combustione"],c:1,expl:"Sotto il punto di rugiada, il vapore acqueo nei fumi condensa e, in presenza di SO₂ da combustibili con zolfo, forma H₂SO₄ che corrode rapidamente l'acciaio. La T minima dei fumi al camino deve essere 20-30°C sopra il punto di rugiada."},
+  {q:"Cos'è la cavitazione nelle pompe di alimento?",opts:["La formazione di bolle di vapore per calo di pressione locale, che collassano violentemente","Il surriscaldamento delle giranti per attrito","La corrosione per ossigeno disciolto","La perdita di tenuta meccanica dell'albero"],c:0,expl:"La cavitazione si verifica quando la pressione locale scende sotto la pressione di vapore alla T di esercizio. Le bolle si formano in aspirazione e collassano violentemente, erodendo le giranti. Si previene garantendo NPSH disponibile > NPSH richiesta."},
+  {q:"Il diagramma di Mollier (h-s) mostra:",opts:["La variazione di temperatura con la pressione","L'entalpia in funzione dell'entropia, con la cupola di saturazione","La variazione di densità del vapore con T","Il rendimento della caldaia in funzione del carico"],c:1,expl:"Il diagramma h-s (Mollier) mostra entalpia vs entropia. Si individua la zona liquida, la cupola del vapore saturo (con linee di titolo X) e la zona del vapore surriscaldato. L'espansione ideale in turbina è isentropica = linea verticale sul diagramma."},
+  {q:"La dilatazione termica di una tubazione in acciaio di 10 m con ΔT = 200°C è di circa:",opts:["12 mm","24 mm","36 mm","48 mm"],c:1,expl:"ΔL = L₀·α·ΔT = 10 × 12×10⁻⁶ × 200 = 0,024 m = 24 mm. Per questo negli impianti a vapore sono obbligatori giunti di dilatazione a soffietto o a lira ogni 20-30 m."},
+  {q:"Qual è il significato del Principio Zero della Termodinamica?",opts:["L'energia si conserva","Se A è in equilibrio termico con C e B è in equilibrio con C, allora A e B sono in equilibrio tra loro","L'entropia di un sistema isolato aumenta sempre","Il calore non può passare da un corpo freddo a uno caldo"],c:1,expl:"Il principio zero è la base della misurazione della temperatura: il termometro (C) raggiunge l'equilibrio con il corpo misurato (A), e la sua lettura è valida. Senza questo principio non avrebbe senso 'misurare' la temperatura."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm1');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm1',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

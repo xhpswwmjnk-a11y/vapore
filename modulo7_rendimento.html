@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 07 — Rendimento ed Efficienza</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 07</div>
+    <div class="header-title">Rendimento ed Efficienza</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. Definizione di rendimento in caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Metodo diretto — calcolo</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. Metodo indiretto — calcolo</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. Perdite al camino — calore sensibile</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. Formula di Hassenstein — applicazione</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Perdite per incombusti gassosi</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. Perdite per incombusti solidi</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Perdite per irraggiamento</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Perdite per spurgo</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Temperatura fumi — importanza</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Eccesso d'aria — effetto sul rendimento</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Temperatura aria comburente</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Economizzatore — guadagno rendimento</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Preriscaldatore aria — guadagno</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Caldaie a condensazione</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Cogenerazione — principio</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Ciclo combinato gas-vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. Audit energetico della caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Analizzatore di combustione</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. Diagramma di Sankey</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. Indice di vaporizzazione specifico</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. Consumo specifico di combustibile</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Effetto delle incrostazioni sul rendimento</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Effetto della fuliggine sul rendimento</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. Modulazione del bruciatore</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Perdite a bruciatore spento</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Rendimento di distribuzione vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. Coibentazione tubazioni — risparmio</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Scaricatori di condensa — efficienza</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Riduzione della pressione di esercizio</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Recupero calore dai fumi</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Free cooling e recupero termico</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Misure di portata vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. Contabilizzazione energetica</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. KPI energetici dell'impianto</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Normativa ISO 50001</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. D.Lgs. 102/2014 — efficienza energetica</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. Diagnosi energetica obbligatoria</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. TEE — Titoli di Efficienza Energetica</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Analisi costi-benefici degli interventi</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Carbon footprint dell'impianto</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Trend futuro — idrogeno e biocombustibili</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. Definizione di Rendimento in Caldaia</h3>
+    <p>Il <strong>rendimento termico</strong> di un generatore di vapore è il rapporto tra il calore effettivamente ceduto al fluido (acqua/vapore) e il calore teoricamente disponibile dalla combustione del combustibile:</p>
+    <div class="formula">
+      <span>η = Q_utile / Q_disponibile = W · (h_s - h_a) / (B · Hi)</span><br>
+      <small>W = portata vapore (kg/h) | h_s = entalpia vapore prodotto (kcal/kg) | h_a = entalpia acqua alimento (kcal/kg)<br>B = consumo combustibile (kg/h o Nm³/h) | Hi = potere calorifico inferiore</small>
+    </div>
+    <p>Il rendimento si esprime in percentuale e indica quanta parte del calore del combustibile viene effettivamente utilizzata. Il complemento a 100% rappresenta le perdite totali:</p>
+    <div class="formula">
+      <span>η% = 100% - P_camino - P_irraggiamento - P_incombusti - P_spurgo</span>
+    </div>
+    <p>Valori tipici: caldaie a tubi di fumo moderne: 84-88%. Caldaie a tubi d'acqua: 85-92%. Caldaie a condensazione: 95-107% (riferita a Hi — superano il 100% perché recuperano anche il calore latente dell'acqua).</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Metodo Diretto — Calcolo del Rendimento</h3>
+    <p>Il <strong>metodo diretto</strong> (o metodo di input-output) calcola il rendimento misurando direttamente il calore utile prodotto e confrontandolo con il calore introdotto con il combustibile:</p>
+    <div class="formula">
+      <span>η_diretto = (W · (h_s - h_a)) / (B · Hi) × 100%</span>
+    </div>
+    <p>Richiede la misura accurata di:</p>
+    <ul>
+      <li><strong>W</strong> — portata di vapore (con flussimetro a orifizio, venturimetro o vortex)</li>
+      <li><strong>h_s</strong> — entalpia vapore prodotto (dalle tavole del vapore, noti P e T)</li>
+      <li><strong>h_a</strong> — entalpia acqua di alimento (≈ temperatura in °C)</li>
+      <li><strong>B</strong> — consumo di combustibile (con contatore gas o misura nafta)</li>
+      <li><strong>Hi</strong> — potere calorifico inferiore (dal certificato del combustibile o analisi)</li>
+    </ul>
+    <p>Vantaggi: immediato, risultato diretto. Svantaggi: richiede strumentazione accurata su tutti i flussi, gli errori di misura si moltiplicano, non identifica dove si trovano le perdite.</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Metodo Indiretto — Calcolo del Rendimento</h3>
+    <p>Il <strong>metodo indiretto</strong> (o metodo delle perdite) calcola il rendimento sommando tutte le perdite identificate e sottraendole da 100%:</p>
+    <div class="formula">
+      <span>η_indiretto = 100% - ΣPerdite%</span><br>
+      <small>Perdite = P_camino + P_irraggiamento + P_incombusti_gassosi + P_incombusti_solidi + P_spurgo</small>
+    </div>
+    <p>È il metodo preferito per le verifiche sul campo perché:</p>
+    <ul>
+      <li>Identifica dove si trovano le perdite → indica dove intervenire per migliorare</li>
+      <li>Richiede solo l'analisi dei fumi (T_fumi, CO₂%, O₂%, CO%) e alcune misure di base</li>
+      <li>Gli errori di misura sono minori (si misurano piccole differenze, non grandi flussi)</li>
+      <li>È il metodo usato dagli ispettori INAIL e dagli auditor energetici</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Perdite al Camino — Calore Sensibile</h3>
+    <p>Le <strong>perdite al camino per calore sensibile</strong> sono la perdita principale di qualsiasi caldaia — rappresentano tipicamente l'8-15% del calore introdotto. Sono il calore "sprecato" nei gas caldi che escono dal camino.</p>
+    <p>Dipendono da due fattori:</p>
+    <ul>
+      <li><strong>Temperatura dei fumi</strong> — più alta è la temperatura, più calore si perde. Abbassare i fumi di 10°C migliora il rendimento di circa 0,5%</li>
+      <li><strong>Portata dei fumi</strong> — dipende dall'eccesso d'aria. Più aria in eccesso → più fumi → più perdite al camino</li>
+    </ul>
+    <div class="formula">
+      <span>P_camino [%] = V_fumi · cp_fumi · (T_fumi - T_aria) / (B · Hi) × 100</span><br>
+      <small>V_fumi = portata volumetrica fumi (Nm³/h) | cp_fumi ≈ 0,32 kcal/Nm³·°C</small>
+    </div>
+    <p>In pratica si usa la formula di Hassenstein: P% = K · (T_fumi - T_aria) / CO₂%</p>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. Formula di Hassenstein — Applicazione Pratica</h3>
+    <p>La formula di Hassenstein permette di calcolare rapidamente le perdite al camino con soli tre dati misurabili sul campo:</p>
+    <div class="formula">
+      <span>P_camino% = K · (T_fumi - T_aria) / CO₂%</span><br>
+      <small>K: carbone=0,65 | nafta=0,58 | metano=0,46<br>T in °C | CO₂% = percentuale CO₂ nei fumi anidri</small>
+    </div>
+    <p>Esempio comparativo — stessa caldaia, diversi stati di efficienza:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Stato</th><th>T_fumi</th><th>CO₂%</th><th>Perdita camino</th></tr>
+      <tr><td>Ottimale (metano)</td><td>180°C</td><td>10%</td><td>0,46 × 160/10 = 7,4%</td></tr>
+      <tr><td>Accettabile</td><td>220°C</td><td>9%</td><td>0,46 × 200/9 = 10,2%</td></tr>
+      <tr><td>Da correggere</td><td>280°C</td><td>8%</td><td>0,46 × 260/8 = 14,9%</td></tr>
+    </table></div>
+    <p>La differenza tra stato ottimale e da correggere è ~7,5% di perdite in più. Su un impianto da 1 MW termico, questo vale circa 75 kW dispersi → oltre 650 MWh/anno → decine di migliaia di euro di combustibile sprecato.</p>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Perdite per Incombusti Gassosi</h3>
+    <p>Le <strong>perdite per incombusti gassosi</strong> rappresentano il calore del combustibile che non ha bruciato completamente e si trova nei fumi come CO (monossido di carbonio) o idrocarburi non bruciati.</p>
+    <div class="formula">
+      <span>P_incombusti_g% = V_fumi · (CO% / 100) · 3.020 / (B · Hi) × 100</span><br>
+      <small>3.020 = potere calorifico del CO (kcal/Nm³)</small>
+    </div>
+    <p>In pratica, si usa la formula semplificata:</p>
+    <div class="formula">
+      <span>P_CO% ≈ 0,006 · CO[ppm] / CO₂%</span><br>
+      <small>CO in ppm (parti per milione) | CO₂ in %</small>
+    </div>
+    <p>Valori tipici di CO accettabili: &lt;100 ppm. Valori preoccupanti: &gt;300 ppm. Valori pericolosi: &gt;1.000 ppm (sia per la perdita economica che per il rischio di intossicazione).</p>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Perdite per Incombusti Solidi</h3>
+    <p>Le <strong>perdite per incombusti solidi</strong> riguardano esclusivamente le caldaie a combustibile solido (carbone, biomasse). Sono i residui di carbone non bruciato presenti nelle ceneri.</p>
+    <div class="formula">
+      <span>P_incombusti_s% = m_ceneri · (Ci / 100) · Hi_carbonio / (B · Hi) × 100</span><br>
+      <small>m_ceneri = portata ceneri (kg/h) | Ci = contenuto incombusti nelle ceneri (%) | Hi_carbonio = 8.130 kcal/kg</small>
+    </div>
+    <p>Il contenuto di incombusti nelle ceneri si misura per calcinazione (perdita di peso a 800°C). Valori accettabili: &lt;5% per griglia mobile, &lt;2% per carbone polverizzato. Cause di alto contenuto di incombusti: combustione troppo rapida (tempo di permanenza in focolare insufficiente), pezzatura troppo grande, eccesso d'aria insufficiente.</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Perdite per Irraggiamento</h3>
+    <p>Le <strong>perdite per irraggiamento</strong> (o dispersione) sono il calore che si disperde dall'involucro esterno della caldaia verso l'ambiente attraverso le pareti, i flangi, le valvole e gli accessori non coibentati.</p>
+    <p>Entità tipica: 0,5-2% del calore introdotto. Per una caldaia ben coibentata e in buono stato: &lt;1%. Per una caldaia vecchia con coibentazione deteriorata: fino al 3-4%.</p>
+    <p>Fattori che influenzano le perdite per irraggiamento:</p>
+    <ul>
+      <li>Stato della coibentazione (spessore, integrità, continuità)</li>
+      <li>Temperatura di esercizio (più alta = più dispersione)</li>
+      <li>Superficie esterna della caldaia</li>
+      <li>Carico termico: a carico parziale le perdite percentuali aumentano (il calore disperso è quasi costante ma il denominatore — calore introdotto — è minore)</li>
+    </ul>
+    <p>La temperatura esterna del casing non deve superare 50°C sia per ridurre le perdite che per la sicurezza del personale.</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Perdite per Spurgo</h3>
+    <p>Le <strong>perdite per spurgo</strong> sono il calore contenuto nell'acqua calda che viene scaricata periodicamente per mantenere la concentrazione di sali entro i limiti. Rappresentano tipicamente 1-4% del calore introdotto.</p>
+    <div class="formula">
+      <span>P_spurgo% = (W_spurgo · h_l) / (B · Hi) × 100</span><br>
+      <small>W_spurgo = portata di spurgo (kg/h) | h_l = entalpia acqua di caldaia (kcal/kg)</small>
+    </div>
+    <p>L'acqua di spurgo esce alla temperatura di saturazione della caldaia — porta via tutto il suo contenuto entalpico. Si può recuperare parzialmente questo calore installando uno <strong>scambiatore di calore spurgo-acqua fredda</strong> (heat exchanger di spurgo) che preriscalda l'acqua di reintegro prima che entri nel degasatore. Con questo sistema si recupera il 50-80% del calore dello spurgo.</p>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Temperatura dei Fumi — Importanza sul Rendimento</h3>
+    <p>La temperatura dei fumi al camino è il parametro più facilmente misurabile e uno dei più importanti indicatori del rendimento della caldaia.</p>
+    <p>Regola empirica fondamentale: <strong>ogni 10°C di riduzione della temperatura dei fumi migliora il rendimento di circa 0,5%</strong>.</p>
+    <div class="table-wrap"><table>
+      <tr><th>T fumi (°C)</th><th>Perdita al camino (metano, CO₂=10%)</th><th>Rendimento stimato</th></tr>
+      <tr><td>150</td><td>6,0%</td><td>~92-93%</td></tr>
+      <tr><td>200</td><td>8,3%</td><td>~90-91%</td></tr>
+      <tr><td>250</td><td>10,6%</td><td>~87-89%</td></tr>
+      <tr><td>300</td><td>12,9%</td><td>~84-86%</td></tr>
+    </table></div>
+    <p>La temperatura dei fumi non può essere abbassata indefinitamente: deve rimanere sopra il <strong>punto di rugiada dell'acido</strong> (~130-150°C per nafta ATZ, ~50°C per metano) per evitare la condensazione di acido solforico corrosivo.</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Eccesso d'Aria — Effetto sul Rendimento</h3>
+    <p>L'eccesso d'aria influenza il rendimento attraverso due effetti opposti:</p>
+    <ul>
+      <li><strong>Effetto positivo</strong>: garantisce la combustione completa eliminando CO e incombusti</li>
+      <li><strong>Effetto negativo</strong>: aumenta la portata dei fumi e abbassa la temperatura di fiamma → maggiori perdite al camino</li>
+    </ul>
+    <p>La relazione tra eccesso d'aria e rendimento:</p>
+    <div class="formula">
+      <span>ΔP_camino% ≈ 0,02 × Δe%</span><br>
+      <small>Per ogni 1% di eccesso d'aria in più → ~0,02% di perdita al camino aggiuntiva</small>
+    </div>
+    <p>Il punto ottimale è dove la curva delle perdite per incombusti incrocia quella delle perdite per eccesso d'aria: tipicamente O₂=1-2% nei fumi per il metano, O₂=2-3% per la nafta.</p>
+    <p>Un bruciatore mal regolato con eccesso del 30% invece dell'ottimale del 10% perde circa 0,4% di rendimento aggiuntivo solo per l'eccesso d'aria, più le ulteriori perdite per la fiamma più fredda. Su 1 MW: ~4 kW di perdita permanente.</p>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Temperatura dell'Aria Comburente</h3>
+    <p>La temperatura dell'aria comburente in ingresso al bruciatore influenza il rendimento: aria più calda porta più entalpia in camera di combustione, riducendo la quantità di combustibile necessaria per raggiungere la stessa temperatura di fiamma.</p>
+    <p>La formula di Hassenstein mostra questo effetto: P_camino = K × (T_fumi - <strong>T_aria</strong>) / CO₂%. Aumentare T_aria di 10°C ha lo stesso effetto di abbassare T_fumi di 10°C (+0,5% rendimento).</p>
+    <p>Il <strong>preriscaldatore d'aria</strong> recupera calore dai fumi per riscaldare l'aria comburente. Guadagni tipici:</p>
+    <div class="table-wrap"><table>
+      <tr><th>T aria in ingresso</th><th>Guadagno vs aria a 20°C</th></tr>
+      <tr><td>100°C</td><td>+3-4%</td></tr>
+      <tr><td>200°C</td><td>+6-8%</td></tr>
+      <tr><td>300°C</td><td>+9-12%</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Economizzatore — Guadagno di Rendimento</h3>
+    <p>L'<strong>economizzatore</strong> è lo scambiatore di calore che recupera il calore residuo dei fumi per preriscaldare l'acqua di alimento. È il recuperatore più diffuso e con il miglior rapporto costo/beneficio.</p>
+    <p>Guadagno di rendimento:</p>
+    <ul>
+      <li>Ogni 10°C di preriscaldo dell'acqua di alimento → circa +0,5-0,6% di rendimento</li>
+      <li>Un economizzatore che porta l'acqua da 60°C a 140°C recupera 80 kcal/kg → risparmio 6-8%</li>
+      <li>Abbassamento fumi di 10°C per ogni 2-3°C di preriscaldo dell'acqua (dipende dalle portate)</li>
+    </ul>
+    <p>Vincolo del subcooling: l'acqua in uscita dall'economizzatore deve rimanere a 5°C sotto la T di saturazione alla pressione di caldaia. Questo limita il raffreddamento massimo dei fumi a circa T_sat - 5°C + margine di sicurezza (≈30°C sopra T_sat per evitare rischi).</p>
+    <p>Costo-beneficio tipico: payback di 1-3 anni per un nuovo economizzatore installato su una caldaia esistente.</p>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Preriscaldatore d'Aria — Guadagno di Rendimento</h3>
+    <p>Il <strong>preriscaldatore d'aria</strong> (LUVO) recupera calore dai fumi a valle dell'economizzatore per riscaldare l'aria comburente. Abbassa ulteriormente la temperatura dei fumi al camino.</p>
+    <p>Guadagni di rendimento:</p>
+    <ul>
+      <li>Ogni 10°C di innalzamento della temperatura aria → +0,5% rendimento (stessa regola dell'economizzatore)</li>
+      <li>Abbassa i fumi di 10-15°C per ogni 20-25°C di preriscaldo dell'aria (dipende dal rapporto portate)</li>
+      <li>Guadagno totale tipico: 3-8% di rendimento</li>
+    </ul>
+    <p>Sequenza tipica nel percorso fumi di una caldaia efficiente:</p>
+    <div class="formula">
+      <span>Focolare (1.200-1.600°C) → Surriscaldatore → Fascio tubiero → Economizzatore → LUVO → Camino (130-180°C)</span>
+    </div>
+    <p>Rischio: se i fumi scendono troppo in temperatura nel LUVO, si possono formare condense acide (H₂SO₄) che corrodono le superfici dello stesso LUVO. La temperatura di uscita dei fumi dal LUVO deve rimanere sopra il punto di rugiada del combustibile usato.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Caldaie a Condensazione</h3>
+    <p>Le <strong>caldaie a condensazione</strong> recuperano anche il calore latente del vapore acqueo contenuto nei fumi portando i fumi sotto il punto di rugiada (~57°C per metano). Il vapore condensa cedendo le ~540 kcal/kg di calore latente all'acqua di ritorno.</p>
+    <p>Rendimento riferito a Hi: fino al <strong>107-110%</strong> — apparentemente impossibile, ma si spiega perché Hi non include il calore latente dell'acqua. Il valore corretto si ottiene riferendosi a Hs (potere calorifico superiore), rispetto al quale il rendimento è circa il 97-99%.</p>
+    <p>Condizioni necessarie per la condensazione:</p>
+    <ul>
+      <li>Temperatura acqua di ritorno &lt; 55°C (più bassa → più condensazione → più guadagno)</li>
+      <li>Fumi devono raffreddarsi sotto ~57°C (punto di rugiada del vapore acqueo per il metano)</li>
+      <li>Gestione della condensa acida prodotta (pH ~4) — scarico in fognatura con neutralizzazione</li>
+    </ul>
+    <p>Non adatte a: combustibili con zolfo (la condensa sarebbe H₂SO₄), impianti a vapore dove l'acqua di ritorno è già calda, sistemi che richiedono alte temperature di distribuzione.</p>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Cogenerazione — Principio e Vantaggi</h3>
+    <p>La <strong>cogenerazione</strong> (o CHP — Combined Heat and Power) è la produzione simultanea di energia elettrica e calore utile da una singola fonte di combustibile. Rispetto alla generazione separata di elettricità e calore, la cogenerazione usa il 30-40% di combustibile in meno.</p>
+    <p>Schema tipico di cogenerazione con turbina a vapore:</p>
+    <ul>
+      <li>Caldaia produce vapore ad alta pressione (es. 40 bar)</li>
+      <li>Il vapore si espande nella turbina producendo energia elettrica (rendimento ~25-30%)</li>
+      <li>Il vapore esausto dalla turbina (a bassa pressione, es. 4 bar) viene usato per il processo industriale</li>
+      <li>Le condense calde vengono recuperate e restituite alla caldaia</li>
+    </ul>
+    <p>Rendimento globale della cogenerazione: 70-85% (vs ~35% della sola generazione elettrica e ~85% della sola caldaia industriale, usati separatamente: totale ~59%).</p>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Ciclo Combinato Gas-Vapore</h3>
+    <p>Il <strong>ciclo combinato</strong> associa una turbina a gas (ciclo Brayton) con un generatore di vapore a recupero (HRSG) e una turbina a vapore (ciclo Rankine), massimizzando il rendimento elettrico.</p>
+    <p>Funzionamento:</p>
+    <ul>
+      <li>La turbina a gas brucia gas naturale ad alta temperatura (~1.200-1.400°C) producendo elettricità (~35% rendimento)</li>
+      <li>I fumi in uscita dalla turbina a gas (~500-600°C) alimentano la HRSG che produce vapore</li>
+      <li>Il vapore si espande nella turbina a vapore producendo ulteriore elettricità (~20% rendimento)</li>
+    </ul>
+    <p>Rendimento elettrico totale: <strong>55-60%</strong> — il più alto tra tutti i sistemi di generazione termica convenzionale. Se si recupera anche il calore per usi industriali (trigenerazione), il rendimento energetico globale può superare l'80%.</p>
+    <p>Le grandi centrali a ciclo combinato producono elettricità a costo marginale più basso di qualsiasi altra tecnologia termica. Sono la scelta standard per le nuove centrali a gas in Italia ed Europa.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. Audit Energetico della Caldaia</h3>
+    <p>L'<strong>audit energetico</strong> è la valutazione sistematica dell'efficienza della caldaia e dell'impianto vapore per identificare le opportunità di risparmio.</p>
+    <p>Fasi dell'audit:</p>
+    <ul>
+      <li><strong>Raccolta dati</strong>: consumi di combustibile e acqua, ore di funzionamento, produzione di vapore, costi energetici</li>
+      <li><strong>Analisi fumi</strong>: T_fumi, CO₂%, O₂%, CO con analizzatore di combustione</li>
+      <li><strong>Misure termiche</strong>: temperature superficiali della caldaia con termocamera</li>
+      <li><strong>Analisi scaricatori di condensa</strong>: identificazione degli scaricatori guasti (vapore vivo sprecato)</li>
+      <li><strong>Calcolo rendimento attuale</strong>: metodo indiretto</li>
+      <li><strong>Identificazione opportunità</strong>: quantificazione dei risparmi per ogni intervento</li>
+      <li><strong>Analisi costi-benefici</strong>: calcolo del payback di ogni intervento</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Analizzatore di Combustione</h3>
+    <p>L'<strong>analizzatore di combustione</strong> (o flue gas analyzer) è lo strumento portatile usato per misurare rapidamente le prestazioni della combustione e il rendimento della caldaia sul campo.</p>
+    <p>Misura tipicamente:</p>
+    <ul>
+      <li>Temperatura dei fumi (T_fumi) — con termocoppia</li>
+      <li>O₂% — con cella elettrochimica</li>
+      <li>CO (ppm) — con cella elettrochimica</li>
+      <li>NO, NO₂, SO₂ (ppm) — con celle elettrochimiche</li>
+      <li>Temperatura aria comburente (T_aria)</li>
+    </ul>
+    <p>L'analizzatore calcola automaticamente da questi dati:</p>
+    <ul>
+      <li>CO₂% — calcolata da O₂% e tipo di combustibile selezionato</li>
+      <li>Eccesso d'aria%</li>
+      <li>Perdite al camino% (formula di Hassenstein interna)</li>
+      <li>Rendimento di combustione%</li>
+    </ul>
+    <p>Marche comuni: Testo (serie 300-320-330), Wöhler, Kane. La calibrazione annuale con gas campione certificato è obbligatoria per le misure ufficiali.</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Diagramma di Sankey</h3>
+    <p>Il <strong>diagramma di Sankey</strong> è una rappresentazione grafica del bilancio energetico della caldaia dove la larghezza di ogni freccia è proporzionale alla quantità di energia che rappresenta. Rende immediatamente visibile dove si perdono le energie.</p>
+    <p>Struttura tipica del diagramma di Sankey per una caldaia:</p>
+    <ul>
+      <li>Freccia principale in entrata: 100% = calore introdotto con il combustibile</li>
+      <li>Freccia principale in uscita utile: rendimento% = vapore prodotto</li>
+      <li>Frecce di perdita (uscite laterali): perdite al camino (~10%), irraggiamento (~1%), incombusti (~1%), spurgo (~2%)</li>
+    </ul>
+    <p>Utile per la comunicazione agli stakeholder non tecnici: il diagramma mostra intuitivamente che per ogni 100 unità di energia del combustibile, solo 86 arrivano nel vapore utile e 14 vanno perse — spingendo la comprensione delle opportunità di miglioramento.</p>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Indice di Vaporizzazione Specifico</h3>
+    <p>L'<strong>indice di vaporizzazione specifico</strong> è il parametro operativo più rapido per monitorare il rendimento giornaliero della caldaia senza strumentazione complessa:</p>
+    <div class="formula">
+      <span>I_vap = W_vapore / B_combustibile</span><br>
+      <small>W_vapore in kg/h | B in Nm³/h (per gas) o kg/h (per nafta/carbone)</small>
+    </div>
+    <p>Un calo dell'indice di vaporizzazione rispetto al valore di riferimento indica un peggioramento del rendimento. Il conduttore deve conoscere i valori di riferimento della propria caldaia e avvisare immediatamente se scendono:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Combustibile</th><th>Valore normale</th><th>Allarme</th><th>Causa tipica</th></tr>
+      <tr><td>Metano</td><td>10-11 kg/Nm³</td><td>&lt;9</td><td>Fuliggine, calcare, eccesso aria</td></tr>
+      <tr><td>Gasolio</td><td>13-15 kg/kg</td><td>&lt;12</td><td>Atomizzazione scadente</td></tr>
+      <tr><td>Nafta</td><td>12-14 kg/kg</td><td>&lt;11</td><td>Viscosità errata, incrostazioni</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Consumo Specifico di Combustibile</h3>
+    <p>Il <strong>consumo specifico di combustibile</strong> (o fuel consumption rate) è l'inverso dell'indice di vaporizzazione — quanto combustibile serve per produrre 1 kg di vapore:</p>
+    <div class="formula">
+      <span>CSC = B / W = 1 / I_vap</span><br>
+      <small>CSC in Nm³/kg_vapore (per gas) o kg_comb/kg_vapore (per liquidi/solidi)</small>
+    </div>
+    <p>Il confronto del consumo specifico nel tempo permette di identificare il trend di degrado. Si usa anche per confrontare caldaie diverse nello stesso impianto o per stimare il risparmio atteso dopo un intervento di manutenzione:</p>
+    <p>Risparmio annuo stimato = (CSC_attuale - CSC_ottimale) × W_annua × Costo_combustibile</p>
+    <p>Esempio: caldaia che produce 5.000 t/anno di vapore con CSC attuale di 0,11 Nm³/kg vs ottimale di 0,095 Nm³/kg:<br>
+    Risparmio = (0,11 - 0,095) × 5.000.000 kg × 0,50 €/Nm³ = <strong>37.500 €/anno</strong></p>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Effetto delle Incrostazioni sul Rendimento</h3>
+    <p>Le incrostazioni calcaree sulle superfici di scambio termico riducono il rendimento aumentando la resistenza allo scambio termico (conducibilità del calcare ~55 volte inferiore all'acciaio).</p>
+    <p>Effetto quantificato:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Spessore incrostazione</th><th>ΔT parete (°C)</th><th>Perdita rendimento</th><th>Aumento consumo</th></tr>
+      <tr><td>0,5 mm</td><td>10-15</td><td>1-2%</td><td>1-2%</td></tr>
+      <tr><td>1 mm</td><td>20-30</td><td>2-3%</td><td>2-3%</td></tr>
+      <tr><td>3 mm</td><td>&gt;50</td><td>&gt;5%</td><td>&gt;5%</td></tr>
+      <tr><td>5 mm</td><td>&gt;100</td><td>&gt;10%</td><td>&gt;10%</td></tr>
+    </table></div>
+    <p>Come si manifesta il calo di rendimento: la caldaia "fa fatica" a mantenere la pressione e la temperatura di esercizio con lo stesso bruciatore → il bruciatore resta acceso più a lungo → consumo in aumento a parità di produzione → indice di vaporizzazione cala.</p>
+    <p>La pulizia delle superfici (chimicamente o meccanicamente) ripristina il rendimento originale in un tempo molto breve — ritorno sull'investimento di pulizia tipicamente &lt;1 mese.</p>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Effetto della Fuliggine sul Rendimento</h3>
+    <p>La fuliggine (lato fumi) ha conduttività termica ancora minore del calcare (λ fuliggine ~0,1 W/m·K vs λ calcare ~0,9 W/m·K). Anche depositi sottilissimi causano perdite significative:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Spessore fuliggine</th><th>ΔT fumi uscita</th><th>Perdita rendimento</th></tr>
+      <tr><td>0,5 mm</td><td>+15-20°C</td><td>~1,5%</td></tr>
+      <tr><td>1 mm</td><td>+30-40°C</td><td>~2-3%</td></tr>
+      <tr><td>3 mm</td><td>&gt;80°C</td><td>&gt;5%</td></tr>
+    </table></div>
+    <p>La fuliggine si forma principalmente con:</p>
+    <ul>
+      <li>Combustione incompleta (eccesso d'aria insufficiente)</li>
+      <li>Atomizzazione scadente della nafta (viscosità errata)</li>
+      <li>Avviamenti e spegnimenti frequenti (il bruciatore freddo atomizza male)</li>
+    </ul>
+    <p>La pulizia della fuliggine si esegue con: spazzole meccaniche (manuali o rotanti), soffiaggio con vapore (soot blowers — automatici nelle grandi caldaie), lavaggio ad acqua (più efficace ma richiede essiccazione successiva).</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Modulazione del Bruciatore</h3>
+    <p>La <strong>modulazione</strong> è la capacità del bruciatore di variare la potenza termica erogata in modo continuo (o a gradini) per seguire il carico richiesto senza continui avviamenti e spegnimenti.</p>
+    <p>Tipi di modulazione:</p>
+    <ul>
+      <li><strong>On-Off</strong>: il bruciatore accende e spegne a potenza fissa. Semplice ma inefficiente: ogni avviamento causa perdite di purga, perdite termiche e stress meccanico. Solo per piccole caldaie.</li>
+      <li><strong>Two-stage (alta/bassa fiamma)</strong>: due livelli di potenza (100% e 40-50%). Riduce i cicli on-off, accettabile per potenze medie.</li>
+      <li><strong>Modulante</strong>: potenza variabile in modo continuo dal 30-40% al 100% mediante segnale 4-20 mA al servocomando. Ideale: nessuno spegnimento, rendimento sempre ottimale, minimi stress termici.</li>
+    </ul>
+    <p>Una caldaia modulante consuma fino al 10-15% meno di una on-off della stessa potenza nominale, per lo stesso carico medio annuo.</p>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Perdite a Bruciatore Spento</h3>
+    <p>Quando il bruciatore è spento ma la caldaia è calda, si verificano comunque perdite di calore. Le più significative:</p>
+    <ul>
+      <li><strong>Perdite per ventilazione naturale</strong>: l'aria fresca entra dalla base del bruciatore e sale attraverso la camera di combustione e i condotti fumi per effetto del tiraggio → raffredda la caldaia e porta via il calore accumulato. Entità: 0,5-2% del calore utile per ora di fermo.</li>
+      <li><strong>Perdite per irraggiamento</strong>: continuano anche con bruciatore spento — la caldaia ancora calda cede calore all'ambiente.</li>
+    </ul>
+    <p>Rimedi:</p>
+    <ul>
+      <li><strong>Serranda di chiusura camino</strong> (damper): si chiude automaticamente quando il bruciatore si spegne, impedendo il raffreddamento per ventilazione naturale</li>
+      <li><strong>Bruciatore modulante</strong>: riduce i tempi di fermo — la caldaia lavora quasi sempre, riducendo i cicli di raffreddamento</li>
+    </ul>
+    <p>Una serranda ben funzionante può recuperare l'1-2% di rendimento su un impianto con frequenti on-off.</p>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Rendimento di Distribuzione del Vapore</h3>
+    <p>Il rendimento complessivo dell'impianto vapore include non solo il rendimento della caldaia ma anche le perdite nella rete di distribuzione. Le perdite di distribuzione sono spesso sottovalutate:</p>
+    <ul>
+      <li><strong>Perdite di calore dalle tubazioni</strong>: coibentazione deteriorata o assente → possono rappresentare il 5-20% del vapore prodotto disperso come calore verso l'ambiente</li>
+      <li><strong>Perdite da scaricatori di condensa guasti</strong>: uno scaricatore che perde vapore vivo può sprecare fino a 50-100 kg/h di vapore ciascuno → in un impianto medio con 50 scaricatori, 10 guasti rappresentano 500-1.000 kg/h di vapore sprecato</li>
+      <li><strong>Perdite da flange e giunti non ermetici</strong>: vapore che fugge direttamente in atmosfera</li>
+    </ul>
+    <p>Un audit della rete di distribuzione (ispezione termografica + test scaricatori) è spesso la misura con il miglior payback di tutto l'impianto vapore.</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Coibentazione delle Tubazioni — Risparmio</h3>
+    <p>La coibentazione delle tubazioni a vapore è uno degli investimenti con il miglior ritorno economico nell'impianto vapore. Le perdite termiche da un tubo non coibentato:</p>
+    <div class="formula">
+      <span>Q_disperso [W/m] ≈ π · D_ext · h · (T_vapore - T_ambiente)</span><br>
+      <small>h = coefficiente di convezione naturale (~10-15 W/m²·K) | D_ext = diametro esterno tubo</small>
+    </div>
+    <p>Esempio: tubo DN100 (D_ext = 114 mm) con vapore a 180°C in ambiente a 20°C:<br>
+    Q ≈ π × 0,114 × 12 × 160 = <strong>687 W/m</strong> → quasi 600 kg di vapore per metro di tubo non coibentato all'anno.</p>
+    <p>Con coibentazione in lana di roccia 50 mm:</p>
+    <ul>
+      <li>Riduzione perdita: fino al 95%</li>
+      <li>Payback dell'investimento: tipicamente 6-12 mesi</li>
+      <li>Durata coibentazione: 15-20 anni</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Scaricatori di Condensa — Efficienza</h3>
+    <p>Gli <strong>scaricatori di condensa</strong> (steam traps) sono fondamentali per l'efficienza della rete vapore. Un scaricatore guasto può funzionare in due modalità di guasto:</p>
+    <ul>
+      <li><strong>Scaricatore bloccato aperto</strong>: passa vapore vivo direttamente allo scarico. Perdita visibile e quantificabile. Un solo scaricatore da 1/2" a 10 bar guasto perde ~100 kg/h di vapore = ~2.400 kg/h anno = perdita economica significativa.</li>
+      <li><strong>Scaricatore bloccato chiuso</strong>: non smaltisce la condensa → accumulo nelle tubazioni → colpi d'ariete, riduzione della capacità di trasmissione del calore negli scambiatori, corrosione.</li>
+    </ul>
+    <p>Metodi di ispezione degli scaricatori:</p>
+    <ul>
+      <li><strong>Visivo</strong>: solo per scaricatori con scarico a vista (spioncino)</li>
+      <li><strong>Ultrasuoni</strong>: il vapore che passa genera segnale ultrasonico rilevabile — il metodo più usato</li>
+      <li><strong>Termometrico</strong>: misura della temperatura a monte e a valle dello scaricatore</li>
+      <li><strong>Termografia</strong>: immagine termica che rivela temperature anomale</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Riduzione della Pressione di Esercizio</h3>
+    <p>Ridurre la <strong>pressione di esercizio</strong> della caldaia (se le utenze lo consentono) può migliorare il rendimento termodinamico per diverse ragioni:</p>
+    <ul>
+      <li>A pressione più bassa, la temperatura di saturazione è più bassa → le perdite per irraggiamento sono minori (ΔT con l'ambiente è minore)</li>
+      <li>Le perdite di distribuzione sono minori (vapor a T più bassa = meno calore disperso)</li>
+      <li>Le perdite di spurgo sono minori (l'entalpia dell'acqua di spurgo è minore a pressione più bassa)</li>
+    </ul>
+    <p>Guadagno tipico: abbassare la pressione da 12 a 8 bar può migliorare il rendimento di sistema dell'1-3%.</p>
+    <div class="callout">
+      <div class="callout-label">Attenzione normativa</div>
+      <p>La riduzione della pressione di esercizio non deve mai portare a funzionare in condizioni che modifichino il regime di sorveglianza (es. scendere sotto 6 bar cambia la normativa applicabile). Va concordata con l'INAIL e registrata sul libretto.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Recupero Calore dai Fumi</h3>
+    <p>Il recupero del calore dai fumi oltre l'economizzatore e il LUVO è possibile con sistemi aggiuntivi:</p>
+    <ul>
+      <li><strong>Condensatore fumi</strong>: abbassa i fumi sotto il punto di rugiada recuperando anche il calore latente. Adatto solo per metano (no zolfo). Produce condensa acida da neutralizzare. Rendimento recuperabile: 5-8% aggiuntivi.</li>
+      <li><strong>Pompa di calore sui fumi</strong>: usa i fumi come sorgente fredda di una pompa di calore per produrre acqua calda a bassa temperatura. Efficiente ma costoso.</li>
+      <li><strong>ORC (Organic Rankine Cycle)</strong>: per fumi a 200-400°C, converte il calore in elettricità tramite un fluido organico. Rendimento elettrico 10-15% del calore recuperato. Payback 5-8 anni.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Free Cooling e Recupero Termico</h3>
+    <p>Il <strong>recupero termico</strong> integra la caldaia con altri sistemi dell'impianto per massimizzare l'uso del calore:</p>
+    <ul>
+      <li><strong>Recupero calore spurgo</strong>: lo scambiatore spurgo-acqua fredda recupera il 50-80% del calore dell'acqua di spurgo. Payback 6-18 mesi.</li>
+      <li><strong>Recupero calore condense calde</strong>: le condense a 80-100°C prereiscaldano l'acqua di reintegro fredda prima del degasatore.</li>
+      <li><strong>Accumulo termico</strong>: un serbatoio di acqua calda accumula il calore nei periodi di bassa richiesta e lo restituisce nei picchi — riduce la modulazione e migliora il rendimento medio della caldaia.</li>
+      <li><strong>Integrazione con refrigerazione ad assorbimento</strong>: il vapore esausto alimenta un gruppo frigorifero ad assorbimento che produce acqua refrigerata per il condizionamento — trigenerazione (elettricità + calore + freddo).</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Misure di Portata del Vapore</h3>
+    <p>La misura accurata della portata di vapore è necessaria per il calcolo del rendimento diretto e per la contabilizzazione energetica. I principali metodi:</p>
+    <ul>
+      <li><strong>Flangia di misura (orifizio)</strong>: la più diffusa. Misura ΔP attraverso un diaframma calibrato. Accuratezza ±1-3%. Richiede tratti rettilinei a monte e valle.</li>
+      <li><strong>Venturimetro</strong>: ΔP su convergente-divergente. Perdita di carico minore dell'orifizio. Accuratezza ±0,5-1%.</li>
+      <li><strong>Misuratore vortex</strong>: conta i vortici generati da un ostacolo (bluff body). Stabile nel tempo, nessuna parte mobile. Accuratezza ±1-2%.</li>
+      <li><strong>Misuratore Coriolis</strong>: misura la forza di Coriolis su un tubo in vibrazione. Il più accurato (±0,1-0,5%) ma costoso. Usato per vapore saturo secco o liquidi.</li>
+      <li><strong>Misuratore ultrasonico</strong>: misura il tempo di transito degli ultrasuoni. Non invasivo (clamp-on). Accuratezza ±2-5%.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Contabilizzazione Energetica</h3>
+    <p>La <strong>contabilizzazione energetica</strong> è il sistema che registra tutti i flussi di energia in entrata e uscita dall'impianto caldaia per permettere il monitoraggio continuo dell'efficienza e la fatturazione interna dei costi energetici.</p>
+    <p>I flussi da misurare:</p>
+    <ul>
+      <li>Combustibile consumato (contatore gas, misuratore nafta)</li>
+      <li>Vapore prodotto (flussimetro + P + T per calcolo entalpia)</li>
+      <li>Acqua di alimento (portata + T)</li>
+      <li>Condense recuperate (portata + T)</li>
+      <li>Acqua di spurgo (portata)</li>
+      <li>Energia elettrica consumata (pompe, ventilatori, sistemi ausiliari)</li>
+    </ul>
+    <p>I sistemi moderni di <strong>SCADA</strong> (Supervisory Control And Data Acquisition) raccolgono tutti questi dati in tempo reale, calcolano il rendimento istantaneo e storico, generano report e allertano il conduttore quando i parametri si discostano dai valori ottimali.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. KPI Energetici dell'Impianto</h3>
+    <p>I <strong>KPI</strong> (Key Performance Indicators) energetici permettono di confrontare le prestazioni dell'impianto nel tempo e rispetto a benchmark di settore:</p>
+    <div class="table-wrap"><table>
+      <tr><th>KPI</th><th>Formula</th><th>Unità</th><th>Valore ottimale tipico</th></tr>
+      <tr><td>Rendimento caldaia</td><td>Q_utile / Q_combustibile</td><td>%</td><td>85-92%</td></tr>
+      <tr><td>Indice vaporizzazione</td><td>kg_vapore / Nm³_gas</td><td>kg/Nm³</td><td>10-11</td></tr>
+      <tr><td>% recupero condense</td><td>kg_condense / kg_vapore</td><td>%</td><td>&gt;80%</td></tr>
+      <tr><td>% spurgo</td><td>kg_spurgo / kg_vapore</td><td>%</td><td>3-8%</td></tr>
+      <tr><td>Perdite distribuzione</td><td>kg_perso / kg_prodotto</td><td>%</td><td>&lt;5%</td></tr>
+      <tr><td>CO₂ specifica</td><td>kg_CO₂ / kg_vapore</td><td>kg/kg</td><td>&lt;0,1 (gas)</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Normativa ISO 50001</h3>
+    <p>La <strong>ISO 50001</strong> è lo standard internazionale per i <strong>Sistemi di Gestione dell'Energia</strong> (SGE). Definisce i requisiti per stabilire, implementare, mantenere e migliorare un sistema di gestione dell'energia nelle organizzazioni.</p>
+    <p>Struttura principale (ciclo PDCA):</p>
+    <ul>
+      <li><strong>Plan</strong>: analisi energetica, definizione baseline, obiettivi e target</li>
+      <li><strong>Do</strong>: implementazione di procedure, formazione, misure</li>
+      <li><strong>Check</strong>: monitoraggio, misura, audit interni</li>
+      <li><strong>Act</strong>: riesame della direzione, azioni correttive, miglioramento continuo</li>
+    </ul>
+    <p>La certificazione ISO 50001 è volontaria ma richiesta per alcune agevolazioni fiscali e per l'accesso ai TEE (Titoli di Efficienza Energetica). Le aziende con consumi superiori a 1.000 tep/anno devono effettuare la diagnosi energetica obbligatoria ogni 4 anni (D.Lgs. 102/2014).</p>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. D.Lgs. 102/2014 — Efficienza Energetica</h3>
+    <p>Il <strong>D.Lgs. 102/2014</strong> (recepimento della Direttiva Europea 2012/27/UE) impone obblighi di efficienza energetica alle grandi aziende e alle PMI a forte consumo energetico:</p>
+    <ul>
+      <li><strong>Diagnosi energetica obbligatoria</strong>: ogni 4 anni per le grandi imprese (più di 250 dipendenti o fatturato &gt;50 M€) e per le aziende ad alto consumo (Energy Intensive Companies — più di 1.000 tep/anno)</li>
+      <li><strong>Soggetti abilitati</strong>: ESCO (Energy Service Company), EGE (Esperto in Gestione dell'Energia) certificato, o audit interni per le imprese con sistema ISO 50001</li>
+      <li><strong>Trasmissione ENEA</strong>: i risultati della diagnosi devono essere trasmessi all'ENEA entro 90 giorni</li>
+      <li><strong>Sanzioni</strong>: fino a 40.000€ per mancata diagnosi, fino a 10.000€ per diagnosi non trasmessa</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Diagnosi Energetica Obbligatoria</h3>
+    <p>La <strong>diagnosi energetica</strong> è la valutazione sistematica dei consumi energetici di un'azienda o di un impianto, finalizzata all'identificazione di opportunità di risparmio economicamente convenienti.</p>
+    <p>Per un impianto a vapore, la diagnosi deve coprire:</p>
+    <ul>
+      <li>Analisi dei consumi storici (almeno 3 anni)</li>
+      <li>Verifica del rendimento della caldaia con misure in campo</li>
+      <li>Analisi dell'impianto di distribuzione vapore (scaricatori, coibentazione, perdite)</li>
+      <li>Analisi del recupero condense</li>
+      <li>Analisi degli ausiliari (pompe, ventilatori)</li>
+      <li>Identificazione e quantificazione degli interventi di risparmio</li>
+      <li>Calcolo del payback e della riduzione di CO₂ per ogni intervento</li>
+    </ul>
+    <p>La diagnosi deve produrre un <strong>rapporto scritto</strong> con le opportunità di risparmio ordinate per payback crescente — dall'intervento più conveniente al meno conveniente.</p>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. TEE — Titoli di Efficienza Energetica</h3>
+    <p>I <strong>TEE</strong> (Titoli di Efficienza Energetica), o <strong>Certificati Bianchi</strong>, sono titoli negoziabili che certificano il risparmio energetico ottenuto attraverso interventi di efficienza energetica. Ogni TEE equivale a 1 tep (tonnellata equivalente di petrolio) risparmiata.</p>
+    <p>Come funzionano per l'impianto vapore:</p>
+    <ul>
+      <li>Si realizza un intervento di efficienza (es. installazione economizzatore, sostituzione caldaia, recupero condense)</li>
+      <li>Si calcola il risparmio energetico rispetto allo scenario baseline</li>
+      <li>Si presenta domanda all'ENEA/GSE con la documentazione tecnica</li>
+      <li>Si ricevono i TEE proporzionali al risparmio ottenuto</li>
+      <li>I TEE vengono venduti sul mercato GME (Gestore Mercati Energetici) a un prezzo variabile (~200-300 €/TEE)</li>
+    </ul>
+    <p>Per molti interventi su caldaie industriali, i proventi dei TEE riducono il payback del 20-40%, rendendo economicamente convenienti anche interventi che senza incentivi avrebbero payback di 5-7 anni.</p>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Analisi Costi-Benefici degli Interventi</h3>
+    <p>L'analisi costi-benefici è fondamentale per decidere quali interventi di efficienza energetica realizzare per primi. I parametri di valutazione principali:</p>
+    <ul>
+      <li><strong>Payback semplice</strong>: investimento / risparmio annuo. Facile da calcolare, non considera il valore del denaro nel tempo.</li>
+      <li><strong>VAN (Valore Attuale Netto)</strong>: somma dei flussi di cassa futuri attualizzati meno l'investimento iniziale. Positivo = conveniente.</li>
+      <li><strong>TIR (Tasso Interno di Rendimento)</strong>: il tasso di sconto che rende il VAN = 0. Da confrontare con il costo del capitale.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <tr><th>Intervento</th><th>Risparmio tipico</th><th>Payback tipico</th></tr>
+      <tr><td>Ottimizzazione combustione</td><td>2-5%</td><td>&lt;1 anno</td></tr>
+      <tr><td>Riparazione scaricatori</td><td>2-8%</td><td>&lt;1 anno</td></tr>
+      <tr><td>Coibentazione tubazioni</td><td>3-10%</td><td>1-2 anni</td></tr>
+      <tr><td>Installazione economizzatore</td><td>4-8%</td><td>1-3 anni</td></tr>
+      <tr><td>Sostituzione caldaia vetusta</td><td>8-15%</td><td>5-10 anni</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Carbon Footprint dell'Impianto</h3>
+    <p>La <strong>carbon footprint</strong> (impronta carbonica) dell'impianto vapore è la quantità totale di CO₂ (equivalente) emessa per la produzione di vapore. È diventata un KPI fondamentale con l'intensificarsi delle politiche climatiche.</p>
+    <div class="formula">
+      <span>CO₂ emessa [kg] = B [Nm³ o kg] × F_emissione [kg_CO₂/Nm³ o kg]</span><br>
+      <small>F_emissione metano: 2,04 kg_CO₂/Nm³ | Nafta: 3,12 kg_CO₂/kg | Carbone: 2,4-3,0 kg_CO₂/kg</small>
+    </div>
+    <p>La CO₂ specifica per kg di vapore prodotto:</p>
+    <div class="formula">
+      <span>CO₂_specifica = F_emissione / (I_vap · η) [kg_CO₂/kg_vapore]</span>
+    </div>
+    <p>Le aziende soggette all'EU ETS (Emissions Trading System) devono acquistare quote di CO₂ per le emissioni eccedenti il livello gratuito assegnato. Il prezzo della CO₂ (€/tonnellata) è diventato un fattore economico rilevante nelle decisioni di investimento — l'efficienza energetica riduce sia i costi del combustibile sia i costi delle quote CO₂.</p>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Trend Futuro — Idrogeno e Biocombustibili</h3>
+    <p>Il settore dei generatori di vapore è in trasformazione verso combustibili a minore impatto climatico:</p>
+    <ul>
+      <li><strong>Idrogeno verde</strong>: prodotto da elettrolisi con energia rinnovabile. Zero CO₂ alla combustione (produce solo H₂O). Hi ≈ 28.700 kcal/kg ma bassa densità energetica volumetrica (435 kcal/Nm³ vs 8.570 per metano). Richiede bruciatori e materiali specifici (infragilimento da idrogeno dell'acciaio). Miscele H₂-CH₄ fino al 20% già compatibili con molti bruciatori esistenti.</li>
+      <li><strong>Biometano</strong>: metano da fermentazione anaerobica di rifiuti organici. Chimicamente identico al metano fossile → compatibile con tutti gli impianti esistenti. CO₂ neutro nel ciclo di vita. In crescita rapida in Italia e UE.</li>
+      <li><strong>Ammoniaca (NH₃)</strong>: studiata come vettore energetico per H₂. Brucia senza CO₂ ma produce NOx — bruciatori specifici in sviluppo.</li>
+      <li><strong>Biomasse avanzate</strong>: pellet, residui agricoli, biochar. Caldaie moderne a letto fluido già ottimizzate per questi combustibili.</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. Ogni 10°C di riduzione T_fumi → +0,5% rendimento. Formula Hassenstein: K × (T_fumi - T_aria) / CO₂%<br>
+      2. Metodo indiretto è il più utile: identifica dove sono le perdite, non solo quante sono<br>
+      3. Incrostazione 1 mm calcare = -2-3% rendimento. Fuliggine 1 mm = -2-3% + +30-40°C T_fumi<br>
+      4. Cogenerazione: rendimento globale 70-85% vs ~59% produzione separata<br>
+      5. Diagnosi energetica obbligatoria ogni 4 anni per grandi imprese e aziende >1.000 tep/anno</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Rendimento ed Efficienza</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"Formula del rendimento di caldaia — metodo diretto",a:"η = W · (h_s - h_a) / (B · Hi) × 100%\nW = portata vapore (kg/h) | h_s = entalpia vapore | h_a = entalpia acqua alimento\nB = consumo combustibile | Hi = potere calorifico inferiore\nValori tipici: tubi di fumo 84-88%, tubi d'acqua 85-92%"},
+  {q:"Metodo indiretto — come si calcola il rendimento",a:"η = 100% - ΣPerdite%\nPerdite = P_camino + P_irraggiamento + P_incombusti_gassosi + P_incombusti_solidi + P_spurgo\nVantaggio: identifica DOVE sono le perdite → indica dove intervenire. Metodo preferito per audit."},
+  {q:"Regola empirica temperatura fumi e rendimento",a:"Ogni 10°C di riduzione della T_fumi → +0,5% di rendimento.\nL'abbassamento ha un limite: T_fumi deve restare sopra il punto di rugiada dell'acido del combustibile (metano ~50°C, nafta ATZ ~130-150°C)."},
+  {q:"Formula di Hassenstein — applicazione numerica",a:"P_camino% = K × (T_fumi - T_aria) / CO₂%\nK: metano=0,46 | nafta=0,58 | carbone=0,65\nEsempio metano: T_fumi=220°C, T_aria=20°C, CO₂=9%\nP = 0,46 × 200 / 9 = 10,2%"},
+  {q:"Eccesso d'aria — effetto duplice sul rendimento",a:"Troppo poco: CO e incombusti → perdite per combustione incompleta.\nTroppo: portata fumi alta → perdite al camino maggiori. Ogni 1% eccesso in più → ~0,02% perdita aggiuntiva.\nOttimo: O₂=1-2% per metano, O₂=2-3% per nafta."},
+  {q:"Perdite per irraggiamento — entità e fattori",a:"Tipicamente 0,5-2% del calore introdotto. Aumenta a carico parziale (perdite assolute costanti, calore introdotto minore).\nLimite T esterna casing: 50°C (sicurezza personale + riduzione perdite).\nPeggiorano con coibentazione deteriorata."},
+  {q:"Cogenerazione — rendimento e schema",a:"CHP: produzione simultanea di elettricità e calore da un combustibile. Schema: caldaia → turbina vapore → vapore esausto per utenze → condense recuperate.\nRendimento globale: 70-85% vs ~59% produzione separata (35% elettrico + 85% termico usati indipendentemente)."},
+  {q:"Ciclo combinato gas-vapore — rendimento",a:"Turbina a gas (35%) + HRSG + turbina a vapore (20%) = rendimento elettrico 55-60%.\nFumi turbina a gas (500-600°C) alimentano la HRSG che produce vapore senza combustione aggiuntiva.\nIl più efficiente sistema di generazione termica convenzionale."},
+  {q:"Economizzatore — guadagno di rendimento",a:"Ogni 10°C di preriscaldo acqua alimento → +0,5-0,6% rendimento.\nPortare acqua da 60°C a 140°C: +80 kcal/kg → +6-8% risparmio combustibile.\nPayback tipico: 1-3 anni. Vincolo: uscita acqua a T_sat - 5°C (subcooling)."},
+  {q:"Modulazione del bruciatore — tipi e vantaggi",a:"On-Off: semplice, inefficiente (cicli frequenti, perdite avviamento).\nTwo-stage: alta/bassa fiamma (40-50%). Riduce cicli on-off.\nModulante (30-100%, segnale 4-20 mA): ideale, nessuno spegnimento. Risparmio 10-15% vs on-off per stesso carico medio."},
+  {q:"Scaricatori di condensa guasti — due tipi di guasto",a:"Bloccato aperto: vapore vivo allo scarico → perdita quantificabile. Un 1/2\" a 10 bar = ~100 kg/h vapore perso.\nBloccato chiuso: condensa accumulata → colpi d'ariete, calo prestazioni scambiatori, corrosione.\nIspezione: ultrasuoni (metodo principale), termografia, termometrico."},
+  {q:"Effetto delle incrostazioni e della fuliggine sul rendimento",a:"Incrostazione 1 mm calcare: +20-30°C parete, -2-3% rendimento.\nFuliggine 1 mm: +30-40°C T_fumi, -2-3% rendimento (λ fuliggine = 0,1 W/m·K vs acciaio 50).\nPulizia superfici → ripristino rendimento immediato. Payback pulizia: <1 mese."},
+  {q:"Perdita per spurgo — come si riduce",a:"P_spurgo% = (W_spurgo · h_l) / (B · Hi) × 100.\nRiduzione: migliorare qualità acqua alimento (meno spurgo necessario), installare scambiatore spurgo-acqua fredda (recupera 50-80% del calore dello spurgo).\nRappresenta tipicamente 1-4% del calore introdotto."},
+  {q:"Caldaia a condensazione — rendimento e limiti",a:"Recupera calore latente del vapore nei fumi portandoli sotto il punto di rugiada (~57°C per metano).\nRendimento riferito a Hi: fino al 107-110%. Riferito a Hs: 97-99%.\nCondizioni: acqua ritorno <55°C. Non adatta a: combustibili con zolfo, impianti a vapore, alte temperature distribuzione."},
+  {q:"TEE (Certificati Bianchi) — cos'è e come funziona",a:"Titoli di Efficienza Energetica: 1 TEE = 1 tep risparmiato. Si ottengono realizzando interventi di efficienza su caldaie, coibentazione, scaricatori, ecc.\nValore di mercato: ~200-300 €/TEE. Riducono il payback degli interventi del 20-40%."},
+  {q:"D.Lgs. 102/2014 — chi deve fare la diagnosi energetica obbligatoria",a:"Grandi imprese (>250 dipendenti O fatturato >50 M€) e aziende ad alto consumo (>1.000 tep/anno = Energy Intensive).\nFrequenza: ogni 4 anni. Trasmissione risultati all'ENEA entro 90 giorni.\nSanzione per mancata diagnosi: fino a 40.000€."},
+  {q:"KPI energetici principali dell'impianto vapore",a:"Rendimento caldaia: 85-92% (ottimale). Indice vaporizzazione: 10-11 kg/Nm³ gas. % recupero condense: >80%. % spurgo: 3-8%. Perdite distribuzione: <5%. CO₂ specifica: <0,1 kg_CO₂/kg_vapore per gas."},
+  {q:"Analizzatore di combustione — cosa misura e cosa calcola",a:"Misura: T_fumi, T_aria, O₂%, CO (ppm), NO, NO₂, SO₂.\nCalcola automaticamente: CO₂%, eccesso d'aria%, perdite al camino% (Hassenstein), rendimento combustione%.\nMarche: Testo 300-330, Wöhler, Kane. Calibrazione annuale obbligatoria per misure ufficiali."},
+  {q:"Coibentazione tubazioni — perdite e payback",a:"Tubo DN100 a 180°C non coibentato: ~687 W/m dispersi = ~600 kg vapore/anno per metro.\nCon coibentazione 50 mm lana di roccia: -95% perdite.\nPayback: 6-12 mesi. Durata: 15-20 anni. È l'investimento con miglior rapporto costo/beneficio nell'impianto vapore."},
+  {q:"Carbon footprint impianto vapore — fattori emissione",a:"CO₂ emessa = B × F_emissione.\nMetano: 2,04 kg_CO₂/Nm³. Nafta: 3,12 kg_CO₂/kg. Carbone: 2,4-3,0 kg_CO₂/kg.\nLe aziende soggette EU ETS devono acquistare quote CO₂. Prezzo CO₂ è ora un fattore economico rilevante nelle decisioni di investimento."},
+];
+
+const QUESTIONS=[
+  {q:"Il metodo indiretto per il calcolo del rendimento è preferito al metodo diretto perché:",opts:["È più semplice da calcolare","Identifica dove si trovano le perdite, non solo la loro somma totale — utile per decidere dove intervenire","Richiede meno strumentazione","Dà risultati sempre più precisi del metodo diretto"],c:1,expl:"Il metodo indiretto (η = 100% - ΣPerdite%) calcola ogni tipo di perdita separatamente: camino, irraggiamento, incombusti, spurgo. Questo permette di sapere che, ad esempio, il 12% di perdita è composto per 10% da perdite al camino, 1% da irraggiamento e 1% da incombusti → si sa dove intervenire prima."},
+  {q:"Abbassare la temperatura dei fumi di 20°C migliora il rendimento di circa:",opts:["0,1%","0,5%","1,0%","2,0%"],c:2,expl:"La regola empirica è: ogni 10°C di riduzione della T_fumi → +0,5% di rendimento. 20°C → +1,0%. Questa regola è valida nell'intorno della temperatura di esercizio normale e considerando lo stesso eccesso d'aria."},
+  {q:"Con la formula di Hassenstein, perdita al camino per metano con T_fumi=200°C, T_aria=20°C, CO₂=10%:",opts:["6,2%","8,3%","10,4%","12,5%"],c:1,expl:"P = K × (T_fumi - T_aria) / CO₂% = 0,46 × (200-20) / 10 = 0,46 × 18 = 8,28% ≈ 8,3%. Il K per il metano è 0,46. La stessa caldaia con T_fumi = 180°C avrebbe: 0,46 × 160/10 = 7,4% → risparmio di quasi 1%."},
+  {q:"L'eccesso d'aria ottimale per una caldaia a metano corrisponde a O₂ nei fumi di:",opts:["0,5-1,0%","1,0-2,0%","3,0-5,0%","5,0-8,0%"],c:1,expl:"L'eccesso d'aria ottimale per il metano corrisponde a O₂=1-2% nei fumi. Con meno O₂ si rischia combustione incompleta con CO. Con più O₂ si aumentano le perdite al camino senza benefici. Ogni 1% di eccesso d'aria aggiuntivo comporta ~0,02% di perdita in più."},
+  {q:"Un bruciatore modulante rispetto a uno on-off della stessa potenza nominale consuma:",opts:["Uguale — la potenza nominale è la stessa","10-15% in meno per lo stesso carico medio annuo","20-30% in meno","5% in più per la complessità del sistema"],c:1,expl:"Un bruciatore modulante lavora a potenza variabile seguendo il carico senza mai spegnersi. Elimina le perdite di: purga pre-accensione, raffreddamento tra i cicli, stress termici da avviamento. Il risparmio è 10-15% per lo stesso carico medio annuo rispetto a un on-off della stessa potenza."},
+  {q:"Le perdite per irraggiamento aumentano percentualmente quando:",opts:["La caldaia lavora a pieno carico","La caldaia lavora a carico parziale","La temperatura esterna è alta","Il casing è di colore scuro"],c:1,expl:"Le perdite per irraggiamento in kcal/h sono quasi costanti indipendentemente dal carico (dipendono principalmente dalla T esterna della caldaia e dalla superficie). Ma espresse in % sul calore introdotto aumentano a carico parziale perché il denominatore (calore introdotto) è minore mentre le perdite assolute rimangono simili."},
+  {q:"La cogenerazione produce:",opts:["Solo vapore ad alta pressione","Solo energia elettrica","Elettricità e calore utile simultaneamente dallo stesso combustibile","Vapore surriscaldato e vapore saturo in parallelo"],c:2,expl:"La cogenerazione (CHP) produce simultaneamente elettricità (nella turbina) e calore utile (vapore esausto per le utenze industriali). Rendimento globale 70-85% vs ~59% se si producesse elettricità e calore separatamente — risparmio del 30-40% di combustibile."},
+  {q:"Il ciclo combinato gas-vapore raggiunge rendimenti elettrici di:",opts:["35-40%","45-50%","55-60%","70-80%"],c:2,expl:"Il ciclo combinato: turbina a gas (~35%) + HRSG che recupera il calore dei fumi + turbina a vapore (~20%) = 55-60% di rendimento elettrico totale. È il sistema più efficiente di generazione termica convenzionale. Con recupero del calore anche per usi termici (trigenerazione) il rendimento energetico globale supera l'80%."},
+  {q:"Un economizzatore porta l'acqua di alimento da 60°C a 140°C. Il guadagno di rendimento è circa:",opts:["1-2%","3-4%","6-8%","10-12%"],c:2,expl:"Ogni 10°C di preriscaldo dell'acqua → +0,5-0,6% rendimento. 80°C di preriscaldo (da 60 a 140°C) → +4-4,8% direttamente. Considerando anche l'abbassamento dei fumi, il guadagno totale è tipicamente 6-8% di combustibile risparmiato."},
+  {q:"Un scaricatore di condensa bloccato aperto causa:",opts:["Accumulo di condensa nelle tubazioni e colpi d'ariete","Perdita di vapore vivo direttamente allo scarico — spreco energetico quantificabile","Riduzione della pressione in caldaia","Aumento della conducibilità dell'acqua in caldaia"],c:1,expl:"Lo scaricatore bloccato APERTO lascia passare vapore vivo che va sprecato. Un solo scaricatore da 1/2\" a 10 bar guasto perde ~100 kg/h di vapore. Lo scaricatore bloccato CHIUSO invece non smaltisce la condensa → accumulo → colpi d'ariete e riduzione scambio termico negli utilizzatori."},
+  {q:"Le caldaie a condensazione superano il 100% di rendimento (riferito a Hi) perché:",opts:["Violano il primo principio della termodinamica","Recuperano il calore latente del vapore acqueo nei fumi condensando i fumi sotto il punto di rugiada","Bruciano il combustibile più completamente delle caldaie normali","Hanno rendimento meccanico superiore al 100%"],c:1,expl:"Il rendimento riferito a Hi (che NON include il calore latente del vapore acqueo) può superare il 100% perché si recupera il calore latente di condensazione dell'acqua (~540 kcal/kg). Riferito a Hs (che include il latente) il rendimento è ~97-99% — sempre sotto 100%, nessuna violazione della termodinamica."},
+  {q:"La diagnosi energetica obbligatoria (D.Lgs. 102/2014) deve essere effettuata ogni:",opts:["Ogni anno","Ogni 2 anni","Ogni 4 anni","Solo una volta in base alla vita dell'impianto"],c:2,expl:"La diagnosi energetica è obbligatoria ogni 4 anni per le grandi imprese (>250 dipendenti o fatturato >50 M€) e per le aziende ad alto consumo (>1.000 tep/anno). I risultati devono essere trasmessi all'ENEA entro 90 giorni. Sanzione per mancata diagnosi: fino a 40.000€."},
+  {q:"Un TEE (Titolo di Efficienza Energetica) equivale a:",opts:["1 MWh di energia elettrica risparmiata","1 tep (tonnellata equivalente di petrolio) risparmiata","1 tonnellata di CO₂ non emessa","1.000 kWh di qualsiasi forma di energia risparmiata"],c:1,expl:"1 TEE = 1 tep (tonnellata equivalente di petrolio) risparmiata = ~11.628 kWh. I TEE sono titoli negoziabili sul mercato GME a ~200-300 €/TEE. Riducono il payback degli interventi di efficienza del 20-40%, rendendo convenienti anche investimenti con payback intrinseco di 5-7 anni."},
+  {q:"L'indice di vaporizzazione cala da 11 a 8 kg/Nm³ su una caldaia a metano. La causa più probabile è:",opts:["Il metano ha potere calorifico minore","Superfici di scambio sporcate da fuliggine lato fumi o calcare lato acqua","Il livello dell'acqua è troppo alto","La pressione di bollo è stata ridotta"],c:1,expl:"Il calo dell'indice di vaporizzazione indica riduzione dell'efficienza termica. Le cause principali sono fuliggine (lato fumi) o calcare (lato acqua) sulle superfici di scambio: entrambi agiscono da isolanti termici. La pulizia delle superfici ripristina il rendimento e l'indice di vaporizzazione in tempi brevi."},
+  {q:"Il fattore di emissione del metano è circa:",opts:["0,5 kg CO₂/Nm³","1,2 kg CO₂/Nm³","2,04 kg CO₂/Nm³","3,12 kg CO₂/Nm³"],c:2,expl:"Il metano (CH₄) ha fattore di emissione ~2,04 kg CO₂/Nm³. Confronto: nafta ~3,12 kg CO₂/kg, carbone ~2,4-3,0 kg CO₂/kg. Il metano è il combustibile fossile a minore emissione di CO₂ per unità di energia, per la sua composizione con alto rapporto H/C."},
+  {q:"Una serranda di chiusura camino (damper) migliora il rendimento perché:",opts:["Aumenta il tiraggio naturale","Impedisce il raffreddamento della caldaia per ventilazione naturale quando il bruciatore è spento","Riduce le perdite per irraggiamento durante il funzionamento","Aumenta la temperatura dell'aria comburente"],c:1,expl:"Quando il bruciatore si spegne, la serranda si chiude impedendo all'aria fresca di attraversare la caldaia calda per effetto del tiraggio naturale. Senza serranda, la ventilazione naturale raffredda la caldaia perdendo 0,5-2% del calore utile per ora di fermo. Con serranda si recupera l'1-2% di rendimento su impianti con frequenti on-off."},
+  {q:"Il preriscaldatore d'aria (LUVO) aumenta il rendimento principalmente perché:",opts:["Riduce la portata di aria necessaria per la combustione","L'aria più calda porta più entalpia in camera di combustione, riducendo il combustibile necessario","Migliora l'atomizzazione della nafta","Riduce la formazione di NOx"],c:1,expl:"L'aria preriscaldata porta più entalpia in camera di combustione. La formula di Hassenstein mostra che T_aria compare nella formula delle perdite: P = K × (T_fumi - T_aria) / CO₂%. Aumentare T_aria di 10°C ha lo stesso effetto positivo di abbassare T_fumi di 10°C (+0,5% rendimento)."},
+  {q:"Quale sequenza è corretta per il percorso fumi in una caldaia efficiente?",opts:["Focolare → Economizzatore → Surriscaldatore → LUVO → Camino","Focolare → Surriscaldatore → Fascio tubiero → LUVO → Economizzatore → Camino","Focolare → Surriscaldatore → Fascio tubiero → Economizzatore → LUVO → Camino","Focolare → LUVO → Economizzatore → Surriscaldatore → Camino"],c:2,expl:"La sequenza corretta è: Focolare (1.200-1.600°C) → Surriscaldatore (zone più calde, ~800-1.000°C) → Fascio tubiero → Economizzatore (300-400°C) → LUVO (150-250°C) → Camino (130-180°C). Il surriscaldatore deve essere nelle zone più calde. L'economizzatore precede il LUVO perché la sua temperatura minima di uscita acqua è più alta della temperatura minima dell'aria."},
+  {q:"La ISO 50001 è:",opts:["La norma sulla qualità delle caldaie costruite in Europa","Lo standard per i Sistemi di Gestione dell'Energia (ciclo PDCA: Plan-Do-Check-Act)","La norma sulle emissioni in atmosfera per i generatori di vapore","Il protocollo per le verifiche INAIL delle caldaie"],c:1,expl:"La ISO 50001 è lo standard internazionale per i Sistemi di Gestione dell'Energia. Segue il ciclo PDCA: Plan (analisi energetica, obiettivi), Do (implementazione), Check (monitoraggio, audit), Act (riesame, miglioramento). La certificazione è volontaria ma richiesta per alcune agevolazioni e per l'accesso ai TEE."},
+  {q:"Perché il biometano è vantaggioso rispetto al metano fossile per i generatori di vapore?",opts:["Ha potere calorifico superiore al metano fossile","È chimicamente identico al metano → compatibile con tutti gli impianti esistenti, con CO₂ neutra nel ciclo di vita","È meno costoso del metano fossile sempre","Non richiede bruciatori specifici come l'idrogeno e ha zero emissioni assolute"],c:1,expl:"Il biometano ha composizione chimica praticamente identica al metano fossile (>95% CH₄) → si usa negli stessi bruciatori, nelle stesse caldaie, con la stessa normativa, senza modifiche. Il vantaggio è la neutralità climatica nel ciclo di vita: la CO₂ emessa alla combustione è stata precedentemente assorbita dalla biomassa di origine."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm7');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm7',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

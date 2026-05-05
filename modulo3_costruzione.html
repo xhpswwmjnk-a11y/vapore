@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 03 — Costruzione e Tipologie di Caldaie</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 03</div>
+    <div class="header-title">Costruzione e Tipologie di Caldaie</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. Caldaia vs generatore di vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Classificazione per pressione</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. Classificazione per volume d'acqua</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. Tubi di fumo vs tubi d'acqua</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. Classificazione per circolazione</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Caldaia Cornovaglia</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. Caldaia a tre giri di fumo</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Caldaia a ritorno di fiamma</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Caldaia tipo marina</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Caldaia Babcock e Wilcox</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Confronto Cornovaglia vs B&W</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Caldaie monotubolari</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Caldaie a recupero (HRSG)</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Il corpo cilindrico</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Fasciame — virole e giunti</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Focolare interno — liscio vs ondulato</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Tubi fumogeni</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. Tubi d'acqua — sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Collettori superiori e inferiori</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. Il duomo</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. Piastre tubiere</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. Passi d'uomo e portine</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Materiali costruttivi</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Saldature e controlli</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. Prove e collaudi</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Prova idraulica</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Targa del costruttore</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. Libretto matricolare</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Circolazione naturale</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Circolazione assistita — La Mont</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Circolazione forzata once-through</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Il surriscaldatore</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Il risurriscaldatore</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. L'economizzatore</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. Preriscaldatore aria — LUVO</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Turbolatori</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. Valvola di presa vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. Scaricatori di condensa</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. Giunti di dilatazione</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Coibentazione (casing)</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Carichi termici specifici</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Producibilità specifica</div>
+    <div class="toc-item" onclick="gotoSection('#t43')">43. Pressione di bollo e di esercizio</div>
+    <div class="toc-item" onclick="gotoSection('#t44')">44. Superficie di riscaldamento</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. Caldaia vs Generatore di Vapore</h3>
+    <p>Distinzione tecnica fondamentale: la <strong>caldaia</strong> è il recipiente destinato al riscaldamento di un liquido. Il <strong>generatore di vapore</strong> è un'apparecchiatura progettata per provocare il cambiamento di stato dell'acqua in modo continuo e in condizioni rigorosamente controllate.</p>
+    <p>In pratica il termine "caldaia" indica spesso l'intero impianto. Il generatore di vapore comprende: corpo caldaia, economizzatore, surriscaldatore, preriscaldatore aria, bruciatori, strumentazione di controllo e sicurezza. La <strong>caldaia</strong> è propriamente la parte dove avviene la trasformazione da liquido a vapore.</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Classificazione per Pressione</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Categoria</th><th>Pressione</th><th>Applicazioni tipiche</th></tr>
+      <tr><td>Bassa pressione</td><td>≤ 1 bar</td><td>Riscaldamento, sterilizzazione, lavanderie</td></tr>
+      <tr><td>Media pressione</td><td>1 — 15 bar</td><td>Industria alimentare, farmaceutica, chimica</td></tr>
+      <tr><td>Alta pressione</td><td>15 — 100 bar</td><td>Industria petrolchimica, cartiera, turbine</td></tr>
+      <tr><td>Altissima pressione</td><td>&gt; 100 bar</td><td>Centrali termoelettriche</td></tr>
+      <tr><td>Supercritica</td><td>&gt; 221 bar</td><td>Grandi centrali ad alto rendimento</td></tr>
+    </table></div>
+    <p>La pressione di esercizio determina la scelta costruttiva: sopra i 20 bar sono obbligatorie le caldaie a tubi d'acqua (B&W) perché i tubi di fumo non resistono strutturalmente alle alte pressioni.</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Classificazione per Volume d'Acqua</h3>
+    <p>Il volume d'acqua per m² di superficie di riscaldamento determina l'elasticità e la sicurezza della caldaia:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Categoria</th><th>Litri/m² superficie</th><th>Esempio</th><th>Caratteristiche</th></tr>
+      <tr><td>Grande volume</td><td>130-250 L/m²</td><td>Cornovaglia</td><td>Elastica, lenta ad avviarsi</td></tr>
+      <tr><td>Medio volume</td><td>70-130 L/m²</td><td>Tre giri di fumo</td><td>Compromesso</td></tr>
+      <tr><td>Piccolo volume</td><td>&lt; 70 L/m²</td><td>B&W</td><td>Avviamento rapido, meno elastica</td></tr>
+    </table></div>
+    <div class="callout">
+      <div class="callout-label">Elasticità termica</div>
+      <p>Le caldaie a grande volume d'acqua sono "elastiche": possono fornire per brevi periodi quantità di vapore superiori alla produzione nominale, attingendo all'energia immagazzinata nell'acqua calda. Le caldaie a piccolo volume reagiscono subito alle variazioni di carico ma non hanno questa riserva.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Tubi di Fumo vs Tubi d'Acqua</h3>
+    <p>La distinzione costruttiva fondamentale tra i due grandi tipi di caldaie:</p>
+    <ul>
+      <li><strong>Caldaie a tubi di fumo</strong> — i gas caldi della combustione scorrono <em>all'interno</em> dei tubi immersi nell'acqua. Grandi volumi d'acqua, pressioni limitate (max 15-20 bar per ragioni strutturali — i tubi devono resistere alla pressione esterna). Robuste, elastiche, semplici da costruire e manutenere.</li>
+      <li><strong>Caldaie a tubi d'acqua</strong> — l'acqua e la miscela acqua-vapore circolano <em>all'interno</em> dei tubi, lambiti esternamente dai fumi. Piccolo diametro dei tubi (40-90 mm) → spessori ridotti → alte pressioni possibili. Definite "non esplodenti" perché il piccolo volume d'acqua per tubo limita l'energia liberabile in caso di rottura.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. Classificazione per Circolazione</h3>
+    <ul>
+      <li><strong>Circolazione naturale</strong> — sfrutta la differenza di densità tra acqua e miscela acqua-vapore. L'acqua più densa scende nei tubi non riscaldati (downcomer), la miscela più leggera sale nei tubi riscaldati (riser). Nessuna pompa necessaria. Standard per caldaie industriali a tubi d'acqua.</li>
+      <li><strong>Circolazione assistita (controllata)</strong> — una pompa di circolazione forza il moto del fluido aumentando la portata rispetto alla circolazione naturale. Usata per piccole potenzialità (fino a 8 t/h) o generatori a serpentino dove l'evaporazione avviene lungo il percorso. Tipo La Mont.</li>
+      <li><strong>Circolazione forzata (once-through)</strong> — l'acqua percorre il circuito una sola volta, trasformandosi completamente in vapore. Nessun corpo cilindrico di separazione. Usata nelle caldaie supercritiche dove non esiste distinzione liquido/vapore.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Caldaia Cornovaglia</h3>
+    <p>Il prototipo delle caldaie industriali a tubi di fumo. Caratteristiche principali:</p>
+    <ul>
+      <li><strong>Tipo</strong>: fissa, a grande volume d'acqua, focolare interno</li>
+      <li><strong>Struttura</strong>: fasciame cilindrico orizzontale attraversato da uno o due tubi-focolare. Attorno al fasciame: muratura refrattaria.</li>
+      <li><strong>Tubi focolare</strong>: lisci o ondulati (Morrison). Il tubo ondulato ha +10% di superficie di scambio e maggiore resistenza al collasso per pressione esterna.</li>
+      <li><strong>Pressione max</strong>: 15 bar</li>
+      <li><strong>Producibilità specifica max</strong>: 25-30 kg/m²h</li>
+      <li><strong>Rendimento</strong>: fino all'80%</li>
+      <li><strong>Superficie riscaldamento</strong>: fino a 150 m²</li>
+    </ul>
+    <p>Il livello minimo dell'acqua deve essere almeno <strong>8 cm sopra</strong> la linea superiore della superficie di riscaldamento per evitare il surriscaldamento a secco del focolare.</p>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Caldaia a Tre Giri di Fumo</h3>
+    <p>Evoluzione della Cornovaglia con fasci di tubi fumogeni aggiuntivi. I gas caldi compiono tre percorsi:</p>
+    <ul>
+      <li><strong>1° giro</strong>: attraversano il focolare interno (tubo-focolare)</li>
+      <li><strong>2° giro</strong>: invertono il moto in una camera posteriore esterna e percorrono i tubi fumogeni inferiori verso la parte anteriore</li>
+      <li><strong>3° giro</strong>: seconda inversione e percorrono i tubi fumogeni superiori verso il camino</li>
+    </ul>
+    <p>I tubi fumogeni hanno diametro 50-70 mm e sono distribuiti intorno al focolare. A parità di dimensioni esterne, la superficie di riscaldamento è molto maggiore della Cornovaglia. Rendimento: <strong>84-87%</strong>. È la caldaia industriale più diffusa in Italia per potenze medie.</p>
+    <p>I <strong>turbolatori</strong> (barre elicoidali in acciaio inox) inseriti nei tubi fumogeni aumentano la turbolenza e migliorano lo scambio termico del 20-30%.</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Caldaia a Ritorno di Fiamma (Focolare Cieco)</h3>
+    <p>Variante della caldaia a tre giri con una differenza costruttiva importante: il focolare <strong>termina con un fondo raffreddato ad acqua</strong> (fondo cieco) invece di essere aperto verso la camera di inversione posteriore esterna.</p>
+    <p>I gas caldi si invertono all'interno della caldaia stessa. Vantaggi: minore ingombro longitudinale, nessuna camera di inversione esterna da isolare, compattezza. Svantaggi: il fondo del focolare in pressione richiede attenzione costruttiva particolare. Stesse prestazioni della caldaia a tre giri. Molto diffusa nelle versioni compatte da 500 kg/h a 5 t/h.</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Caldaia Tipo Marina</h3>
+    <p>Caldaia a tubi di fumo progettata originariamente per le navi. Adatta alla produzione di acqua calda e vapore a bassa pressione. Caratteristiche:</p>
+    <ul>
+      <li>Costruzione robusta e compatta per resistere alle vibrazioni e ai moti della nave</li>
+      <li>Focolari multipli (2-4) per alta producibilità in spazi ridotti</li>
+      <li>Fasci tubieri frontali e laterali per massimizzare lo scambio termico</li>
+      <li>Usata anche a terra per impianti industriali che richiedono grande affidabilità in spazi limitati</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Caldaia Babcock & Wilcox (B&W)</h3>
+    <p>Prototipo delle caldaie a tubi d'acqua, brevettata nel 1867. Caratteristiche fondamentali:</p>
+    <ul>
+      <li><strong>Tubi inclinati</strong> (10-15°) collegati a collettori (drum) superiori e inferiori</li>
+      <li><strong>Piccolo diametro tubi</strong> (40-90 mm) → spessori ridotti → alte pressioni possibili</li>
+      <li><strong>Piccolo volume acqua</strong> (~70 L/m²) → avviamento rapido (20 min vs 2-3 ore Cornovaglia)</li>
+      <li><strong>Producibilità specifica</strong>: 20-100 kg/m²h (molto superiore ai tubi di fumo)</li>
+      <li><strong>Pressione</strong>: illimitata in teoria — adatta fino alle supercritiche</li>
+      <li><strong>Rendimento</strong>: tra i più elevati</li>
+    </ul>
+    <p>Il drum superiore separa vapore e acqua. Il drum inferiore raccoglie i fanghi (spurgo di fondo). La circolazione naturale è garantita dalla differenza di densità tra downcomer (tubi freddi) e riser (tubi riscaldati).</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Confronto Cornovaglia vs B&W</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Caratteristica</th><th>Cornovaglia</th><th>B&W</th></tr>
+      <tr><td>Tipo</td><td>Tubi di fumo</td><td>Tubi d'acqua</td></tr>
+      <tr><td>Volume acqua</td><td>~200 L/m²</td><td>~70 L/m²</td></tr>
+      <tr><td>Pressione max</td><td>15 bar</td><td>Illimitata</td></tr>
+      <tr><td>Avviamento</td><td>2-3 ore</td><td>20-30 min</td></tr>
+      <tr><td>Elasticità</td><td>Alta</td><td>Bassa</td></tr>
+      <tr><td>Prod. specifica</td><td>25-30 kg/m²h</td><td>20-100 kg/m²h</td></tr>
+      <tr><td>Sicurezza scoppio</td><td>Più pericolosa</td><td>"Non esplodente"</td></tr>
+      <tr><td>Manutenzione</td><td>Semplice</td><td>Più complessa</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Caldaie Monotubolari e a Serpentino</h3>
+    <p>Le <strong>caldaie monotubolari</strong> (o a serpentino) sono generatori a circolazione forzata in cui l'acqua percorre un unico tubo avvolto a spirale o a serpentino riscaldato esternamente. Non hanno corpo cilindrico né drum di separazione.</p>
+    <p>Caratteristiche:</p>
+    <ul>
+      <li>Volume d'acqua minimissimo → avviamento in 3-5 minuti</li>
+      <li>Nessun rischio di scoppio catastrofico (pochissima energia accumulata)</li>
+      <li>Portata pompa = 110% della producibilità (norma)</li>
+      <li>Vapore prodotto con titolo prossimo a 1 ma con eventuale trascinamento di gocce</li>
+      <li>Usate per vapore di processo a bassa potenza, sterilizzazione, lavanderie</li>
+    </ul>
+    <p>Lo svantaggio principale: sensibilissime alla qualità dell'acqua. Le incrostazioni nel tubo unico portano rapidamente al surriscaldamento e alla rottura.</p>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Caldaie a Recupero (HRSG)</h3>
+    <p>Le caldaie <strong>HRSG (Heat Recovery Steam Generator)</strong> non hanno focolare proprio: recuperano il calore sensibile dei fumi provenienti da altri processi industriali o da turbine a gas.</p>
+    <ul>
+      <li>Fonti di calore: fumi di turbogas (450-600°C), fumi di forni industriali, fumi di inceneritori</li>
+      <li>Producono vapore saturo o surriscaldato senza consumare combustibile aggiuntivo</li>
+      <li>Possono essere a tubi di fumo o a tubi d'acqua a seconda della potenza</li>
+      <li>Producibilità specifica inferiore alle caldaie a combustione diretta</li>
+    </ul>
+    <p>Negli impianti di cogenerazione (ciclo combinato), la HRSG recupera il calore dello scarico della turbina a gas e produce vapore per una turbina a vapore, portando il rendimento elettrico complessivo al 55-60%.</p>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Il Corpo Cilindrico</h3>
+    <p>Il <strong>corpo cilindrico</strong> (o shell) è il serbatoio principale della caldaia dove avviene la separazione tra acqua e vapore. È la parte in pressione principale e la più critica per la sicurezza.</p>
+    <p>Funzioni: contiene l'acqua in ebollizione e il vapore prodotto, separa le fasi liquida e gassosa, fornisce il volume di riserva idrica (elasticità), supporta i componenti accessori (valvole, indicatori, manometri).</p>
+    <p>Costruzione: cilindro in acciaio di spessore calcolato in funzione della pressione di bollo, chiuso da due fondi (anteriore e posteriore). I fondi possono essere piatti (saldati o bullonati) o bombati (semisferici o torisferi) — i fondi bombati resistono meglio alla pressione.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Fasciame — Virole e Giunti</h3>
+    <p>Il <strong>fasciame</strong> è il cilindro del corpo caldaia, costruito assemblando più anelli cilindrici chiamati <strong>virole</strong>. Ogni virola è ricavata da un foglio di lamiera di acciaio curvato e saldato lungo un giunto longitudinale.</p>
+    <p>Le virole vengono poi unite tra loro con <strong>giunti circolari</strong> (o giunti di testa). Le saldature devono essere di qualità certificata — il coefficiente di giuntura (η) riduce la resistenza teorica della lamiera:</p>
+    <div class="formula">
+      <span>s = P · D / (2 · σ_amm · η)</span><br>
+      <small>s = spessore lamiera (mm) | P = pressione di bollo (bar) | D = diametro interno | σ_amm = tensione ammissibile | η = coefficiente giuntura</small>
+    </div>
+    <p>Il coefficiente η vale: 1,0 per giuntura saldata di qualità con controllo radiografico al 100%, 0,85 per saldatura controllata parzialmente, 0,70 per saldatura non controllata.</p>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Focolare Interno — Liscio vs Ondulato</h3>
+    <p>Il <strong>focolare interno</strong> (o tubo-focolare) è il grande tubo cilindrico all'interno del corpo caldaia dove avviene la combustione nelle caldaie tipo Cornovaglia.</p>
+    <p>Due varianti costruttive:</p>
+    <ul>
+      <li><strong>Focolare liscio</strong> — cilindro di acciaio di spessore uniforme. Più semplice da costruire. Rischio: il collasso per pressione esterna (l'acqua preme dall'esterno, i fumi dall'interno) nei focolari di grande diametro ad alta pressione.</li>
+      <li><strong>Focolare ondulato (Morrison)</strong> — il cilindro ha profilo ondulato (ondulazioni circolari). Vantaggi: +10% di superficie di scambio termico, maggiore resistenza al collasso esterno (le ondulazioni irrigidiscono strutturalmente), migliore assorbimento delle dilatazioni termiche.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Tubi Fumogeni</h3>
+    <p>I <strong>tubi fumogeni</strong> (fire tubes) sono i tubi attraverso i quali scorrono i gas caldi di combustione nelle caldaie a tubi di fumo. Caratteristiche:</p>
+    <ul>
+      <li><strong>Diametro</strong>: 50-70 mm per le caldaie industriali standard</li>
+      <li><strong>Materiale</strong>: acciaio senza saldatura longitudinale (trafilato)</li>
+      <li><strong>Disposizione</strong>: a fascio, distribuiti simmetricamente intorno al focolare</li>
+      <li><strong>Attacco alle piastre tubiere</strong>: per mandrinatura (espansione meccanica) o saldatura</li>
+      <li><strong>Turbolatori</strong>: barre elicoidali inseribili per aumentare la turbolenza e lo scambio termico</li>
+    </ul>
+    <p>La pressione di esercizio è limitata: le pareti dei tubi fumogeni devono resistere alla pressione <em>esterna</em> dell'acqua, e tubi di grande diametro a pareti sottili tendono al collasso oltre certi valori di pressione.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. Tubi d'Acqua — Sicurezza Intrinseca</h3>
+    <p>Nelle caldaie a tubi d'acqua, l'acqua e la miscela acqua-vapore circolano <em>all'interno</em> di tubi di piccolo diametro (40-90 mm). Questo porta a due vantaggi di sicurezza fondamentali:</p>
+    <ul>
+      <li><strong>Spessori ridotti</strong>: la pressione interna su un tubo di piccolo diametro richiede spessori minimi. Esempio: a 100 bar e D=60 mm servono ~5-6 mm di spessore. Per un corpo cilindrico da 1 m di diametro servirebbero ~60 mm.</li>
+      <li><strong>Energia limitata per tubo</strong>: se un tubo si rompe, la quantità di acqua in pressione che si libera è minima rispetto al grande volume di una caldaia a tubi di fumo. Nessun effetto catastrofico a cascata.</li>
+    </ul>
+    <p>Per questo le caldaie B&W sono definite <strong>"non esplodenti"</strong>: la rottura di un tubo è un incidente grave ma controllabile, non uno scoppio catastrofico come quello di una caldaia a tubi di fumo della stessa potenzialità.</p>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Collettori Superiori e Inferiori (Drums)</h3>
+    <p>I <strong>collettori</strong> (o drums) sono i cilindri orizzontali a cui sono collegati i tubi d'acqua nelle caldaie B&W:</p>
+    <ul>
+      <li><strong>Drum superiore (steam drum)</strong> — riceve la miscela acqua-vapore dai riser, separa le fasi, accumula il vapore saturo secco che viene prelevato per l'utilizzo. Dotato di separatori di umidità interni (cicloni o deflettori) per garantire vapore secco.</li>
+      <li><strong>Drum inferiore (mud drum)</strong> — raccoglie l'acqua che ritorna dai downcomer. Zona di accumulo dei fanghi e delle impurità precipitate. Da qui avviene lo <strong>spurgo di fondo</strong> per rimuovere i depositi.</li>
+    </ul>
+    <p>I drum hanno passi d'uomo per l'ispezione interna periodica obbligatoria.</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Il Duomo</h3>
+    <p>Il <strong>duomo</strong> è una camera a forma di cupola posta sulla sommità del corpo cilindrico nelle caldaie a tubi di fumo. La sua funzione è raccogliere il vapore più secco per il prelievo.</p>
+    <p>Perché il vapore nel duomo è più secco? Perché la superficie libera dell'acqua in ebollizione è lontana dall'uscita vapore — le goccioline proiettate dall'ebollizione ricadono prima di raggiungere il duomo. La velocità del vapore nel duomo è bassa, favorendo la separazione delle ultime goccioline per gravità.</p>
+    <p>Ogni generatore deve avere una <strong>valvola di presa vapore</strong> (intercettazione principale) sull'uscita dal duomo. I generatori che funzionano a pressione superiore a 6 bar devono avere una valvola di presa automatica di chiusura a distanza.</p>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Piastre Tubiere</h3>
+    <p>Le <strong>piastre tubiere</strong> sono le pareti terminali del corpo cilindrico nelle caldaie a tubi di fumo, attraversate dai tubi fumogeni e dal tubo-focolare. Sono le parti strutturali più sollecitate della caldaia.</p>
+    <p>Sollecitazioni subite: pressione dell'acqua da un lato, pressione dei fumi dall'altro, tensioni termiche per la differenza di temperatura tra centro e bordi, forze di trazione/compressione trasmesse dai tubi.</p>
+    <p>Costruzione: lamiera spessa (25-50 mm), fresata per accogliere i tubi. Il collegamento tubi-piastra avviene per <strong>mandrinatura</strong> (espansione meccanica del tubo fino al contatto con la piastra) e/o <strong>saldatura</strong>. Le piastre piane di grande diametro richiedono irrigidimenti (tiranti, rompigiogo) per resistere alla pressione senza deformarsi.</p>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Passi d'Uomo e Portine di Accesso</h3>
+    <p>I <strong>passi d'uomo</strong> sono aperture nelle parti in pressione della caldaia che permettono l'accesso interno per ispezione, pulizia e manutenzione. La loro chiusura è di tipo ad <strong>autoclave</strong>: più la caldaia va in pressione, più la chiusura è ermetica (il coperchio viene premuto contro il bordo dalla pressione interna).</p>
+    <p>Dimensioni minime: 300×400 mm per i passi d'uomo elittici, o Ø 400 mm per quelli circolari. Ogni corpo cilindrico e ogni collettore deve avere almeno un passo d'uomo.</p>
+    <p>Le <strong>portine di accesso lato fumi</strong> permettono l'ispezione dei fasci tubieri e la pulizia della fuliggine. I condotti fumi devono avere aperture di ispezione di almeno <strong>400×400 mm</strong>.</p>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Materiali Costruttivi</h3>
+    <p>I materiali delle parti in pressione devono garantire resistenza meccanica, resistenza alla corrosione e lavorabilità per la saldatura. L'<strong>acciaio al carbonio</strong> è il materiale standard:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Componente</th><th>Materiale tipico</th><th>Note</th></tr>
+      <tr><td>Fasciame, fondi</td><td>Acciaio P265GH</td><td>Acciaio da pressione a caldo</td></tr>
+      <tr><td>Tubi fumogeni</td><td>Acciaio St 35.8</td><td>Trafilato senza saldatura</td></tr>
+      <tr><td>Tubi d'acqua</td><td>Acciaio 16Mo3</td><td>Con molibdeno per alte T</td></tr>
+      <tr><td>Surriscaldatore</td><td>Acciaio inox o leghe Cr-Mo</td><td>Per T > 450°C</td></tr>
+      <tr><td>Bulloneria</td><td>Acciai legati</td><td>Alta resistenza alle alte T</td></tr>
+    </table></div>
+    <p>Il rame fu abbandonato per le parti in pressione perché corrode in presenza di ammoniaca e ossigeno disciolto nell'acqua trattata. L'acciaio al carbonio richiede purezza e composizione chimica certificate — il contenuto di zolfo e fosforo è limitato per garantire la saldabilità.</p>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Saldature e Controlli</h3>
+    <p>La qualità delle saldature è critica per la sicurezza della caldaia. I metodi di controllo non distruttivo (NDT) obbligatori:</p>
+    <ul>
+      <li><strong>Liquidi penetranti</strong> — rileva difetti superficiali. Il liquido penetra nelle cricche, viene rimosso dalla superficie, il rivelatore mostra i difetti. Economico, applicabile a qualsiasi materiale.</li>
+      <li><strong>Magnetoscopia</strong> — rileva difetti superficiali e sottosuperficiali nei materiali ferromagnetici tramite campo magnetico e polveri magnetiche.</li>
+      <li><strong>Ultrasuoni</strong> — rileva difetti interni. Un fascio ultrasonoro penetra nel materiale e i difetti riflettono il segnale. Molto preciso, applicabile in spessori grandi.</li>
+      <li><strong>Radiografia (X o gamma)</strong> — il metodo più preciso per difetti interni. Lastre o film fotosensibili rivelano le variazioni di densità causate dai difetti. Obbligatoria per le saldature principali delle caldaie in pressione.</li>
+    </ul>
+    <p>Il coefficiente di giuntura η dipende dall'estensione dei controlli: controllo al 100% con radiografia → η=1,0 (nessuna penalizzazione dello spessore).</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Prove e Collaudi</h3>
+    <p>Prima della messa in servizio ogni caldaia deve superare tre prove obbligatorie:</p>
+    <ul>
+      <li><strong>Visita interna</strong> — ispezione visiva di tutte le superfici interne accessibili, verifica dell'assenza di difetti, incrostazioni, corrosioni, deformazioni. Eseguita dall'INAIL o da un organismo notificato.</li>
+      <li><strong>Prova idraulica</strong> — la caldaia viene riempita completamente d'acqua e portata a 1,5× la pressione di bollo. Verifica la tenuta e l'assenza di deformazioni permanenti.</li>
+      <li><strong>Prova a caldo (prova di funzionamento)</strong> — la caldaia viene avviata e portata alle condizioni di esercizio. Verifica il funzionamento di tutti i dispositivi di sicurezza (valvole, pressostati, livellostati), del bruciatore, degli accessori.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Prova Idraulica — Procedura Dettagliata</h3>
+    <p>La prova idraulica è il collaudo strutturale fondamentale della caldaia. Procedura:</p>
+    <ul>
+      <li>Riempire completamente la caldaia con acqua (eliminare ogni bolla d'aria)</li>
+      <li>Portare la pressione lentamente fino a <strong>1,5 × pressione di bollo</strong></li>
+      <li>Mantenere la pressione per almeno <strong>30 minuti</strong></li>
+      <li>Ispezionare tutte le saldature, le connessioni, le piastre tubiere cercando perdite o deformazioni</li>
+      <li>Ridurre la pressione lentamente</li>
+    </ul>
+    <div class="formula">
+      <span>P_prova = 1,5 × P_bollo</span><br>
+      <small>Esempio: caldaia con P_bollo = 10 bar → P_prova = 15 bar</small>
+    </div>
+    <p>Si usa acqua e non vapore per sicurezza: l'acqua è incomprimibile, quindi in caso di rottura durante la prova l'energia liberata è minima (nessuna flash evaporation). Con il vapore la rottura sarebbe catastrofica.</p>
+    <p>La prova idraulica si ripete periodicamente (ogni 5-10 anni secondo normativa) e ogni volta che si eseguono riparazioni alle parti in pressione.</p>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Targa del Costruttore</h3>
+    <p>Ogni generatore di vapore deve essere dotato di una <strong>targa metallica permanente</strong> (normalmente in acciaio inox o ottone) applicata in posizione visibile. Contiene le informazioni obbligatorie per legge:</p>
+    <ul>
+      <li>Nome e ragione sociale del costruttore</li>
+      <li>Anno di costruzione</li>
+      <li>Numero di fabbrica (matricola)</li>
+      <li><strong>Pressione massima di esercizio (pressione di bollo)</strong> — in bar</li>
+      <li>Superficie di riscaldamento — in m²</li>
+      <li>Producibilità massima — in kg/h</li>
+      <li>Marcatura CE e numero organismo notificato (per generatori PED)</li>
+    </ul>
+    <p>La pressione di bollo sulla targa è il riferimento per la taratura delle valvole di sicurezza e dei pressostati, e per la pressione della prova idraulica. Non può essere superata durante l'esercizio normale.</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Libretto Matricolare</h3>
+    <p>Il <strong>libretto matricolare</strong> (o libretto di impianto) è il documento ufficiale che accompagna ogni generatore di vapore per tutta la sua vita operativa. È richiesto dalle autorità di controllo durante le ispezioni.</p>
+    <p>Contenuto obbligatorio:</p>
+    <ul>
+      <li>Dati tecnici del generatore (come nella targa)</li>
+      <li>Documentazione costruttiva: disegni, calcoli di resistenza, certificati materiali</li>
+      <li>Verbale della prima verifica (collaudo iniziale) da parte dell'INAIL</li>
+      <li>Verbali di tutte le visite periodiche successive</li>
+      <li>Registro degli interventi di manutenzione e riparazioni alle parti in pressione</li>
+      <li>Registro dei risultati delle analisi dell'acqua</li>
+    </ul>
+    <p>Il libretto deve essere tenuto sempre aggiornato e disponibile in sala caldaia. La perdita o l'incompletezza del libretto può comportare la sospensione dell'esercizio della caldaia.</p>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Circolazione Naturale — Principio Fisico</h3>
+    <p>La circolazione naturale si basa sulla differenza di densità tra acqua fredda e miscela acqua-vapore calda. È il principio che muove il fluido nelle caldaie a tubi d'acqua senza pompe di circolazione:</p>
+    <ul>
+      <li><strong>Downcomer (tubi discendenti)</strong> — tubi non riscaldati dai fumi. L'acqua è quasi tutta liquida, densa (~900 kg/m³ a 10 bar). Scende per gravità.</li>
+      <li><strong>Riser (tubi ascendenti)</strong> — tubi riscaldati. La miscela acqua-vapore è meno densa (~500 kg/m³ a 10 bar). Sale per galleggiamento.</li>
+    </ul>
+    <div class="formula">
+      <span>Δp = H · g · (ρ_acqua - ρ_miscela)</span><br>
+      <small>H = altezza della colonna | g = 9,81 m/s² | ρ = densità (kg/m³)</small>
+    </div>
+    <p>La circolazione naturale diventa meno efficace ad alta pressione perché la differenza di densità tra acqua e vapore diminuisce al crescere della pressione (si annulla al punto critico 221 bar). Sopra certi valori di pressione è necessaria la circolazione forzata.</p>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Circolazione Assistita — Tipo La Mont</h3>
+    <p>La caldaia <strong>La Mont</strong> è il tipo più diffuso di caldaia a circolazione assistita. Una pompa di circolazione (pompa La Mont) forza il moto del fluido nei tubi riscaldati, garantendo velocità e portata controllate indipendentemente dalla differenza di densità.</p>
+    <p>Vantaggi rispetto alla circolazione naturale:</p>
+    <ul>
+      <li>Dimensioni ridotte — i tubi possono essere più piccoli e in geometria più flessibile</li>
+      <li>Controllo totale del flusso — si può aumentare la velocità per migliorare lo scambio termico</li>
+      <li>Funziona efficacemente anche ad alte pressioni dove la circolazione naturale è debole</li>
+      <li>Avviamento più rapido</li>
+    </ul>
+    <p>Usata nelle centrali termoelettriche di medie dimensioni e nelle caldaie industriali di potenza elevata (oltre 20-30 t/h).</p>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Circolazione Forzata Once-Through</h3>
+    <p>Nelle caldaie <strong>once-through</strong> (o a passaggio unico) l'acqua percorre il circuito una sola volta, trasformandosi progressivamente in vapore surriscaldato senza mai tornare indietro. Non esiste un drum di separazione acqua-vapore.</p>
+    <p>Caratteristiche:</p>
+    <ul>
+      <li>Obbligatoria per caldaie supercritiche (&gt;221 bar) dove non esiste distinzione liquido/vapore</li>
+      <li>Qualità dell'acqua critica: impurità si concentrano lungo il percorso e si depositano → acqua demineralizzata obbligatoria</li>
+      <li>Tempi di avviamento molto rapidi (pochi minuti)</li>
+      <li>Controllo preciso delle condizioni del vapore</li>
+      <li>Esempio: caldaie Benson, Sulzer, Naturi</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Il Surriscaldatore</h3>
+    <p>Il <strong>surriscaldatore</strong> è un fascio di tubi attraverso cui passa il vapore saturo secco uscente dal drum per essere riscaldato oltre la temperatura di saturazione, producendo <strong>vapore surriscaldato</strong>.</p>
+    <p>Posizionamento: nelle zone più calde del percorso fumi (vicino al focolare), protetto dal <strong>naso refrattario</strong> — una sporgenza della muratura che impedisce all'irraggiamento diretto della fiamma di colpire i tubi (che potrebbero surriscaldarsi eccessivamente senza il raffreddamento del vapore in ebollizione).</p>
+    <p>Caratteristiche costruttive: tubi di acciaio legato (Cr-Mo) resistenti alle alte temperature (fino a 560-600°C). La temperatura del vapore in uscita è il parametro più critico delle caldaie per turbine.</p>
+    <div class="formula">
+      <span>P_utile con surriscaldatore [kW] = W · (h_s - h_a) / 3600</span><br>
+      <small>h_s = entalpia vapore surriscaldato (maggiore di h_v saturo secco)</small>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Il Risurriscaldatore</h3>
+    <p>Il <strong>risurriscaldatore</strong> (o risurriscaldamento) è presente negli impianti con turbine a vapore a più stadi. Il vapore, dopo essersi parzialmente espanso nel primo stadio della turbina, viene estratto, riportato in caldaia per essere nuovamente surriscaldato, e poi rimandato alla turbina per il secondo stadio di espansione.</p>
+    <p>Vantaggi del risurriscaldamento:</p>
+    <ul>
+      <li>Aumenta il rendimento termodinamico del ciclo Rankine</li>
+      <li>Mantiene il titolo del vapore &gt;0,92 negli stadi finali della turbina (evita erosione palette)</li>
+      <li>Permette di estrarre più lavoro per kg di vapore</li>
+    </ul>
+    <p>È standard nelle grandi centrali termoelettriche. Il vapore risurriscaldato ha T tipicamente simile al vapore originale (500-560°C) ma pressione inferiore.</p>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. L'Economizzatore</h3>
+    <p>L'<strong>economizzatore</strong> (ECO) è uno scambiatore di calore multitubolare posizionato nel percorso dei fumi tra la caldaia e il camino. Recupera il calore residuo dei fumi per preriscaldare l'acqua di alimento.</p>
+    <p>Principio di funzionamento: l'acqua di alimento fredda scorre all'interno dei tubi in controcorrente rispetto ai fumi. Recupera calore che altrimenti andrebbe al camino. Deve sempre lavorare in <strong>subcooling</strong>: l'acqua in uscita deve essere a temperatura inferiore di almeno 5°C rispetto alla T di saturazione alla pressione di caldaia.</p>
+    <p>Se l'acqua raggiungesse la T di saturazione nell'economizzatore, vaporizzerebbe parzialmente dentro i tubi → bolle → colpi d'ariete → surriscaldamento locale della parete.</p>
+    <p>Guadagno di rendimento: ogni 10°C di preriscaldo dell'acqua di alimento → circa 0,5-0,6% di miglioramento del rendimento. Un economizzatore che porta l'acqua da 60°C a 140°C recupera ~80 kcal/kg → risparmio combustibile 6-8%.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Preriscaldatore d'Aria — LUVO (Ljungström)</h3>
+    <p>Il <strong>preriscaldatore d'aria comburente</strong> (LUVO — LUftVOrwärmer, in tedesco) recupera il calore dei fumi per riscaldare l'aria prima che entri nel bruciatore. Migliora il rendimento di combustione e abbassa ulteriormente la temperatura dei fumi al camino.</p>
+    <p>Il tipo <strong>Ljungström</strong> è il più diffuso: è un preriscaldatore rotativo con cestello in acciaio che ruota lentamente (2-6 giri/min). Da un lato si riscalda con i fumi, dall'altro lato cede il calore all'aria comburente. Temperatura aria in uscita: 150-350°C.</p>
+    <p>Vantaggi: compattezza, elevata efficienza di scambio, adatto a grandi portate. Svantaggio: possibili infiltrazioni di fumi verso il lato aria e viceversa alle guarnizioni di tenuta tra i due settori.</p>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Turbolatori</h3>
+    <p>I <strong>turbolatori</strong> sono inserti metallici introdotti nei tubi fumogeni delle caldaie a tubi di fumo per aumentare artificialmente la turbolenza del flusso dei gas caldi e migliorare lo scambio termico.</p>
+    <p>Costruzione: barre di acciaio inox (per resistere alle alte temperature e alla corrosione) attorcigliate a elica con passo variabile. Si inseriscono nei tubi fumogeni e vengono tenuti in posizione dalla loro forma elicoidale.</p>
+    <p>Effetti:</p>
+    <ul>
+      <li>+20-30% di coefficiente di scambio termico (Re aumenta, Nu aumenta)</li>
+      <li>+10-20% di perdite di carico nel circuito fumi (il ventilatore deve lavorare di più)</li>
+      <li>Riduzione della T dei fumi al camino → miglioramento rendimento</li>
+    </ul>
+    <p>A bruciatore spento i turbolatori riducono il tiraggio naturale (ostacolano il moto dei gas). I moderni turbolatori sono estraibili per la pulizia senza smontare la caldaia.</p>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Valvola di Presa Vapore</h3>
+    <p>La <strong>valvola di presa</strong> è il rubinetto principale che intercetta la comunicazione tra il generatore e la rete di distribuzione del vapore. Obbligatoria per ogni generatore.</p>
+    <p>Normativa specifica:</p>
+    <ul>
+      <li>Tutti i generatori devono avere una valvola di presa che permetta di isolare il generatore dalla rete</li>
+      <li>I generatori a <strong>P &gt; 6 bar</strong> devono avere una valvola di presa <strong>automatica di chiusura a distanza</strong>, azionabile dall'esterno del locale caldaia in caso di emergenza</li>
+      <li>La valvola di presa deve essere nella posizione più vicina possibile al corpo caldaia</li>
+    </ul>
+    <p>Funzione di sicurezza: in caso di rottura della rete vapore a valle, la valvola di presa chiusa impedisce che l'acqua della caldaia continui ad alimentare la perdita.</p>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Scaricatori di Condensa</h3>
+    <p>Gli <strong>scaricatori di condensa</strong> (steam traps) sono dispositivi che lasciano passare la condensa (acqua) trattenendo il vapore. Sono essenziali in tutte le tubazioni e negli utilizzatori di vapore per evitare ristagni di acqua (colpi d'ariete) e recuperare la condensa calda.</p>
+    <p>Tipi principali:</p>
+    <ul>
+      <li><strong>A dilatazione termica (a bellows)</strong> — un elemento sensibile alla temperatura regola l'apertura: aperto a T bassa (condensa), chiuso a T alta (vapore). Semplice e robusto.</li>
+      <li><strong>A galleggiante aperto</strong> — un galleggiante apre una valvola quando il livello di condensa sale. Continuo, per grandi quantità di condensa.</li>
+      <li><strong>A galleggiante chiuso (a secchio rovesciato)</strong> — un secchio rovesciato sale con il vapore (chiude) e affonda con la condensa (apre). Intermittente.</li>
+      <li><strong>A labirinto (termodinamico)</strong> — sfrutta la differenza di pressione tra vapore e condensa. Piccolo, per pressioni elevate.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Giunti di Dilatazione</h3>
+    <p>Le tubazioni a vapore si allungano significativamente con la temperatura: acciaio a 300°C si allunga di ~3,6 mm per metro rispetto alla temperatura ambiente. Su un tratto di 20 m, questo vale 72 mm. Se la tubazione è rigidamente ancorata alle estremità, si generano forze enormi.</p>
+    <p>I <strong>giunti di dilatazione</strong> assorbono questi movimenti termici:</p>
+    <ul>
+      <li><strong>Giunto a soffietto (expansion bellows)</strong> — elemento metallico ondulato (soffietto) che si estende e comprime. Assicura tenuta ermetica, adatto a pressioni elevate.</li>
+      <li><strong>Giunto a lira</strong> — la tubazione forma una curva a forma di U o Ω che assorbe le dilatazioni con la propria flessibilità. Semplice, robusto, nessuna parte mobile.</li>
+      <li><strong>Giunto scorrevole</strong> — una parte della tubazione scorre all'interno dell'altra. Richiedono guarnizioni di tenuta soggette a usura.</li>
+    </ul>
+    <p>La norma prescrive che le tubazioni abbiano una <strong>pendenza dell'1%</strong> per favorire il deflusso della condensa verso gli scaricatori. Questo è possibile solo con giunti di dilatazione che permettono i movimenti.</p>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Coibentazione (Casing)</h3>
+    <p>Il <strong>casing</strong> è il rivestimento esterno del generatore di vapore, composto da:</p>
+    <ul>
+      <li><strong>Primo strato</strong>: lana di roccia minerale (o lana di vetro) applicata direttamente sulla superficie calda del corpo caldaia. Spessore 80-150 mm. Riduce le dispersioni per irraggiamento verso l'esterno.</li>
+      <li><strong>Secondo strato</strong>: lamiera di acciaio verniciata che chiude e protegge il coibente.</li>
+    </ul>
+    <p>Le perdite per irraggiamento (dispersione attraverso il casing) rappresentano tipicamente lo 0,5-2% del calore introdotto con il combustibile. Un casing ben coibentato e privo di danneggiamenti mantiene queste perdite al minimo.</p>
+    <p>La temperatura esterna del casing non dovrebbe superare i <strong>50°C</strong> per: limitare le perdite di calore, garantire la sicurezza del personale (evitare ustioni al contatto accidentale), rispettare le norme di sicurezza sul lavoro.</p>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Carichi Termici Specifici</h3>
+    <p>I <strong>carichi termici specifici</strong> caratterizzano l'intensità dello scambio termico in caldaia:</p>
+    <ul>
+      <li><strong>Carico termico superficiale</strong> — calore ceduto per unità di superficie di riscaldamento (kcal/m²·h). Determina la temperatura della parete del tubo. Troppo alto → surriscaldamento → danneggiamento. Valori tipici: tubi fumogeni 50.000-80.000 kcal/m²·h; focolare tubi d'acqua 150.000-400.000 kcal/m²·h.</li>
+      <li><strong>Carico termico volumetrico</strong> — calore liberato dalla combustione per unità di volume del focolare (kcal/m³·h). Determina la completezza della combustione. Troppo alto → i gas non hanno tempo di bruciare completamente prima di uscire dal focolare → incombusti.</li>
+    </ul>
+    <div class="formula">
+      <span>q_sup = Q_focolare / A_riscaldamento [kcal/m²·h]</span><br>
+      <span>q_vol = Q_focolare / V_focolare [kcal/m³·h]</span>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Producibilità Specifica</h3>
+    <p>La <strong>producibilità specifica</strong> è il rapporto tra la portata di vapore prodotta e la superficie di riscaldamento della caldaia. È il parametro di confronto tra diversi tipi di generatori:</p>
+    <div class="formula">
+      <span>PS = W / A_riscaldamento [kg vapore/m²·h]</span>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Tipo caldaia</th><th>Producibilità specifica</th></tr>
+      <tr><td>Cornovaglia</td><td>25-30 kg/m²·h</td></tr>
+      <tr><td>Tre giri di fumo</td><td>30-50 kg/m²·h</td></tr>
+      <tr><td>B&W (tubi d'acqua)</td><td>20-100 kg/m²·h</td></tr>
+      <tr><td>Caldaia supercritica</td><td>100-300 kg/m²·h</td></tr>
+    </table></div>
+    <p>La producibilità specifica aumenta con: migliore qualità del bruciatore e della combustione, temperature di fiamma più alte, superfici pulite (no fuliggine o calcare). La superficie di riscaldamento si misura sempre <strong>dal lato lambito dai fumi</strong>.</p>
+  </div>
+
+  <div class="teoria-block" id="t43">
+    <h3>43. Pressione di Bollo e Pressione di Esercizio</h3>
+    <p>Due pressioni fondamentali che ogni conduttore deve conoscere perfettamente:</p>
+    <ul>
+      <li><strong>Pressione di bollo (P_max)</strong> — la pressione massima alla quale il generatore può funzionare regolarmente. È riportata sulla targa del costruttore ed è il riferimento per la taratura delle valvole di sicurezza, dei pressostati e per la prova idraulica (1,5×). Non deve mai essere superata.</li>
+      <li><strong>Pressione di esercizio (P_ex)</strong> — la pressione alla quale il generatore viene effettivamente fatto funzionare. È sempre inferiore alla pressione di bollo per avere un margine di sicurezza. La differenza (P_bollo - P_ex) è il margine operativo.</li>
+    </ul>
+    <p>Le valvole di sicurezza vengono tarate a una pressione leggermente superiore alla pressione di bollo (tipicamente P_bollo + 5-10%). I pressostati di regolazione intervengono prima (a P_ex), quelli di sicurezza (PSHH) a una pressione tra P_ex e P_bollo.</p>
+  </div>
+
+  <div class="teoria-block" id="t44">
+    <h3>44. Superficie di Riscaldamento</h3>
+    <p>La <strong>superficie di riscaldamento</strong> è l'area totale (in m²) delle superfici che da un lato sono in contatto con i fumi caldi e dall'altro con l'acqua/vapore. È il parametro dimensionale principale della caldaia, usato per:</p>
+    <ul>
+      <li>Classificare le caldaie per la determinazione del grado di patente necessario</li>
+      <li>Calcolare la producibilità specifica</li>
+      <li>Determinare i requisiti normativi (numero di valvole, presenza obbligatoria del conduttore, esoneri)</li>
+    </ul>
+    <p>La misura va eseguita <strong>dal lato lambito dai fumi</strong>. Per i tubi: π × D_esterno × lunghezza. Per il focolare di una Cornovaglia: π × D_focolare × lunghezza focolare.</p>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. Tubi di fumo: max 15-20 bar. Tubi d'acqua: pressione illimitata, "non esplodenti"<br>
+      2. Cornovaglia: ~200 L/m², elastica, lenta. B&W: ~70 L/m², rigida, rapida<br>
+      3. Prova idraulica: 1,5 × pressione di bollo con acqua, 30 minuti<br>
+      4. Economizzatore in subcooling: uscita acqua a T_sat - 5°C minimo<br>
+      5. Superficie di riscaldamento misurata DAL LATO FUMI</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Costruzione e Tipologie di Caldaie</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"Differenza fondamentale tra caldaie a tubi di fumo e tubi d'acqua",a:"Tubi di fumo: i fumi scorrono DENTRO i tubi immersi nell'acqua. Max 15-20 bar. Grande volume, elastiche.\nTubi d'acqua: l'acqua scorre DENTRO i tubi lambiti dai fumi. Pressione illimitata. Piccolo volume, 'non esplodenti'."},
+  {q:"Perché le caldaie a tubi d'acqua sono dette 'non esplodenti'?",a:"Il piccolo diametro dei tubi (40-90 mm) permette spessori ridotti per alte pressioni. In caso di rottura di un tubo, il volume di acqua liberato è minimo → nessuna flash evaporation catastrofica. Nessun effetto scoppio globale."},
+  {q:"Caldaia Cornovaglia — caratteristiche principali",a:"Tipo: fissa, grande volume (~200 L/m²), focolare interno. Pressione max: 15 bar. Producibilità specifica: 25-30 kg/m²h. Rendimento: fino all'80%. Livello minimo: 8 cm sopra la superficie di riscaldamento."},
+  {q:"Caldaia B&W — caratteristiche principali vs Cornovaglia",a:"Volume acqua: ~70 L/m². Avviamento: 20-30 min (vs 2-3 ore). Pressione: illimitata. Producibilità specifica: 20-100 kg/m²h. Meno elastica ma più sicura e performante ad alta pressione."},
+  {q:"Caldaia a tre giri di fumo — percorso dei fumi",a:"1° giro: attraverso il focolare interno. 2° giro: camera inversione posteriore → tubi fumogeni inferiori verso l'anteriore. 3° giro: seconda inversione → tubi superiori verso il camino. Rendimento: 84-87%."},
+  {q:"Cosa sono i turbolatori e che effetto hanno?",a:"Barre di acciaio inox attorcigliate a elica inserite nei tubi fumogeni. Effetti: +20-30% coefficiente di scambio termico, +10-20% perdite di carico nel circuito fumi. Riducono T fumi al camino → migliorano rendimento."},
+  {q:"Focolare ondulato (Morrison) vs liscio — vantaggi",a:"Ondulato: +10% superficie di scambio termico, maggiore resistenza al collasso per pressione esterna (le ondulazioni irrigidiscono), migliore assorbimento dilatazioni termiche. È la scelta standard nelle caldaie Cornovaglia moderne."},
+  {q:"Prova idraulica — procedura e pressione",a:"Riempire di acqua (no vapore!), portare a 1,5 × pressione di bollo, mantenere 30 min, ispezionare perdite e deformazioni. Si usa acqua perché è incomprimibile → nessun pericolo in caso di rottura durante la prova."},
+  {q:"Cos'è la targa del costruttore e cosa deve contenere?",a:"Targa metallica permanente obbligatoria con: nome costruttore, anno costruzione, numero matricola, pressione di bollo (bar), superficie di riscaldamento (m²), producibilità max (kg/h), marcatura CE."},
+  {q:"Cos'è il libretto matricolare?",a:"Documento ufficiale che accompagna la caldaia per tutta la vita operativa. Contiene: dati tecnici, documentazione costruttiva, verbali collaudi, registro manutenzioni, analisi acque. Deve essere sempre aggiornato e disponibile in sala caldaia."},
+  {q:"Circolazione naturale — principio fisico",a:"Si basa sulla differenza di densità tra acqua fredda (densa, scende nei downcomer) e miscela acqua-vapore calda (meno densa, sale nei riser). Nessuna pompa necessaria. Diventa meno efficace ad alta pressione (densità liquido e vapore si avvicinano)."},
+  {q:"Differenza tra pressione di bollo e pressione di esercizio",a:"Pressione di bollo: massima sulla targa, riferimento per valvole e prova idraulica (1,5×). Pressione di esercizio: pressione reale di funzionamento, sempre inferiore alla pressione di bollo per avere margine di sicurezza."},
+  {q:"Economizzatore — funzione e regola del subcooling",a:"Scambiatore che recupera calore dei fumi per preriscaldare l'acqua di alimento. Regola: uscita acqua a T_sat - 5°C minimo (subcooling). Se l'acqua vaporizza dentro i tubi → colpi d'ariete e surriscaldamento parete."},
+  {q:"Il duomo — funzione e perché il vapore prelevato è più secco",a:"Camera a cupola sulla sommità del corpo cilindrico. Il vapore è più secco perché la superficie libera dell'acqua in ebollizione è lontana dall'uscita → le goccioline ricadono prima. La bassa velocità nel duomo favorisce la separazione per gravità."},
+  {q:"Dove si misura la superficie di riscaldamento?",a:"Dal lato lambito dai FUMI. Per tubi: π × D_esterno × lunghezza. Per il focolare Cornovaglia: π × D_focolare × lunghezza focolare. È il parametro dimensionale principale per la classificazione normativa."},
+  {q:"Cos'è una caldaia HRSG (a recupero)?",a:"Heat Recovery Steam Generator — non ha focolare proprio. Recupera il calore dei fumi di altri processi (turbogas, forni, inceneritori). Negli impianti di cogenerazione porta il rendimento complessivo al 55-60%."},
+  {q:"Saldature in caldaia — metodi di controllo non distruttivo",a:"Liquidi penetranti: difetti superficiali. Magnetoscopia: difetti superficiali/sottosuperficiali (ferromagnetici). Ultrasuoni: difetti interni. Radiografia: metodo più preciso per difetti interni, obbligatoria per saldature principali."},
+  {q:"Cos'è il downcomer e il riser in una caldaia B&W?",a:"Downcomer: tubi discendenti non riscaldati, l'acqua densa scende per gravità. Riser: tubi ascendenti riscaldati dai fumi, la miscela acqua-vapore meno densa sale per galleggiamento. Costituiscono la circolazione naturale."},
+  {q:"Valvola di presa vapore — quando è obbligatoria quella automatica?",a:"Tutti i generatori devono avere una valvola di presa. I generatori con P > 6 bar devono avere valvola di presa AUTOMATICA di chiusura a distanza, azionabile dall'esterno del locale caldaia in emergenza."},
+  {q:"Cos'è il preriscaldatore Ljungström?",a:"Preriscaldatore d'aria rotativo con cestello che ruota lentamente (2-6 giri/min). Da un lato si riscalda con i fumi, dall'altro cede calore all'aria comburente. Compatto, alta efficienza. Svantaggio: possibili infiltrazioni fumi-aria alle guarnizioni."},
+];
+
+const QUESTIONS=[
+  {q:"Nelle caldaie a tubi di fumo i gas caldi scorrono:",opts:["All'interno dei tubi, immersi nell'acqua","All'esterno dei tubi che contengono l'acqua","In un circuito separato dall'acqua","Attraverso il drum superiore"],c:0,expl:"Nelle caldaie a tubi di fumo i fumi passano DENTRO i tubi immersi nell'acqua. Nelle caldaie a tubi d'acqua è il contrario: l'acqua scorre dentro i tubi lambiti esternamente dai fumi. Questa è la distinzione costruttiva fondamentale."},
+  {q:"Qual è la pressione massima per le caldaie a tubi di fumo?",opts:["5 bar","15-20 bar","50 bar","100 bar"],c:1,expl:"Le caldaie a tubi di fumo sono limitate a 15-20 bar per ragioni strutturali: i tubi devono resistere alla pressione esterna dell'acqua, e tubi di grande diametro a pareti sottili tendono al collasso oltre questi valori. Le caldaie B&W a tubi d'acqua non hanno questo limite."},
+  {q:"La caldaia Cornovaglia ha un livello minimo di acqua di almeno 8 cm sopra la superficie di riscaldamento perché:",opts:["È un valore arbitrario di normativa","Sotto questo livello il focolare si surriscalda a secco senza raffreddamento","È il livello di attivazione delle valvole di sicurezza","Corrisponde alla posizione degli indicatori di livello"],c:1,expl:"Il focolare della Cornovaglia è la superficie di riscaldamento principale. Se il livello dell'acqua scende sotto 8 cm sopra di esso, il metallo superiore del focolare non è più raffredato dall'acqua e si surriscalda rapidamente fino alla deformazione o rottura."},
+  {q:"La prova idraulica di una caldaia con pressione di bollo 12 bar deve essere eseguita a:",opts:["12 bar","15 bar","18 bar","24 bar"],c:2,expl:"P_prova = 1,5 × P_bollo = 1,5 × 12 = 18 bar. Si usa acqua (non vapore) perché è incomprimibile: in caso di rottura durante la prova l'energia liberata è minima, senza flash evaporation catastrofica."},
+  {q:"Perché le caldaie B&W sono definite 'non esplodenti'?",opts:["Non possono mai rompersi","Il piccolo volume d'acqua per tubo limita l'energia liberabile in caso di rottura","Hanno sistemi di sicurezza automatici più avanzati","Funzionano a bassa pressione"],c:1,expl:"Il piccolo diametro dei tubi (40-90 mm) significa che ogni tubo contiene pochissima acqua. Se un tubo si rompe, la quantità di acqua in pressione che si libera è minima → nessuna flash evaporation catastrofica. Non c'è un'esplosione dell'intero sistema."},
+  {q:"L'economizzatore deve lavorare in subcooling. Questo significa che:",opts:["L'acqua deve entrare fredda nell'economizzatore","L'acqua in uscita dall'economizzatore deve essere a almeno 5°C sotto la T di saturazione alla pressione di caldaia","L'economizzatore raffredda i fumi sotto 100°C","L'acqua non deve mai superare i 50°C nell'economizzatore"],c:1,expl:"Il subcooling garantisce che l'acqua rimanga completamente liquida dentro i tubi dell'economizzatore. Se raggiungesse T_sat, vaporizzerebbe parzialmente → bolle → colpi d'ariete → surriscaldamento locale della parete del tubo."},
+  {q:"Dove si misura la superficie di riscaldamento di una caldaia?",opts:["Dal lato acqua (interno)","Dal lato fumi (esterno dei tubi)","Come media dei due lati","Sulla sezione trasversale"],c:1,expl:"La superficie di riscaldamento si misura DAL LATO LAMBITO DAI FUMI. Per i tubi fumogeni: π × D_esterno × lunghezza. È la superficie che riceve il calore dai fumi e lo trasmette all'acqua. È il parametro normativo per la classificazione della caldaia."},
+  {q:"Il focolare ondulato (Morrison) rispetto a quello liscio offre:",opts:["Minore superficie di scambio ma più resistente","Uguale superficie ma costo inferiore","+10% superficie di scambio, maggiore resistenza al collasso, migliore assorbimento dilatazioni termiche","Solo vantaggi estetici"],c:2,expl:"Il profilo ondulato del focolare Morrison offre tre vantaggi simultanei: +10% di superficie di scambio termico a parità di lunghezza, maggiore resistenza strutturale al collasso per pressione esterna (le ondulazioni irrigidiscono il cilindro), e migliore compensazione delle dilatazioni termiche."},
+  {q:"I turbolatori nei tubi fumogeni aumentano il rendimento perché:",opts:["Riducono il peso della caldaia","Aumentano la turbolenza del flusso migliorando il coefficiente di scambio termico (+20-30%)","Filtrano le impurità dai fumi","Permettono una pulizia più facile"],c:1,expl:"I turbolatori (barre elicoidali in inox) aumentano il numero di Reynolds del flusso, portandolo dal regime laminare (scambio scarso) al regime turbolento (scambio ottimo). Il risultato è un aumento del 20-30% del coefficiente di scambio e una riduzione della T dei fumi al camino."},
+  {q:"La caldaia Babcock & Wilcox fu brevettata nel:",opts:["1842","1867","1901","1923"],c:1,expl:"La caldaia Babcock & Wilcox fu brevettata nel 1867 e rappresentò una rivoluzione: per la prima volta una caldaia 'non esplodente' permetteva di raggiungere alte pressioni in sicurezza grazie ai tubi d'acqua di piccolo diametro."},
+  {q:"Il drum superiore di una caldaia B&W ha la funzione di:",opts:["Alimentare l'acqua alla caldaia","Separare vapore e acqua, accumulare il vapore saturo secco","Raccogliere i fanghi per lo spurgo di fondo","Contenere il surriscaldatore"],c:1,expl:"Il drum superiore (steam drum) riceve la miscela acqua-vapore dai riser, separa le due fasi tramite separatori interni (cicloni o deflettori), accumula il vapore saturo secco per l'utilizzo. Il drum inferiore (mud drum) raccoglie l'acqua e i fanghi per lo spurgo di fondo."},
+  {q:"La circolazione naturale in una caldaia a tubi d'acqua si indebolisce ad alta pressione perché:",opts:["La pompa non riesce a mantenere la portata","La differenza di densità tra acqua e vapore diminuisce al crescere della pressione","Le valvole di sicurezza aprono più spesso","I tubi si deformano per la pressione elevata"],c:1,expl:"La forza motrice della circolazione naturale è Δp = H × g × (ρ_acqua - ρ_vapore). All'aumentare della pressione, la densità del vapore aumenta e quella dell'acqua diminuisce → la differenza si riduce. Al punto critico (221 bar) le densità si equalizzano e la circolazione naturale cessa del tutto."},
+  {q:"Il libretto matricolare di una caldaia deve contenere:",opts:["Solo i dati di targa","Dati tecnici, documentazione costruttiva, verbali collaudi, registro manutenzioni e analisi acque","Solo i verbali delle ultime 3 ispezioni","Solo le analisi dell'acqua degli ultimi 12 mesi"],c:1,expl:"Il libretto matricolare è il 'documento di identità completo' della caldaia: dati tecnici, disegni e calcoli costruttivi, certificati materiali, verbale del primo collaudo INAIL, tutti i verbali delle visite successive, registro delle manutenzioni alle parti in pressione, registro delle analisi acque."},
+  {q:"Cos'è una caldaia HRSG?",opts:["Una caldaia ad alta resistenza strutturale","Una caldaia a recupero che sfrutta il calore dei fumi di altri processi senza bruciare combustibile","Una caldaia a circolazione forzata ad alta velocità","Una caldaia per gas ad alta pressione"],c:1,expl:"HRSG = Heat Recovery Steam Generator. Non ha focolare proprio: recupera il calore sensibile dei fumi di turbogas, forni industriali, inceneritori. Negli impianti di cogenerazione porta il rendimento complessivo al 55-60%, producendo vapore senza consumare combustibile aggiuntivo."},
+  {q:"La valvola di presa automatica di chiusura a distanza è obbligatoria per:",opts:["Tutte le caldaie","Caldaie con P > 6 bar","Caldaie con producibilità > 1 t/h","Solo caldaie con surriscaldatore"],c:1,expl:"I generatori con pressione superiore a 6 bar devono avere una valvola di presa automatica azionabile a distanza, dall'esterno del locale caldaia. In caso di rottura della rete vapore a valle o di emergenza, il conduttore può chiudere la valvola senza entrare nella sala."},
+  {q:"I passi d'uomo nelle caldaie devono avere dimensioni minime di:",opts:["200×300 mm","300×400 mm (elittici) o Ø 400 mm (circolari)","400×500 mm","600×600 mm"],c:1,expl:"I passi d'uomo devono essere abbastanza grandi da permettere a un operatore di accedere all'interno per ispezione e pulizia. Le dimensioni minime di legge sono 300×400 mm per la forma elittica o Ø 400 mm per la forma circolare."},
+  {q:"La produzione specifica di una caldaia si misura in:",opts:["kcal/h","kg vapore / (m² superficie riscaldamento × h)","bar·h","m³ vapore/h"],c:1,expl:"La producibilità specifica PS = W / A_riscaldamento [kg_vap/m²h] è il parametro di confronto tra diversi tipi di caldaie. Cornovaglia: 25-30 kg/m²h. Tre giri di fumo: 30-50 kg/m²h. B&W: 20-100 kg/m²h. Più alto è il valore, più intensamente lavora la superficie di riscaldamento."},
+  {q:"Lo spurgo di fondo di una caldaia serve a:",opts:["Verificare il funzionamento delle valvole di sicurezza","Rimuovere i fanghi e le impurità sedimentate nel drum inferiore","Misurare la qualità del vapore prodotto","Regolare il livello dell'acqua"],c:1,expl:"Lo spurgo di fondo (dal drum inferiore o dal fondo del corpo cilindrico) rimuove i fanghi depositati: cristalli di sali, impurità precipitate, ossidi. Se non rimossi, formano incrostazioni sulle superfici di riscaldamento. Lo spurgo di superficie rimuove invece l'acqua concentrata in superficie."},
+  {q:"Il preriscaldatore d'aria Ljungström funziona:",opts:["Come uno scambiatore statico con tubi a U","Come un cestello rotante che si riscalda con i fumi e cede calore all'aria alternando i settori","Come una pompa di calore","Come un condensatore in controcorrente"],c:1,expl:"Il Ljungström è un preriscaldatore ROTATIVO: un cestello di acciaio ruota lentamente (2-6 giri/min). Una metà si trova nel percorso dei fumi (si riscalda), l'altra metà nel percorso dell'aria (cede il calore). La rotazione continua alterna ciclicamente i due lati."},
+  {q:"Il coefficiente di giuntura η nella formula dello spessore della lamiera è massimo (=1,0) quando:",opts:["La caldaia è nuova","Le saldature sono controllate al 100% con radiografia","Il materiale è acciaio inossidabile","La pressione è inferiore a 6 bar"],c:1,expl:"Il coefficiente di giuntura η riduce la resistenza teorica della lamiera in funzione della qualità delle saldature. η=1,0 (nessuna penalizzazione) solo con controllo radiografico al 100% delle saldature. η=0,85 con controllo parziale. η=0,70 senza controllo. Uno spessore maggiore compensa un η inferiore."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm3');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm3',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

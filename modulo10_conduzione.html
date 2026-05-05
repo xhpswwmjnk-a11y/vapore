@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 10 — Conduzione e Avviamento</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 10</div>
+    <div class="header-title">Conduzione e Avviamento</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. Il conduttore — ruolo e responsabilità</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Turni di conduzione</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. Consegna turno — procedura</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. Prima messa in servizio</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. Avviamento da freddo</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Avviamento da caldo</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. Salita a regime — controlli</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Esercizio normale — sorveglianza</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Controllo del livello in esercizio</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Controllo della pressione</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Analisi fumi durante l'esercizio</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Gestione del carico variabile</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Spurgo in esercizio</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Test dispositivi sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Arresto programmato</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Arresto di emergenza</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Gestione anomalie comuni</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. Livello che scende — cause e rimedi</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Pressione che non sale — cause</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. Vapore umido — cause e rimedi</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. Fumo nero e fumo bianco</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. Priming — riconoscimento e gestione</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Colpo d'ariete — gestione</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Vibrazione e rumori anomali</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. Perdite di vapore e acqua</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Manutenzione ordinaria del conduttore</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Pulizia superfici di scambio</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. Manutenzione bruciatore</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Manutenzione pompe di alimento</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Manutenzione valvole di sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Ispezione interna — preparazione</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Compilazione registro giornaliero</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Gestione impianto multi-caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. Avviamento caldaia di riserva</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. Interconnessione collettori vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Gestione del degasatore</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. Gestione del serbatoio nafta</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. Cambio combustibile (dual fuel)</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. Preriscaldo nafta — procedura</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Gestione del blackout elettrico</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Lettura e interpretazione grafici</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Check-list operativa — riepilogo</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. Il Conduttore — Ruolo e Responsabilità</h3>
+    <p>Il <strong>conduttore di caldaie</strong> è la figura professionale che, in virtù della patente di abilitazione, ha la responsabilità operativa del generatore di vapore durante il suo turno di servizio. Il suo ruolo va molto oltre il semplice controllo degli strumenti — è il garante della sicurezza dell'impianto e delle persone.</p>
+    <p>Responsabilità operative fondamentali:</p>
+    <ul>
+      <li>Mantenere il generatore nelle condizioni operative sicure e conformi alle specifiche di progetto</li>
+      <li>Controllare continuamente i parametri di esercizio (P, T, livello, analisi fumi)</li>
+      <li>Eseguire e registrare le analisi dell'acqua e i test dei dispositivi di sicurezza</li>
+      <li>Identificare precocemente le anomalie e intervenire o segnalare tempestivamente</li>
+      <li>Tenere aggiornato il registro giornaliero</li>
+      <li>Non abbandonare il posto di conduzione senza un sostituto patentato</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Principio fondamentale</div>
+      <p>Il conduttore <strong>non esegue ordini ciecamente</strong>: se riceve disposizioni che contrastano con la sicurezza dell'impianto, ha il dovere professionale e legale di rifiutarle e di segnalare la situazione. La sua responsabilità penale è personale e non si trasferisce al superiore che ha impartito l'ordine.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Turni di Conduzione</h3>
+    <p>I generatori di vapore soggetti all'obbligo di conduzione (non esonerati dagli Art. 39 o 43) devono avere un conduttore patentato presente per tutta la durata del funzionamento. Questo implica l'organizzazione in turni continui.</p>
+    <p>Organizzazione tipica dei turni:</p>
+    <ul>
+      <li><strong>Turno unico (8-12 ore)</strong>: per impianti che funzionano solo di giorno o in orari limitati. Il conduttore arriva prima dell'avviamento e parte dopo l'arresto.</li>
+      <li><strong>Tre turni da 8 ore</strong>: per impianti H24. Cambio turno tipicamente a 06:00, 14:00, 22:00. Ogni turno ha il suo conduttore patentato.</li>
+      <li><strong>Due turni da 12 ore</strong>: alternativa diffusa. Cambio a 06:00 e 18:00.</li>
+    </ul>
+    <p>Durante il cambio turno, il conduttore entrante <strong>non deve assumere la conduzione</strong> finché non ha ricevuto e verificato personalmente le informazioni dalla consegna. Il conduttore uscente rimane responsabile fino alla firma di consegna turno.</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Consegna Turno — Procedura</h3>
+    <p>La <strong>consegna del turno</strong> è il momento più critico nella gestione di un impianto: è quando le informazioni sui problemi in corso possono non essere trasmesse correttamente. Una procedura rigida è essenziale.</p>
+    <p>Procedura di consegna turno:</p>
+    <ul>
+      <li><strong>Verifica fisica congiunta</strong>: il conduttore entrante gira fisicamente con quello uscente ispezionando la caldaia, non riceve solo informazioni verbali</li>
+      <li><strong>Lettura degli strumenti</strong>: pressione attuale, livello, T vapore, T fumi, parametri del bruciatore</li>
+      <li><strong>Stato dei dispositivi</strong>: eventuali dispositivi fuori servizio, by-passati, in manutenzione</li>
+      <li><strong>Anomalie in corso</strong>: ogni scostamento dai valori normali, anche minimo, deve essere comunicato</li>
+      <li><strong>Interventi eseguiti nel turno</strong>: manutenzioni, regolazioni, spurghi effettuati</li>
+      <li><strong>Lavori di ditte esterne</strong>: attività in corso o programmate</li>
+      <li><strong>Firma sul registro</strong>: il conduttore entrante firma accettando la conduzione. Da quel momento è responsabile.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Prima Messa in Servizio</h3>
+    <p>La <strong>prima messa in servizio</strong> di un generatore nuovo o di uno sottoposto a riparazione significativa richiede procedure più articolate rispetto al normale avviamento. Prima dell'accensione:</p>
+    <ul>
+      <li>Verifica che tutte le documentazioni siano complete e disponibili (libretto, verbale INAIL, DoC CE)</li>
+      <li>Ispezione interna con accesso dal passo d'uomo: verificare assenza di corpi estranei, utensili, stracci rimasti durante la costruzione/riparazione</li>
+      <li>Verifica della pulizia di tutti i circuiti (vapore, acqua, combustibile, fumi)</li>
+      <li>Verifica del corretto montaggio e funzionamento di tutti i dispositivi di sicurezza</li>
+      <li>Riempimento con acqua trattata fino al livello minimo</li>
+      <li><strong>Prova idraulica a freddo</strong> se richiesta (nuovi generatori o riparazioni parti in pressione)</li>
+      <li>Avviamento lento con controllo di ogni parametro durante la salita a regime</li>
+    </ul>
+    <p>I <strong>cicli di preavviamento</strong> per caldaie nuove prevedono tipicamente 3-5 cicli di riscaldamento progressivo fino al 25%, 50%, 75% della pressione di bollo, con raffreddamento intermedio, per assestare le giunture e rilevare eventuali perdite.</p>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. Avviamento da Freddo</h3>
+    <p>L'<strong>avviamento da freddo</strong> parte con la caldaia alla temperatura ambiente e a pressione zero. È la procedura più lunga e delicata perché tutti i componenti devono scaldarsi gradualmente per evitare stress termici.</p>
+    <p>Sequenza operativa completa:</p>
+    <ul>
+      <li><strong>Verifica pre-avviamento</strong>: chiusura di tutti i drenaggi e sfiati, passi d'uomo chiusi, strumentazione allineata</li>
+      <li><strong>Apertura sfiati</strong>: gli sfiati del corpo cilindrico devono essere aperti durante il riempimento per eliminare l'aria intrappolata</li>
+      <li><strong>Riempimento acqua</strong>: fino al livello minimo di accensione con acqua trattata (addolcita o demineralizzata)</li>
+      <li><strong>Verifica dispositivi sicurezza</strong>: PSHH, LSHH, manometri, indicatori di livello tutti operativi</li>
+      <li><strong>Purga camera combustione</strong>: ventilatore al 30% per ≥30 secondi. Obbligatoria</li>
+      <li><strong>Accensione con fiamma pilota</strong>: la fotocellula deve rilevare la fiamma entro 3-5 secondi</li>
+      <li><strong>Riscaldamento progressivo</strong>: potenza al minimo. Non forzare la salita di pressione</li>
+      <li><strong>Chiusura sfiati</strong>: quando esce vapore continuo dagli sfiati, l'aria è eliminata → chiudere</li>
+      <li><strong>Salita a regime</strong>: progressiva, monitorando livello (swell) e pressione</li>
+    </ul>
+    <p>Tempo tipico da freddo a regime: Cornovaglia 2-3 ore. B&W 20-40 min. Il riscaldamento troppo rapido causa tensioni termiche nelle giunture e nei tubi.</p>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Avviamento da Caldo</h3>
+    <p>L'<strong>avviamento da caldo</strong> si esegue quando la caldaia è stata ferma per breve tempo (ore) ed è ancora calda (P>0, T>100°C). È più rapido del freddo ma richiede controlli specifici.</p>
+    <p>Differenze rispetto all'avviamento da freddo:</p>
+    <ul>
+      <li>Il livello dell'acqua è influenzato dalla contrazione durante il raffreddamento: verificare e integrare se necessario</li>
+      <li>La pressione residua può essere ancora significativa: verificare che i dispositivi di sicurezza siano operativi prima di aumentare ulteriormente la pressione</li>
+      <li>La camera di combustione è già calda: la purga è comunque obbligatoria (gas potrebbero essersi accumulati)</li>
+      <li>La salita a regime è più rapida: monitorare attentamente il fenomeno dello <strong>swell</strong></li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Fenomeno Swell — Attenzione</div>
+      <p>Quando si accende il bruciatore dopo un fermo breve, la pressione scende momentaneamente (il bruciatore è spento → condensazione vapore → P↓) e il livello dell'acqua sale per la formazione di bolle nella massa d'acqua riscaldata. Il livello apparente sale prima di scendere. Il conduttore non deve aggiungere acqua in questa fase — il livello è solo apparente.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Salita a Regime — Controlli</h3>
+    <p>Durante la <strong>salita a regime</strong>, cioè durante il riscaldamento da freddo fino alla pressione di esercizio, il conduttore deve monitorare con continuità:</p>
+    <ul>
+      <li><strong>Livello acqua</strong>: tende a calare durante la vaporizzazione. Integrare con la pompa di alimento mantenendo il livello nel range operativo. Attenzione allo swell iniziale</li>
+      <li><strong>Pressione</strong>: salita deve essere graduale. Non aumentare la potenza del bruciatore troppo rapidamente</li>
+      <li><strong>Temperatura fumi</strong>: verifica che il bruciatore stia lavorando correttamente</li>
+      <li><strong>Perdite</strong>: durante la salita di temperatura le dilatazioni possono evidenziare perdite da flangie o giunti che a freddo non erano visibili. Fermarsi e riparare se significative</li>
+      <li><strong>Rumore</strong>: rumori di dilatazione (clic, schiocchi) sono normali. Rumori metallici intensi o vibrazioni sono segnali di allarme</li>
+      <li><strong>Bruciatore</strong>: fiamma stabile, nessun fumo nero, nessun tentativo di spegnimento</li>
+    </ul>
+    <p>Quando si raggiunge la <strong>pressione di esercizio normale</strong>: ridurre la potenza del bruciatore alla modalità di regolazione automatica. Verificare l'intervento corretto del pressostato di regolazione.</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Esercizio Normale — Sorveglianza Continua</h3>
+    <p>Durante il normale esercizio, il conduttore deve effettuare <strong>rondes periodiche</strong> (giri di ispezione) dell'impianto con frequenza stabilita dalle procedure aziendali (tipicamente ogni 30-60 minuti).</p>
+    <p>Parametri da controllare ad ogni ronda:</p>
+    <ul>
+      <li><strong>Livello acqua</strong>: deve essere nel range operativo normale (circa a metà dell'indicatore)</li>
+      <li><strong>Pressione</strong>: deve corrispondere alla pressione di esercizio nominale ±5%</li>
+      <li><strong>Temperatura vapore</strong>: se presente surriscaldatore</li>
+      <li><strong>Temperatura fumi al camino</strong>: non deve discostarsi dai valori normali di riferimento (aumento = sporcamento superfici)</li>
+      <li><strong>Bruciatore</strong>: fiamma visibile dall'oblò, nessun fumo anomalo, nessun odore di gas o nafta non bruciata</li>
+      <li><strong>Pompe di alimento</strong>: manometri di aspirazione e mandata nei valori normali, nessuna vibrazione anomala</li>
+      <li><strong>Tenute e giunti</strong>: nessuna perdita visibile di vapore o acqua</li>
+      <li><strong>Rumori</strong>: nessun rumore anomalo rispetto al normale funzionamento</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Controllo del Livello in Esercizio</h3>
+    <p>Il controllo del livello è la verifica più importante durante l'esercizio normale. Il livello deve rimanere entro i limiti operativi:</p>
+    <ul>
+      <li><strong>Livello troppo basso</strong>: rischio surriscaldamento a secco delle superfici riscaldanti → deformazione → rottura catastrofica</li>
+      <li><strong>Livello troppo alto</strong>: il vapore trascina goccioline di acqua (priming) → vapore umido → colpi d'ariete nelle utenze → depositi di sali negli scambiatori</li>
+    </ul>
+    <p>Procedura di verifica livello:</p>
+    <ul>
+      <li>Leggere il livello sull'indicatore principale. Se il livello non è visibile o sembra fermo: aprire il rubinetto di prova superiore (deve uscire vapore) e inferiore (deve uscire acqua) per escludere ostruzioni nell'indicatore</li>
+      <li>Confrontare le letture di due indicatori di livello diversi: devono essere concordanti</li>
+      <li>Verificare che la pompa di alimento stia lavorando correttamente (manometro di mandata nella norma)</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Swal — Il fenomeno più insidioso</div>
+      <p>Durante un aumento brusco del carico vapore, il livello apparente SALE perché le bolle aumentano in numero e dimensione nell'acqua subcooled. Il conduttore inesperto potrebbe ridurre l'alimentazione pensando che il livello sia troppo alto — ma in realtà il livello REALE sta scendendo. I moderni sistemi a tre elementi (livello + portata vapore + portata alimento) compensano automaticamente questo fenomeno.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Controllo della Pressione</h3>
+    <p>La pressione deve essere mantenuta entro i limiti operativi. Il conduttore deve comprendere il comportamento normale della pressione per distinguerlo dalle anomalie:</p>
+    <p><strong>Comportamento normale della pressione:</strong></p>
+    <ul>
+      <li>Con bruciatore a piena potenza e basso prelievo vapore: pressione sale → il pressostato spegne il bruciatore</li>
+      <li>Con bruciatore spento e prelievo vapore normale: pressione scende → il pressostato riaccende il bruciatore</li>
+      <li>Con bruciatore modulante: la pressione oscilla in un range ristretto (±0,5 bar tipicamente)</li>
+    </ul>
+    <p><strong>Pressione anomalamente bassa:</strong> possibili cause: prelievo vapore eccessivo rispetto alla producibilità, bruciatore non funzionante, perdita di vapore significativa, combustibile esaurito.</p>
+    <p><strong>Pressione che sale oltre il normale:</strong> possibili cause: prelievo vapore cessato improvvisamente (utenza chiusa), bruciatore bloccato in posizione di massima potenza, pressostato di regolazione guasto.</p>
+    <p>Se la pressione supera la pressione di regolazione senza che il bruciatore si spenga: agire manualmente per spegnere il bruciatore e chiamare la manutenzione.</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Analisi Fumi Durante l'Esercizio</h3>
+    <p>Le analisi dei fumi sono uno strumento diagnostico fondamentale per il conduttore. Devono essere eseguite periodicamente e ogni volta che si sospetta un problema di combustione.</p>
+    <p>Frequenza minima consigliata:</p>
+    <ul>
+      <li>Dopo ogni avviamento: verificare che la combustione sia ottimale prima di lasciare l'impianto in regime automatico</li>
+      <li>Una volta per turno durante il normale esercizio</li>
+      <li>Dopo ogni cambio di combustibile</li>
+      <li>Dopo la manutenzione del bruciatore</li>
+      <li>Quando si rileva un aumento della T_fumi al camino (possibile sporcamento)</li>
+    </ul>
+    <p>Interpretazione rapida dei risultati:</p>
+    <ul>
+      <li>CO₂% bassa + O₂% alta → eccesso d'aria eccessivo → regolare il bruciatore</li>
+      <li>CO₂% bassa + O₂% bassa + CO >100 ppm → combustione incompleta → aumentare aria</li>
+      <li>T_fumi alta + CO₂% normale → superfici sporcate (fuliggine o calcare) → programmma pulizia</li>
+      <li>CO >300 ppm → bloccare il bruciatore e intervenire → rischio intossicazione personale</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Gestione del Carico Variabile</h3>
+    <p>Nella maggior parte degli impianti industriali il prelievo di vapore non è costante: varia con i turni produttivi, l'avviamento delle macchine, i picchi di processo. Il conduttore deve anticipare e gestire queste variazioni.</p>
+    <p>Strategie di gestione:</p>
+    <ul>
+      <li><strong>Conoscere il profilo di carico</strong>: l'esperienza permette di anticipare i picchi di prelievo (avvio turno produzione, ore di punta processo) e prepararsi aumentando gradualmente la pressione prima del picco</li>
+      <li><strong>Mantenere una riserva di pressione</strong>: operare normalmente a 85-90% della pressione di bollo lascia un margine per assorbire i picchi senza che la valvola di sicurezza intervenga</li>
+      <li><strong>Coordinare con la produzione</strong>: comunicare quando si prevedono limitazioni nella produzione di vapore (manutenzioni, pulizia bruciatore) per permettere alla produzione di adeguarsi</li>
+      <li><strong>Gestire il livello durante i picchi</strong>: durante un picco di vapore, il livello scende rapidamente → pompare acqua anticipatamente, non aspettare l'allarme basso livello</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Spurgo in Esercizio</h3>
+    <p>Lo spurgo è una delle operazioni di manutenzione quotidiana più importanti del conduttore. Deve essere eseguito regolarmente e registrato.</p>
+    <p><strong>Spurgo di fondo:</strong></p>
+    <ul>
+      <li>Frequenza: 1-2 volte al giorno (più frequente con TDS alto)</li>
+      <li>Procedura: aprire la valvola di spurgo di fondo per 15-30 secondi. L'acqua e i fanghi escono sotto pressione</li>
+      <li>Attenzione: l'acqua di spurgo è alla T di saturazione (es. 184°C a 10 bar) → convogliare in modo sicuro, mai vicino al personale</li>
+      <li>Dopo lo spurgo: verificare che la valvola sia completamente chiusa (nessun gocciolamento residuo)</li>
+    </ul>
+    <p><strong>Spurgo di superficie:</strong></p>
+    <ul>
+      <li>Frequenza: dipende dalla conducibilità dell'acqua di caldaia</li>
+      <li>Procedura: aprire lentamente la valvola di spurgo di superficie per abbassare la conducibilità al di sotto del limite</li>
+      <li>Monitorare la conducibilità in caldaia: se supera il limite → aumentare la frequenza degli spurghi</li>
+    </ul>
+    <p>Ogni spurgo deve essere registrato nel registro giornaliero con ora e durata.</p>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Test dei Dispositivi di Sicurezza</h3>
+    <p>I dispositivi di sicurezza devono essere testati periodicamente per verificarne il corretto funzionamento. Il conduttore è responsabile dei test di routine e della loro registrazione.</p>
+    <p><strong>Test valvole di sicurezza</strong> (settimanale/mensile):</p>
+    <ul>
+      <li>Aprire manualmente la leva di prova quando la caldaia è in pressione (non a freddo)</li>
+      <li>La valvola deve aprirsi agevolmente scaricando vapore, poi richiudersi perfettamente quando si rilascia la leva</li>
+      <li>Una valvola che non apre: corrosione, incrostazioni → sostituire subito</li>
+      <li>Una valvola che non richiude: potrebbe essersi danneggiata la sede → sostituire</li>
+    </ul>
+    <p><strong>Test pressostato di sicurezza PSHH</strong> (mensile):</p>
+    <ul>
+      <li>Simulare l'intervento aumentando la pressione al di sopra del set-point (con le utenze aperte) oppure usando il tasto di test se presente</li>
+      <li>Verificare che il bruciatore si spenga. Verificare il riarmo manuale obbligatorio</li>
+    </ul>
+    <p><strong>Test livellostato LSHH</strong> (mensile):</p>
+    <ul>
+      <li>Abbassare il livello controllato fino all'intervento del LSHH (con bruciatore a bassa potenza e prelievo aperto)</li>
+      <li>Verificare che il bruciatore si spenga. Riarmo manuale. Ripristinare il livello</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Arresto Programmato</h3>
+    <p>L'<strong>arresto programmato</strong> (o arresto normale) è la procedura di spegnimento pianificata della caldaia per manutenzione, weekend, o fine campagna produttiva.</p>
+    <p>Sequenza di arresto:</p>
+    <ul>
+      <li>Avvisare la produzione dell'imminente interruzione della fornitura vapore</li>
+      <li>Ridurre progressivamente il carico del bruciatore</li>
+      <li>Chiudere la valvola di presa vapore principale</li>
+      <li>Spegnere il bruciatore</li>
+      <li>Lasciar girare il ventilatore (post-purga) per smaltire i fumi residui in camera (almeno 30 secondi)</li>
+      <li>Mantenere attiva la pompa di alimento per compensare la contrazione del livello durante il raffreddamento</li>
+      <li>Aprire lentamente lo sfiato per rilasciare la pressione residua in modo controllato (non aprire valvole di sicurezza manualmente per questo scopo)</li>
+      <li>Solo quando P=0 e T sicura: drenare se necessario, aprire i passi d'uomo</li>
+    </ul>
+    <p>Per un <strong>fermo superiore a 1-2 settimane</strong>: applicare la procedura di conservazione (umida o secca) per prevenire la corrosione interna.</p>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Arresto di Emergenza</h3>
+    <p>L'<strong>arresto di emergenza</strong> è richiesto quando si verificano condizioni di pericolo imminente che non consentono la normale procedura di arresto. Deve essere eseguito rapidamente e senza esitazione.</p>
+    <p>Condizioni che richiedono arresto di emergenza immediato:</p>
+    <ul>
+      <li>Livello non visibile negli indicatori (possibile perdita di acqua grave)</li>
+      <li>Pressione che continua a salire oltre il PSHH senza che il bruciatore si spenga</li>
+      <li>Rottura di un tubo fumogeno o del corpo cilindrico (fuga di vapore grave)</li>
+      <li>Incendio in sala caldaia</li>
+      <li>Allarme CO che persiste dopo ventilazione</li>
+      <li>Perdita di gas nel locale non controllabile</li>
+    </ul>
+    <p>Sequenza di arresto di emergenza:</p>
+    <ul>
+      <li><strong>1. SPEGNERE IL BRUCIATORE</strong> (priorità assoluta)</li>
+      <li><strong>2. Chiudere la valvola di presa vapore principale</strong></li>
+      <li><strong>3. Chiudere l'alimentazione di combustibile</strong></li>
+      <li><strong>4. Evacuare il personale</strong> se necessario</li>
+      <li><strong>5. Chiamare i soccorsi</strong> se necessario (115, 118)</li>
+      <li><strong>6. NON abbandonare l'impianto</strong> senza qualcuno che lo sorvegli dall'esterno</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Gestione delle Anomalie Comuni</h3>
+    <p>Il conduttore esperto riconosce le anomalie dai segnali precoci e interviene prima che diventino emergenze. Le più comuni:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Anomalia</th><th>Segnali precoci</th><th>Azione immediata</th></tr>
+      <tr><td>Sporcamento superfici</td><td>T_fumi sale gradualmente (+10°C/settimana)</td><td>Programmare pulizia; analisi fumi per conferma</td></tr>
+      <tr><td>Bruciatore mal regolato</td><td>CO>100 ppm, O₂ fuori range</td><td>Taratura bruciatore; chiamare tecnico</td></tr>
+      <tr><td>Scaricatore condensa guasto</td><td>Rumori, colpi d'ariete, vapore nelle condense</td><td>Ispezione ultrasuoni; sostituzione</td></tr>
+      <tr><td>Pompa di alimento degradata</td><td>Pressione mandata instabile, rumore anormale</td><td>Passare alla pompa di riserva; manutenzione</td></tr>
+      <tr><td>Incrostazioni in formazione</td><td>Indice vaporizzazione scende; T_fumi sale</td><td>Intensificare spurgo; analisi acque; decapaggio</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. Livello che Scende — Cause e Rimedi</h3>
+    <p>Un livello che scende durante il normale esercizio è una delle anomalie più comuni e potenzialmente più pericolose. Il conduttore deve identificare rapidamente la causa:</p>
+    <ul>
+      <li><strong>Prelievo vapore superiore alla produzione</strong>: il vapore prodotto non è sufficiente per le utenze. Rimedio: aumentare la potenza del bruciatore o limitare il prelievo</li>
+      <li><strong>Pompa di alimento ferma o inefficiente</strong>: la portata di reintegro è insufficiente. Rimedio: passare alla pompa di riserva, verificare le valvole di aspirazione e mandata</li>
+      <li><strong>Perdita d'acqua dalla caldaia</strong>: rottura di un tubo, perdita da flangia o passo d'uomo. Rimedio: localizzare la perdita, valutare l'arresto di emergenza</li>
+      <li><strong>Valvola di spurgo rimasta aperta</strong>: controllo errore. Rimedio: verificare e chiudere le valvole di spurgo</li>
+      <li><strong>Valvola di non ritorno della pompa guasta</strong>: il vapore rifluisce verso la pompa. Rimedio: passare alla pompa di riserva, manutenzione</li>
+    </ul>
+    <p>Se il livello scende sotto il minimo: interviene il LSHH → blocco bruciatore. Procedura: NON alimentare immediatamente acqua fredda su caldaia calda. Attendere raffreddamento parziale. Poi alimentare gradualmente.</p>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Pressione che Non Sale — Cause</h3>
+    <p>Se la caldaia non raggiunge la pressione di esercizio nominale o la pressione scende durante l'esercizio, le cause possibili sono:</p>
+    <ul>
+      <li><strong>Prelievo vapore eccessivo</strong>: le utenze richiedono più vapore di quanto la caldaia produca alla potenza attuale. Rimedio: aumentare potenza bruciatore o limitare prelievo</li>
+      <li><strong>Bruciatore a potenza ridotta</strong>: il bruciatore non sta lavorando al massimo necessario. Verificare il set-point del pressostato di regolazione, verificare la pressione combustibile</li>
+      <li><strong>Perdite di vapore dalla rete</strong>: vapore disperso in atmosfera da perdite. Rimedio: individuare e riparare le perdite</li>
+      <li><strong>Valvola di presa vapore parzialmente aperta</strong>: verifica. Rimedio: aprire completamente</li>
+      <li><strong>Problema al combustibile</strong>: pressione gas bassa, filtro nafta intasato, nafta a temperatura sbagliata (viscosità alta). Verificare tutta la catena di alimentazione combustibile</li>
+      <li><strong>Valvola di sicurezza che perde</strong>: scarica continuamente vapore abbassando la pressione. Rimedio: sostituzione valvola</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Vapore Umido — Cause e Rimedi</h3>
+    <p>Il <strong>vapore umido</strong> (titolo X &lt;1) contiene goccioline d'acqua che danneggiano le utenze a valle e le turbine. Il conduttore deve riconoscere i segnali:</p>
+    <p><strong>Segnali di vapore umido:</strong></p>
+    <ul>
+      <li>Colpi d'ariete nelle tubazioni di distribuzione</li>
+      <li>Aumento della condensa nelle utenze (scaricatori di condensa che scaricano continuamente)</li>
+      <li>Depositi bianchi sulle palette delle turbine (sali disciolti portati dalle goccioline)</li>
+      <li>Livello dell'acqua in caldaia che scende più rapidamente del normale (l'acqua esce con il vapore)</li>
+    </ul>
+    <p><strong>Cause del vapore umido:</strong></p>
+    <ul>
+      <li>Livello acqua troppo alto: poco spazio per la separazione vapore/acqua</li>
+      <li>TDS elevato nell'acqua di caldaia: abbassa la tensione superficiale favorendo il priming</li>
+      <li>Aumento brusco del prelievo vapore: la pressione scende rapidamente, l'ebollizione si intensifica</li>
+      <li>Priming: condizioni di schiuma nell'acqua di caldaia</li>
+    </ul>
+    <p><strong>Rimedi:</strong> ridurre il livello (spurgo di superficie), eseguire spurgo per abbassare TDS, ridurre temporaneamente il carico bruciatore, identificare e correggere la causa del priming.</p>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Fumo Nero e Fumo Bianco</h3>
+    <p>Il colore del fumo al camino è un indicatore immediato della qualità della combustione:</p>
+    <p><strong>Fumo nero:</strong></p>
+    <ul>
+      <li>Causa: combustione incompleta — incombusti solidi (fuliggine) nei fumi. Carbonio non bruciato.</li>
+      <li>Indica: eccesso d'aria insufficiente, atomizzazione scadente (nafta viscosa o ugelli intasati), temperatura focolare bassa, miscelazione aria-combustibile scarsa</li>
+      <li>Azione: aumentare l'aria (aprire il registro aria), verificare la viscosità della nafta e il preriscaldo, pulire gli ugelli del bruciatore</li>
+    </ul>
+    <p><strong>Fumo bianco:</strong></p>
+    <ul>
+      <li>All'avviamento a freddo: normale. È vapore acqueo condensato che si forma quando i fumi caldi incontrano l'aria fredda esterna</li>
+      <li>Durante l'esercizio normale: se il fumo bianco è denso e persistente può indicare eccesso d'aria molto alto che abbassa la T dei fumi sotto il punto di rugiada</li>
+      <li>Con odore di gas: segnale di combustione incompleta di idrocarburi → intervento immediato</li>
+    </ul>
+    <p><strong>Fumo grigio-giallastro:</strong> indica eccesso d'aria molto alto, T fiamma bassa, scarso rendimento. Regolare il bruciatore.</p>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Priming — Riconoscimento e Gestione</h3>
+    <p>Il <strong>priming</strong> (trascinamento) è il fenomeno per cui l'acqua di caldaia viene trascinata nel vapore sotto forma di goccioline. Il conduttore deve riconoscerlo rapidamente per intervenire prima che danneggi le utenze.</p>
+    <p><strong>Segnali di priming in atto:</strong></p>
+    <ul>
+      <li>Pressione in caldaia instabile (oscillazioni rapide)</li>
+      <li>Livello dell'acqua che oscilla violentemente nell'indicatore</li>
+      <li>Colpi d'ariete nelle tubazioni principali di distribuzione</li>
+      <li>Rumore caratteristico di "gorgoglio" nella valvola di presa vapore</li>
+      <li>Presenza di acqua (condensazione eccessiva) nelle linee vapore lontane dalla caldaia</li>
+    </ul>
+    <p><strong>Procedura di intervento durante priming:</strong></p>
+    <ul>
+      <li>Ridurre immediatamente il carico del bruciatore</li>
+      <li>Eseguire spurgo di superficie per abbassare il TDS</li>
+      <li>Ridurre il livello acqua se è troppo alto</li>
+      <li>Verificare la conducibilità dell'acqua di caldaia e intensificare il trattamento chimico se necessario</li>
+      <li>Non aumentare il prelievo vapore finché il priming non è cessato</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Colpo d'Ariete — Gestione</h3>
+    <p>Il <strong>colpo d'ariete</strong> è uno degli eventi più dannosi per le tubazioni. Se si verifica durante il servizio normale, il conduttore deve intervenire subito:</p>
+    <p><strong>Azione immediata:</strong></p>
+    <ul>
+      <li>Ridurre la produzione di vapore (ridurre il bruciatore)</li>
+      <li>Verificare che tutti gli scaricatori di condensa stiano funzionando: aprire i drenaggi manuali lungo la tubazione per svuotare le sacche di condensa</li>
+      <li>Se il colpo d'ariete persiste: chiudere lentamente la valvola di presa vapore, attendere che le tubazioni si svuotino dalla condensa, poi riaprire lentamente</li>
+    </ul>
+    <p><strong>Prevenzione:</strong></p>
+    <ul>
+      <li>Aprire sempre le valvole sulle linee vapore LENTAMENTE: l'apertura brusca porta vapore ad alta velocità su sacche di condensa fredda</li>
+      <li>Prima di aprire una linea vapore fredda o rimasta ferma: aprire i drenaggi e attendere che la condensa defluisca prima di introdurre il vapore</li>
+      <li>Verificare periodicamente il funzionamento di tutti gli scaricatori di condensa</li>
+      <li>Verificare che le tubazioni abbiano la pendenza corretta verso gli scaricatori (almeno 1%)</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Vibrazione e Rumori Anomali</h3>
+    <p>Vibrazioni e rumori sono spesso i primi segnali di un guasto in formazione. Il conduttore deve imparare a distinguere i rumori normali da quelli anomali per la sua specifica caldaia:</p>
+    <p><strong>Rumori normali:</strong></p>
+    <ul>
+      <li>Clic e scricchiolii durante il riscaldamento: dilatazione termica dei componenti metallici</li>
+      <li>Gorgoglio nell'ebollizione: normale</li>
+      <li>Rumore regolare delle pompe centrifughe</li>
+    </ul>
+    <p><strong>Rumori anomali:</strong></p>
+    <ul>
+      <li><strong>Colpi metallici intermittenti</strong>: probabile colpo d'ariete nelle tubazioni. Verificare scaricatori e condensa</li>
+      <li><strong>Fischio acuto</strong>: perdita di vapore da piccolo foro (valvola, flangia). Localizzare e riparare</li>
+      <li><strong>Vibrazione della pompa con rumore di ghiaia</strong>: cavitazione nella pompa. Verificare NPSH, T acqua aspirata, valvole di aspirazione</li>
+      <li><strong>Rumore di bolle esplosive in caldaia</strong>: possibile film di vapore sulle superfici per incrostazioni o eccessivo deposito. Verificare qualità acqua</li>
+      <li><strong>Vibrazione strutturale intensa</strong>: problema al bruciatore (instabilità di fiamma) o ai ventilatori (sbilanciamento). Fermare e verificare</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Perdite di Vapore e Acqua</h3>
+    <p>Le perdite di vapore e acqua devono essere localizzate e riparate tempestivamente. Oltre alla perdita economica, possono compromettere la sicurezza.</p>
+    <p><strong>Come localizzare una perdita di vapore:</strong></p>
+    <ul>
+      <li>Le perdite di vapore surriscaldato sono invisibili ma producono un fischio e possono essere localizzate con un panno bagnato (il vapore lo asciuga) o con ultrasuoni</li>
+      <li>Le perdite di vapore saturo sono visibili come nuvola bianca dopo un breve tratto di distanza dalla perdita (il vapore condensa nell'aria più fredda)</li>
+      <li>Usare uno specchio per verificare aree non direttamente accessibili in sicurezza</li>
+      <li>MAI avvicinarsi a una perdita di vapore a mani nude — il getto può causare ustioni gravissime anche a distanza</li>
+    </ul>
+    <p><strong>Criteri per decidere se fermare la caldaia:</strong></p>
+    <ul>
+      <li>Perdita che causa calo di pressione non compensabile: fermare</li>
+      <li>Perdita che rischia di colpire il personale: fermare immediatamente</li>
+      <li>Perdita da parte in pressione (corpo cilindrico, tubi): fermare e attendere INAIL</li>
+      <li>Piccola perdita da flangia di accessori: può essere monitorata fino alla manutenzione programmata se non aumenta</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Manutenzione Ordinaria del Conduttore</h3>
+    <p>Alcune attività di manutenzione sono di competenza diretta del conduttore nel normale esercizio quotidiano (a differenza delle manutenzioni straordinarie affidate a tecnici specializzati):</p>
+    <div class="table-wrap"><table>
+      <tr><th>Attività</th><th>Frequenza</th><th>Note</th></tr>
+      <tr><td>Spurghi di fondo e superficie</td><td>1-2 volte/giorno</td><td>Registrare sul log</td></tr>
+      <tr><td>Analisi acque (pH, conducibilità, durezza)</td><td>Giornaliera</td><td>Annotare e confrontare con i limiti</td></tr>
+      <tr><td>Test valvole di sicurezza</td><td>Settimanale/mensile</td><td>Con caldaia in pressione</td></tr>
+      <tr><td>Analisi fumi</td><td>Ogni turno / giornaliera</td><td>Con analizzatore portatile</td></tr>
+      <tr><td>Verifica rubinetti di prova livello</td><td>Ogni turno</td><td>Verificare che non siano intasati</td></tr>
+      <tr><td>Pulizia ottica fotocellula UV</td><td>Settimanale</td><td>Con caldaia spenta e fredda</td></tr>
+      <tr><td>Controllo filtri nafta</td><td>Mensile</td><td>Pulizia o sostituzione se intasati</td></tr>
+      <tr><td>Lubrificazione pompe</td><td>Secondo manuale costruttore</td><td>Solo se richiesto dal costruttore</td></tr>
+    </table></div>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Pulizia delle Superfici di Scambio</h3>
+    <p>La pulizia periodica delle superfici di scambio termico è fondamentale per mantenere il rendimento. Esistono due lati da pulire:</p>
+    <p><strong>Lato fumi (fuliggine):</strong></p>
+    <ul>
+      <li><strong>Spazzolatura meccanica</strong>: barre metalliche circolari o spazzole elicoidali inserite nei tubi fumogeni. Si effettua con la caldaia ferma e raffreddata. Richiede lo smontaggio delle portine di accesso</li>
+      <li><strong>Soot blower</strong>: nelle grandi caldaie, lance con vapore ad alta velocità che soffiano i depositi durante il funzionamento. Non richiede fermata</li>
+      <li><strong>Lavaggio ad acqua</strong>: più efficace della spazzolatura. La fuliggine bagnata cola a pezzi. Richiede essiccazione completa prima dell'avviamento</li>
+    </ul>
+    <p><strong>Lato acqua (calcare/incrostazioni):</strong></p>
+    <ul>
+      <li><strong>Decapaggio chimico</strong>: HCl 3-5% + inibitore di corrosione in circolazione per 4-8 ore. Seguito da risciacquo e passivazione. Da ditte specializzate</li>
+      <li><strong>Pulizia meccanica</strong>: con raschiatori o spazzole metalliche sui tubi accessibili dalla caldaia aperta. Per incrostazioni molto dure</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Manutenzione del Bruciatore</h3>
+    <p>Il bruciatore è il componente che richiede la manutenzione più frequente. Molte operazioni di manutenzione di base possono essere eseguite dal conduttore durante i fermi programmati:</p>
+    <p><strong>Ispezione visiva della testa bruciatore:</strong></p>
+    <ul>
+      <li>Verificare lo stato degli ugelli: non devono essere ostruiti, deformati o consumati</li>
+      <li>Verificare lo stato dell'elettrodo di accensione: la punta deve essere integra, la distanza con la testa corretta (secondo il manuale)</li>
+      <li>Verificare lo stato della fotocellula UV: deve essere pulita e non presentare incrinature</li>
+      <li>Verificare le guarnizioni della testa bruciatore: nessuna perdita di gas o nafta</li>
+    </ul>
+    <p><strong>Pulizia ugelli nafta:</strong></p>
+    <ul>
+      <li>Smontare gli ugelli con la chiave appropriata</li>
+      <li>Pulire con solvente e aria compressa (MAI con oggetti metallici che deformano il foro calibrato)</li>
+      <li>Verificare che il foro sia perfettamente circolare con lente d'ingrandimento</li>
+      <li>Sostituire se danneggiati — gli ugelli non si riparano</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Manutenzione delle Pompe di Alimento</h3>
+    <p>Le pompe di alimento sono componenti critici per la sicurezza: il loro guasto porta al blocco della caldaia. Il conduttore deve monitorarle costantemente e intervenire ai primi segnali di anomalia.</p>
+    <p><strong>Segnali di anomalia della pompa:</strong></p>
+    <ul>
+      <li>Pressione di mandata irregolare o calante: possibile usura girante, filtro intasato, cavitazione</li>
+      <li>Rumore di ghiaia: cavitazione (bolle di vapore che collassano sulle palette) — causa danno rapidissimo</li>
+      <li>Perdite dal premistoppa: normale un piccolo gocciolamento, ma se aumenta → serrare o sostituire premistoppa</li>
+      <li>Temperatura eccessiva del corpo pompa: possibile mancanza di fluido, cavitazione</li>
+      <li>Vibrazioni anormali: sbilanciamento girante, cuscinetti usurati</li>
+    </ul>
+    <p><strong>Manutenzione preventiva:</strong></p>
+    <ul>
+      <li>Alternare periodicamente le pompe (non lasciare sempre la stessa in funzione)</li>
+      <li>Testare la pompa di riserva almeno una volta a settimana per verificarne la disponibilità</li>
+      <li>Mantenere puliti i filtri di aspirazione</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Manutenzione delle Valvole di Sicurezza</h3>
+    <p>Le valvole di sicurezza sono l'ultima difesa contro la sovrapressione. La loro manutenzione è critica e soggetta a normativa precisa.</p>
+    <p><strong>Controlli periodici del conduttore:</strong></p>
+    <ul>
+      <li>Test manuale settimanale o mensile: aprire la leva di prova con caldaia in pressione (almeno al 75% della P di taratura)</li>
+      <li>Verificare che la valvola si apra agevolmente e si richiuda perfettamente</li>
+      <li>Verificare che non ci siano perdite dalla sede (sibili o vapore continuo dalla valvola chiusa)</li>
+      <li>Verificare che il tronchetto di scarico sia libero e non otturato</li>
+    </ul>
+    <p><strong>Operazioni riservate a personale specializzato:</strong></p>
+    <ul>
+      <li>Ritaratura: solo da tecnici specializzati con attrezzatura certificata, seguita da piombatura e certificato di taratura</li>
+      <li>Revisione interna: smontaggio, ispezione e sostituzione delle guarnizioni di sede</li>
+      <li>Sostituzione: se la valvola non chiude perfettamente o ha subito apertura violenta</li>
+    </ul>
+    <p>La piombatura della valvola di sicurezza garantisce che la taratura non sia stata manomessa. Se la piomba è rotta: fermare la caldaia fino alla ritaratura certificata.</p>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Ispezione Interna — Preparazione</h3>
+    <p>L'ispezione interna è obbligatoria ogni 2 anni (INAIL) ma il conduttore può richiederne una straordinaria se ha rilevato anomalie. La preparazione per l'accesso interno è fondamentale per la sicurezza.</p>
+    <p><strong>Procedura di messa in sicurezza per accesso interno:</strong></p>
+    <ul>
+      <li>Arresto completo, raffreddamento fino a T sicura (&lt;40°C internamente)</li>
+      <li>Riduzione pressione a zero e apertura sfiati</li>
+      <li>Drenaggio completo dell'acqua</li>
+      <li>LOTO su tutte le fonti di energia: bruciatore, pompe, valvole automatiche, alimentazione elettrica del pannello</li>
+      <li>Cartello "NON AVVIARE — MANUTENZIONE IN CORSO" su tutti i comandi</li>
+      <li>Analisi dell'atmosfera interna: O₂ (18-21%), CO (&lt;35 ppm), gas combustibile (&lt;10% LEL)</li>
+      <li>Ventilazione forzata interna prima dell'accesso</li>
+      <li>Vigilante esterno sempre presente durante tutto il periodo di accesso</li>
+      <li>Sistema di recupero (imbracatura + corda + argano) pronto all'uso</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Compilazione del Registro Giornaliero</h3>
+    <p>Il registro giornaliero è il documento operativo obbligatorio per i generatori che funzionano in regime di esonero (Art. 43). La sua corretta compilazione protegge il conduttore in caso di controversie o ispezioni.</p>
+    <p><strong>Come compilare correttamente il registro:</strong></p>
+    <ul>
+      <li>Ogni voce deve avere data e ora precisa — non "mattina" o "circa"</li>
+      <li>I valori misurati devono essere riportati numericamente — non "nella norma" senza il valore</li>
+      <li>Le anomalie devono essere descritte con: cosa è accaduto, quando, azione intrapresa, esito</li>
+      <li>I test dei dispositivi di sicurezza devono riportare: data, ora, esito (OK/KO), eventuale azione</li>
+      <li>Firma leggibile a ogni registrazione</li>
+    </ul>
+    <p><strong>Errori comuni da evitare:</strong></p>
+    <ul>
+      <li>Compilare il registro "in anticipo" riportando valori non ancora misurati</li>
+      <li>Omettere anomalie per non creare problemi</li>
+      <li>Usare correzioni con bianchetto (usare una linea di cancellazione con data e firma)</li>
+      <li>Lasciare spazi bianchi tra le registrazioni</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Gestione Impianto Multi-Caldaia</h3>
+    <p>Negli impianti con più generatori collegati allo stesso collettore vapore, la gestione è più complessa. Il conduttore deve coordinare il funzionamento di tutti i generatori in modo ottimale.</p>
+    <p><strong>Principi di gestione multi-caldaia:</strong></p>
+    <ul>
+      <li><strong>Caldaia di punta</strong>: quella che assorbe le variazioni di carico. Di solito ha la regolazione più rapida (bruciatore modulante)</li>
+      <li><strong>Caldaia di base</strong>: quella che lavora a carico costante elevato. Ottimale per caldaie a tubi di fumo con alto rendimento a pieno carico</li>
+      <li><strong>Caldaia di riserva</strong>: ferma ma pronta a partire rapidamente in caso di guasto di una delle attive</li>
+    </ul>
+    <p><strong>Attenzioni specifiche:</strong></p>
+    <ul>
+      <li>Prima di collegare una caldaia al collettore comune, la sua pressione deve essere uguale o leggermente superiore a quella del collettore — altrimenti entra vapore dal collettore nella caldaia fredda → colpi d'ariete</li>
+      <li>Le valvole di intercettazione tra le caldaie e il collettore devono essere chiaramente identificate e il loro stato deve essere comunicato nella consegna turno</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Avviamento della Caldaia di Riserva</h3>
+    <p>La caldaia di riserva deve essere mantenuta in condizioni di prontezza per un avviamento rapido in caso di guasto delle unità in servizio. Il conduttore deve conoscere esattamente quanto tempo richiede l'avviamento.</p>
+    <p><strong>Tre stati di prontezza della caldaia di riserva:</strong></p>
+    <ul>
+      <li><strong>Prontezza fredda</strong>: caldaia a temperatura ambiente, completamente spenta. Avviamento: 2-3 ore (tubi di fumo) o 30-40 min (tubi d'acqua). Conservazione a secco o umida</li>
+      <li><strong>Prontezza calda</strong>: caldaia mantenuta a temperatura di pre-ebollizione (70-90°C) con bruciatore in stand-by. Avviamento: 20-30 min. Consume combustibile per il mantenimento</li>
+      <li><strong>Prontezza a vapore</strong>: caldaia in pressione a 50-70% della P di esercizio. Avviamento: 5-10 min. Massima disponibilità, massimo consumo in stand-by</li>
+    </ul>
+    <p>La scelta dello stato di prontezza dipende dalla criticità dell'impianto e dai costi di esercizio.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Interconnessione dei Collettori Vapore</h3>
+    <p>Il collegamento di più caldaie a un collettore comune richiede procedure precise per evitare colpi d'ariete e danneggiamenti:</p>
+    <p><strong>Procedura di collegamento di una nuova caldaia al collettore:</strong></p>
+    <ul>
+      <li>Portare la caldaia da collegare alla stessa pressione del collettore o leggermente superiore (0,2-0,5 bar in più)</li>
+      <li>Scaldare gradualmente il tronchetto di collegamento tra la caldaia e il collettore (aprire lentamente una valvola bypass o di drenaggio)</li>
+      <li>Aprire lentamente la valvola di presa vapore principale: se si sentono colpi d'ariete — chiudere e attendere che il tronchetto si riscaldi ulteriormente</li>
+      <li>Solo quando non ci sono più colpi d'ariete: aprire completamente la valvola</li>
+    </ul>
+    <p><strong>Procedura di scollegamento di una caldaia dal collettore:</strong></p>
+    <ul>
+      <li>Ridurre progressivamente il carico della caldaia da scollegare</li>
+      <li>Chiudere lentamente la valvola di presa vapore</li>
+      <li>Eseguire l'arresto normale della caldaia scollegata</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Gestione del Degasatore</h3>
+    <p>Il <strong>degasatore termico</strong> è un componente che il conduttore deve monitorare e gestire con attenzione, poiché influisce direttamente sulla qualità dell'acqua e quindi sulla durabilità della caldaia.</p>
+    <p><strong>Controlli periodici del degasatore:</strong></p>
+    <ul>
+      <li>Verificare che lo sfiato del degasatore sia sempre aperto durante il funzionamento: se si chiudesse, i gas non potrebbero uscire e l'ossigeno resterebbe nell'acqua</li>
+      <li>Verificare la pressione di esercizio del degasatore (tipicamente 1,2-2,7 bar): deve essere stabile</li>
+      <li>Controllare la temperatura di uscita dell'acqua degasata: deve essere alla T di saturazione alla pressione di esercizio</li>
+      <li>Verificare il livello nel serbatoio del degasatore: deve avere volume sufficiente per garantire l'autonomia delle pompe di alimento</li>
+    </ul>
+    <p><strong>Anomalie comuni:</strong></p>
+    <ul>
+      <li>Sfiato che non emette vapore: o l'acqua non è abbastanza calda o lo sfiato è ostruito. Verificare e correggere</li>
+      <li>O₂ nell'acqua sempre alto nonostante il degasatore funzionante: aumentare il dosaggio di idrazina, verificare il set-point della T del degasatore</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Gestione del Serbatoio Nafta</h3>
+    <p>Per le caldaie alimentate a nafta, la gestione del serbatoio è parte integrante della conduzione:</p>
+    <p><strong>Controlli quotidiani:</strong></p>
+    <ul>
+      <li>Livello del serbatoio: verificare il livello con l'asta di misurazione o il trasduttore di livello. Non lasciare scendere sotto il 20% (rischio di aspirare acqua o fanghi depositati sul fondo)</li>
+      <li>Temperatura di preriscaldo: verificare che la nafta sia alla temperatura corretta nel circuito caldo (viscosità 3-5°E per l'atomizzazione)</li>
+      <li>Verifica per acqua di fondo: ogni settimana aprire il rubinetto di drenaggio in fondo al serbatoio e verificare se esce acqua prima della nafta. L'acqua è più densa e si deposita sul fondo</li>
+    </ul>
+    <p><strong>Sicurezza del serbatoio:</strong></p>
+    <ul>
+      <li>Il serbatoio deve avere il bacino di contenimento (vasca di raccolta) efficiente: verificare che non ci siano perdite dalla vasca</li>
+      <li>Il tubo di sfiato del serbatoio deve essere libero e terminare in posizione sicura (lontano da fonti di innesco)</li>
+      <li>L'area intorno al serbatoio deve essere classificata ATEX: nessuna fiamma libera, nessun utensile non certificato</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Cambio Combustibile (Dual Fuel)</h3>
+    <p>Nelle caldaie con bruciatori combinati (dual fuel), il cambio da gas a nafta o viceversa è una manovra che richiede attenzione particolare e una sequenza precisa:</p>
+    <p><strong>Da gas a nafta:</strong></p>
+    <ul>
+      <li>Verificare che la nafta sia alla temperatura corretta nel circuito caldo (preriscaldo adeguato)</li>
+      <li>Verificare la viscosità della nafta (3-5°E) prima di aprire al bruciatore</li>
+      <li>Aprire l'alimentazione nafta al bruciatore mentre si chiude gradualmente quella del gas</li>
+      <li>Verificare la qualità della fiamma (nessun fumo nero = atomizzazione corretta)</li>
+      <li>Regolare l'aria per il rapporto stechiometrico corretto per la nafta (diverso da quello per il gas)</li>
+      <li>Eseguire analisi fumi e verificare che il CO sia sotto i limiti</li>
+    </ul>
+    <p><strong>Da nafta a gas:</strong></p>
+    <ul>
+      <li>Verificare la pressione del gas al bruciatore</li>
+      <li>Aprire gradualmente il gas mentre si chiude la nafta</li>
+      <li>Lasciare il circuito nafta caldo (circolazione di ricircolo) per mantenerla pronta</li>
+      <li>Regolare l'aria per il rapporto stechiometrico del gas</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Preriscaldo Nafta — Procedura</h3>
+    <p>Il preriscaldo della nafta è una delle operazioni più critiche prima dell'avviamento di una caldaia a nafta. Una nafta a temperatura sbagliata causa problemi gravi di combustione.</p>
+    <p><strong>Sequenza di preriscaldo:</strong></p>
+    <ul>
+      <li>Verificare il livello del serbatoio nafta</li>
+      <li>Avviare la pompa di trasferimento e il circuito caldo (ricircolo nafta)</li>
+      <li>Attivare il preriscaldatore (elettrico o a vapore)</li>
+      <li>Attendere che la temperatura nel circuito raggiunga il valore target (dipende dalla viscosità della nafta specifica)</li>
+      <li>Verificare la viscosità con il viscosimetro se disponibile, o controllare la temperatura di riferimento nelle specifiche della nafta</li>
+      <li>Solo quando la nafta ha raggiunto la T corretta: procedere all'accensione</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Errore critico</div>
+      <p>Aprire la nafta al bruciatore prima che abbia raggiunto la temperatura corretta = viscosità alta = goccioline grandi = atomizzazione scadente = fumo nero + incombusti + possibile spegnimento con accumulo di nafta non bruciata in camera di combustione → rischio esplosione alla successiva accensione.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Gestione del Blackout Elettrico</h3>
+    <p>La mancanza improvvisa di energia elettrica è uno degli eventi più critici per la sala caldaia. Il conduttore deve sapere esattamente cosa fare nei primissimi secondi.</p>
+    <p><strong>Cosa succede al blackout:</strong></p>
+    <ul>
+      <li>Il bruciatore si spegne (logica fail-safe: mancanza tensione = bruciatore spento)</li>
+      <li>Le pompe di alimento si fermano (se non hanno UPS o generatore)</li>
+      <li>Il sistema di controllo automatico si spegne</li>
+      <li>Le valvole di sicurezza rimangono meccaniche e operative</li>
+    </ul>
+    <p><strong>Sequenza di azioni del conduttore:</strong></p>
+    <ul>
+      <li>Verificare che il bruciatore sia spento (visivamente e da pannello)</li>
+      <li>Chiudere manualmente la valvola di presa vapore principale per evitare che la pressione scenda troppo</li>
+      <li>Avviare la pompa di alimento di riserva azionata da vapore o diesel (se disponibile) per mantenere il livello</li>
+      <li>Monitorare la pressione: scende lentamente con il bruciatore spento</li>
+      <li>Comunicare con la centrale elettrica/UPS per stimare la durata del blackout</li>
+      <li>Se il blackout si prolunga oltre 30-60 min: procedura di arresto controllato</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Lettura e Interpretazione dei Grafici</h3>
+    <p>I moderni sistemi SCADA registrano tutti i parametri della caldaia in forma di grafici storici. Il conduttore deve saper interpretarli per identificare trend e anomalie precocemente.</p>
+    <p><strong>Grafici fondamentali da monitorare:</strong></p>
+    <ul>
+      <li><strong>Pressione vs tempo</strong>: deve essere stabile durante l'esercizio. Oscillazioni ampie = sistema di regolazione non ottimale. Trend discendente = problema</li>
+      <li><strong>Livello vs tempo</strong>: deve essere stabile. Calo rapido = perdita o pompa guasta. Oscillazioni = priming o swell</li>
+      <li><strong>Temperatura fumi vs tempo</strong>: deve essere stabile. Trend crescente lento = sporcamento superfici. Trend crescente rapido = anomalia grave</li>
+      <li><strong>Consumo combustibile vs produzione vapore</strong>: il rapporto (indice di vaporizzazione) deve essere stabile. Peggioramento = calo efficienza</li>
+      <li><strong>Conducibilità acqua caldaia vs tempo</strong>: deve restare sotto il limite. Tendenza crescente = ridurre il fattore di concentrazione aumentando gli spurghi</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Check-List Operativa — Riepilogo</h3>
+    <p>Una <strong>check-list</strong> operativa è lo strumento più efficace per garantire che nessun controllo venga saltato, specialmente nelle operazioni complesse come l'avviamento e l'arresto.</p>
+    <p><strong>CHECK-LIST AVVIAMENTO (da verificare nell'ordine):</strong></p>
+    <ul>
+      <li>☐ Tutti i drenaggi chiusi</li>
+      <li>☐ Passi d'uomo e portine chiuse</li>
+      <li>☐ Strumentazione allineata (manometri, indicatori di livello)</li>
+      <li>☐ Livello acqua al minimo di accensione</li>
+      <li>☐ PSHH e LSHH operativi</li>
+      <li>☐ Valvole di sicurezza libere (nessun vincolo)</li>
+      <li>☐ Pompe di alimento pronte (manometri nella norma)</li>
+      <li>☐ Alimentazione combustibile aperta fino al bruciatore</li>
+      <li>☐ PURGA CAMERA — 30 secondi ventilatore al 30%</li>
+      <li>☐ Accensione con fiamma pilota</li>
+      <li>☐ Rilevamento fiamma confermato entro 5 sec</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. Purga obbligatoria SEMPRE prima di ogni accensione — senza eccezioni<br>
+      2. Swell: livello apparente sale all'avviamento — non aggiungere acqua finché non si stabilizza<br>
+      3. Dopo LSHH: MAI acqua fredda di colpo. Attendere raffreddamento parziale poi alimentare gradualmente<br>
+      4. Collega caldaia al collettore SOLO quando P_caldaia ≥ P_collettore<br>
+      5. Cambio a nafta: verificare temperatura (viscosità 3-5°E) PRIMA di aprire al bruciatore</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Conduzione e Avviamento</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"Sequenza completa avviamento da freddo",a:"1. Verifica pre-avviamento (drenaggi chiusi, strumentazione)\n2. Apertura sfiati\n3. Riempimento acqua fino a livello minimo\n4. Verifica PSHH e LSHH operativi\n5. PURGA camera combustione ≥30 sec a ≥30% ventilatore\n6. Accensione fiamma pilota\n7. Riscaldamento progressivo\n8. Chiusura sfiati quando esce vapore continuo\n9. Salita graduale a regime"},
+  {q:"Fenomeno Swell — cos'è e perché è pericoloso",a:"All'avviamento o a brusco aumento carico, la pressione scende → le bolle nell'acqua aumentano → livello APPARENTE sale.\nIl conduttore inesperto riduce l'alimento pensando che sia troppo alto — ma il livello REALE sta scendendo.\nAzione corretta: attendere stabilizzazione prima di agire sul livello."},
+  {q:"Procedura consegna turno — 7 punti",a:"1. Verifica fisica congiunta (non solo verbale)\n2. Lettura strumenti insieme\n3. Stato dispositivi (fuori servizio, by-passati)\n4. Anomalie in corso (anche minime)\n5. Interventi eseguiti nel turno\n6. Lavori ditte esterne in corso\n7. FIRMA sul registro → da quel momento è responsabile il subentrante"},
+  {q:"Arresto di emergenza — sequenza",a:"1. SPEGNERE IL BRUCIATORE (priorità assoluta)\n2. Chiudere valvola presa vapore principale\n3. Chiudere alimentazione combustibile\n4. Evacuare il personale se necessario\n5. Chiamare soccorsi (115/118) se necessario\n6. NON abbandonare senza sorvegliante esterno"},
+  {q:"LSHH blocco basso livello — procedura corretta",a:"1. Spegnere bruciatore (interviene automaticamente LSHH)\n2. Chiudere valvola presa vapore\n3. Attendere raffreddamento parziale della caldaia\n4. Alimentare acqua GRADUALMENTE\nMAI aggiungere acqua fredda di colpo su caldaia calda: shock termico → cricche → rottura strutturale"},
+  {q:"Colori del fumo — diagnosi rapida",a:"Fumo NERO: incombusti (carbonio). Causa: aria insufficiente, nafta viscosa, ugelli intasati. Aumentare aria, verificare nafta.\nFumo BIANCO a freddo: normale (vapore acqueo condensato).\nFumo BIANCO in esercizio: eccesso aria molto alto o idrocarburi non bruciati.\nFumo GRIGIO-GIALLASTRO: eccesso aria molto alto, T fiamma bassa."},
+  {q:"Collegamento caldaia al collettore vapore comune",a:"REGOLA FONDAMENTALE: P_caldaia deve essere ≥ P_collettore prima di aprire la valvola di presa.\nProcedura: portare la caldaia a P leggermente superiore → scaldare il tronchetto di collegamento (apri bypass) → aprire LENTAMENTE la valvola principale.\nSe colpi d'ariete: chiudere, attendere riscaldamento ulteriore, riprovare."},
+  {q:"Priming — segnali e intervento",a:"Segnali: pressione instabile, livello che oscilla, colpi d'ariete nelle tubazioni, rumore di gorgoglio alla valvola presa.\nIntervento: ridurre carico bruciatore → spurgo di superficie (abbassa TDS) → ridurre livello se troppo alto → non aumentare prelievo vapore finché non cessa."},
+  {q:"Test dispositivi di sicurezza — frequenza e modalità",a:"Valvole di sicurezza: settimanale/mensile. Aprire la leva con caldaia in pressione. Deve aprire e richiudere perfettamente.\nPSHH: mensile. Simulare salita P oltre set-point → bruciatore si spegne → riarmo MANUALE obbligatorio.\nLSHH: mensile. Abbassare il livello fino all'intervento → bruciatore si spegne → riarmo MANUALE."},
+  {q:"Cambio da gas a nafta — passi critici",a:"1. Verificare T nafta nel circuito caldo (viscosità 3-5°E)\n2. Aprire nafta al bruciatore MENTRE si chiude il gas\n3. Verificare fiamma (no fumo nero = atomizzazione ok)\n4. Regolare aria per nafta (eccesso aria diverso dal gas)\n5. Analisi fumi: CO sotto i limiti\nERRORE CRITICO: aprire nafta fredda → viscosità alta → incombusti → rischio esplosione"},
+  {q:"Analisi fumi durante esercizio — interpretazione",a:"CO₂ bassa + O₂ alta → eccesso aria eccessivo → regolare bruciatore\nCO₂ bassa + O₂ bassa + CO>100ppm → combustione incompleta → aumentare aria\nT_fumi alta + CO₂ normale → superfici sporcate → programmare pulizia\nCO>300 ppm → BLOCCARE bruciatore → rischio intossicazione personale"},
+  {q:"Spurgo di fondo — procedura e frequenza",a:"Frequenza: 1-2 volte/giorno (più frequente con TDS alto).\nProcedura: aprire valvola spurgo fondo per 15-30 secondi → l'acqua e i fanghi escono sotto pressione (T saturation).\nDopo spurgo: verificare che valvola sia completamente chiusa.\nL'acqua di spurgo a 184°C (10 bar) è pericolosa: convogliare in modo sicuro."},
+  {q:"Gestione blackout elettrico — primi 60 secondi",a:"1. Verificare che bruciatore sia spento (fail-safe lo spegne automaticamente)\n2. Chiudere valvola presa vapore manualmente\n3. Avviare pompa alimento a vapore o diesel (se disponibile) per mantenere il livello\n4. Monitorare pressione (scende lentamente)\n5. Stimare durata blackout\nSe blackout >30-60 min: procedura arresto controllato"},
+  {q:"Segnali di anomalia pompa di alimento",a:"Pressione mandata calante o irregolare: usura girante, filtro intasato, cavitazione\nRumore di ghiaia: CAVITAZIONE → danni rapidi alla girante → passare subito alla pompa di riserva\nPerdite premistoppa: piccolo gocciolamento normale, se aumenta → serrare o sostituire\nVibrazioni anormali: cuscinetti usurati o sbilanciamento girante"},
+  {q:"Tre stati di prontezza della caldaia di riserva",a:"FREDDA: a temperatura ambiente. Avviamento: 2-3 ore (tubi fumo), 30-40 min (tubi acqua). Min consumo stand-by.\nCALDA: mantenuta a 70-90°C in stand-by. Avviamento: 20-30 min. Consume combustibile.\nA VAPORE: in pressione al 50-70% P esercizio. Avviamento: 5-10 min. Massima disponibilità."},
+  {q:"Manutenzione ordinaria del conduttore — frequenze",a:"Giornaliera: spurghi, analisi acque (pH, conducibilità, durezza, O₂), analisi fumi\nSettimanale: test valvole sicurezza, verifica pompa riserva, pulizia fotocellula UV\nMensile: test PSHH e LSHH, controllo filtri nafta, lubrificazione (se prevista)\nTutto registrato nel registro giornaliero con data, ora, firma"},
+  {q:"Preparazione per ispezione interna (spazio confinato)",a:"1. Arresto completo e raffreddamento a T<40°C\n2. Pressione zero + sfiati aperti\n3. Drenaggio completo\n4. LOTO su tutte le fonti di energia\n5. Cartello 'NON AVVIARE'\n6. Analisi atmosfera (O₂ 18-21%, CO<35ppm, gas<10%LEL)\n7. Ventilazione forzata interna\n8. Vigilante esterno sempre presente\n9. Sistema recupero pronto"},
+  {q:"Compilazione registro giornaliero — errori da evitare",a:"NON compilare 'in anticipo' con valori non ancora misurati.\nNON omettere anomalie per non creare problemi.\nNON usare bianchetto (linea di cancellazione con data e firma).\nNON lasciare spazi bianchi.\nValori devono essere NUMERICI, non 'nella norma'.\nAnomalie: cosa, quando, azione intrapresa, esito."},
+  {q:"Gestione del degasatore — controlli critici",a:"Sfiato SEMPRE APERTO durante il funzionamento (se si chiude i gas rimangono nell'acqua).\nVerificare T uscita acqua = T saturazione alla P degasatore.\nVerificare livello serbatoio sufficiente per autonomia pompe.\nSegnale di anomalia: sfiato che non emette vapore → acqua non abbastanza calda o sfiato ostruito."},
+  {q:"Check-list avviamento — 11 voci in ordine",a:"1.Drenaggi chiusi 2.Passi d'uomo chiusi 3.Strumentazione allineata 4.Livello a minimo 5.PSHH e LSHH operativi 6.Valvole sicurezza libere 7.Pompe alimento pronte 8.Combustibile aperto 9.PURGA 30sec al 30% 10.Accensione fiamma pilota 11.Rilevamento fiamma entro 5 sec"},
+];
+
+const QUESTIONS=[
+  {q:"Prima di ogni accensione della caldaia, la purgatura della camera di combustione è:",opts:["Facoltativa se la caldaia era in servizio il giorno prima","Obbligatoria sempre — almeno 30 secondi con ventilatore al 30%","Necessaria solo dopo soste superiori a 8 ore","Richiesta solo per caldaie a nafta, non per quelle a gas"],c:1,expl:"La purgatura della camera di combustione è OBBLIGATORIA prima di ogni accensione, senza eccezioni. Elimina i gas residui che potrebbero essersi accumulati. Senza purga, i gas residui + scintilla di accensione = deflagrazione o detonazione. È reato ometterla. 30 secondi a ventilatore ≥30% sono il minimo."},
+  {q:"Il fenomeno dello 'swell' durante l'avviamento si manifesta come:",opts:["Calo brusco del livello dell'acqua per evaporazione rapida","Salita apparente del livello causata dalla formazione di bolle, mentre il livello reale può scendere","Aumento della pressione oltre il set-point del pressostato","Vibrazione delle tubazioni per dilatazione termica"],c:1,expl:"Lo swell è l'aumento apparente del livello causato dalla formazione di bolle nella massa d'acqua riscaldata. Il volume specifico della miscela acqua-vapore aumenta. Il conduttore inesperto, vedendo il livello salire, potrebbe ridurre l'alimentazione — ma il livello REALE sta scendendo. Attendere la stabilizzazione prima di agire."},
+  {q:"Dopo l'intervento del LSHH (blocco basso livello), la procedura corretta è:",opts:["Riarmare immediatamente e aggiungere acqua rapidamente per recuperare il livello","Spegnere il bruciatore, attendere raffreddamento parziale, poi alimentare acqua GRADUALMENTE","Aprire lo spurgo di fondo per pulire e poi riempire la caldaia","Chiamare immediatamente l'INAIL e attendere la loro autorizzazione"],c:1,expl:"Dopo il LSHH: il bruciatore è spento (automaticamente). MAI aggiungere acqua fredda di colpo su caldaia calda. Lo shock termico (ΔT > 50-100°C) causa tensioni termiche che possono formare cricche nel metallo. Attendere raffreddamento parziale, poi alimentare gradualmente. L'INAIL va chiamato solo se si è verificato un incidente."},
+  {q:"Il conduttore che riceve una consegna turno diventa responsabile della caldaia:",opts:["Solo dopo 15 minuti di osservazione congiunta","Subito alla firma di accettazione sul registro di consegna","Solo dalla mezz'ora successiva alla consegna","Quando il collega uscente ha lasciato fisicamente la sala caldaia"],c:1,expl:"La responsabilità passa al conduttore entrante nel momento in cui firma l'accettazione della consegna sul registro. Da quel momento è lui il responsabile legale della conduzione. La firma non è una formalità — è l'atto formale che trasferisce la responsabilità. Per questo la verifica fisica congiunta prima della firma è fondamentale."},
+  {q:"Per collegare una caldaia di riserva al collettore vapore comune, la pressione della caldaia deve essere:",opts:["Almeno 2 bar inferiore a quella del collettore per bilanciare i flussi","Uguale o leggermente SUPERIORE a quella del collettore prima di aprire la valvola","Esattamente a zero per evitare contraccolpi","Uguale a quella del collettore solo per caldaie a tubi d'acqua"],c:1,expl:"Prima di collegare al collettore comune, la pressione della caldaia deve essere uguale o leggermente superiore (0,2-0,5 bar) a quella del collettore. Se la P della caldaia fosse inferiore, il vapore del collettore entrerebbe nella caldaia più fredda → condensazione istantanea → colpi d'ariete violenti. Si apre poi la valvola LENTAMENTE."},
+  {q:"Il fumo nero al camino di una caldaia a nafta indica principalmente:",opts:["Eccesso d'aria troppo alto che raffredda la fiamma","Combustione incompleta — carbonio non bruciato per insufficiente aria o atomizzazione scadente","Vapore acqueo che condensa nell'aria fredda esterna","Presenza di CO₂ in eccesso nei fumi"],c:1,expl:"Fumo nero = incombusti solidi (fuliggine = carbonio non bruciato). Cause: insufficiente aria comburente, atomizzazione scadente (nafta viscosa, ugelli intasati), temperatura focolare troppo bassa. Azione: aumentare l'aria, verificare viscosità nafta, pulire o sostituire gli ugelli. Il fumo nero rappresenta anche una perdita energetica significativa."},
+  {q:"Durante il priming, la prima azione del conduttore deve essere:",opts:["Aumentare la potenza del bruciatore per produrre più vapore secco","Ridurre immediatamente il carico del bruciatore e aprire lo spurgo di superficie","Chiudere la valvola di presa vapore ed eseguire un arresto di emergenza","Aggiungere additivi antischiuma direttamente nella camera di combustione"],c:1,expl:"Il priming richiede azioni immediate: 1) Ridurre il carico del bruciatore (meno vapore prodotto = meno turbolenza superficie) 2) Spurgo di superficie per abbassare il TDS (i sali abbassano la tensione superficiale) 3) Ridurre il livello se troppo alto. Non si deve chiudere tutta la valvola di presa né fermare la caldaia — si gestisce riducendo il carico."},
+  {q:"Durante il blackout elettrico, la logica fail-safe garantisce che:",opts:["Il bruciatore rimanga acceso per mantenere la pressione","Il bruciatore si spenga automaticamente per mancanza di tensione","Le pompe di alimento continuino a funzionare in emergenza","Le valvole di sicurezza si chiudano automaticamente"],c:1,expl:"La logica fail-safe è progettata per portare il sistema nella condizione più sicura in caso di guasto, inclusa la mancanza di corrente. Il bruciatore si spegne automaticamente perché i suoi circuiti di controllo non hanno più alimentazione. Le valvole di sicurezza sono meccaniche e restano operative indipendentemente dall'elettricità."},
+  {q:"Il rumore di 'ghiaia' proveniente dalla pompa di alimento indica:",opts:["Normale funzionamento ad alta portata","Cavitazione — bolle di vapore che collassano sulle palette della girante","Usura del premistoppa con perdita d'acqua","Sedimenti nell'acqua che passano attraverso la pompa"],c:1,expl:"Il rumore di ghiaia è il segnale classico della CAVITAZIONE: la pressione di aspirazione è così bassa che l'acqua vaporizza localmente e le bolle collassano violentemente sulle palette. Causa danni rapidissimi alla girante. Azione immediata: passare alla pompa di riserva. Poi identificare la causa (NPSH insufficiente, T acqua troppo alta, valvola aspirazione parzialmente chiusa, filtro intasato)."},
+  {q:"La compilazione del registro giornaliero richiede che i valori misurati siano riportati:",opts:["Con la dicitura 'nella norma' se sono entro i limiti","Numericamente con data e ora precise — mai con descrizioni generiche","Solo settimanalmente per i parametri che non variano","Esclusivamente dal responsabile dell'impianto, non dal conduttore"],c:1,expl:"Il registro deve riportare valori NUMERICI con data e ora precise. 'Nella norma' non è un valore registrato — non permette di rilevare trend di peggioramento progressivo. Se un valore è sempre '7,5 nella norma' ma lentamente scende da 10,8 a 10,1 a 9,8 (vicino al limite inferiore 9,5), i numeri lo mostrano mentre la generica nota no. Le anomalie devono descrivere: cosa, quando, azione, esito."},
+  {q:"Il test mensile del pressostato PSHH prevede:",opts:["Portare la pressione oltre il set-point del PSHH e verificare che il bruciatore si spenga","Verificare solo visivamente che il pressostato sia collegato correttamente","Smontare il pressostato e testarlo su banco prova","Resettare automaticamente il pressostato attraverso il sistema di controllo"],c:0,expl:"Il test del PSHH richiede di portare la pressione oltre il suo set-point (più alto del pressostato di regolazione) e verificare che il bruciatore si spenga. Dopo l'intervento, il riarmo deve essere MANUALE — non può avvenire automaticamente. Il test va registrato sul registro con data, ora ed esito. Se il PSHH non interviene: fermata immediata della caldaia e manutenzione."},
+  {q:"Prima di aprire la nafta al bruciatore in un cambio combustibile, il conduttore deve verificare:",opts:["Che la pressione del gas sia scesa a zero","Che la nafta sia alla temperatura corretta (viscosità 3-5°E) nel circuito caldo","Che il serbatoio di nafta sia pieno almeno all'80%","Che il sistema ATEX sia stato disattivato"],c:1,expl:"La temperatura della nafta è il parametro critico per il cambio combustibile. Nafta fredda = alta viscosità = goccioline grandi = atomizzazione scadente = incombusti = fumo nero + rischio accumulo di nafta non bruciata in camera. Se poi si tenta una riaccensione: esplosione. La viscosità target 3-5°E corrisponde a temperature diverse per nafti diverse (consultare le specifiche)."},
+  {q:"Quale affermazione sulla responsabilità del conduttore è corretta?",opts:["Il conduttore può eseguire ordini del superiore anche se contrastano con la sicurezza — la responsabilità è del superiore","Il conduttore ha il dovere professionale e legale di rifiutare ordini contrari alla sicurezza — la sua responsabilità è personale","Il conduttore è responsabile solo durante il proprio turno — i problemi emersi prima non lo riguardano","Il conduttore è responsabile solo delle operazioni meccaniche, non delle anomalie chimiche dell'acqua"],c:1,expl:"La responsabilità del conduttore è PERSONALE e non trasferibile. Se esegue un ordine contrario alla sicurezza, risponde penalmente anche se l'ordine è venuto dal superiore. Ha il dovere di rifiutare e segnalare. Allo stesso modo, alla consegna turno, la firma lo rende responsabile anche di problemi emersi nel turno precedente che non ha ricevuto correttamente — motivo per cui la consegna deve essere esaustiva."},
+  {q:"Lo spurgo di fondo durante il normale esercizio serve principalmente a:",opts:["Abbassare il livello dell'acqua se è troppo alto","Rimuovere i fanghi sedimentati (sali precipitati, ossidi) dal punto più basso della caldaia","Ridurre rapidamente la pressione in caso di emergenza","Raffreddare la caldaia durante l'estate"],c:1,expl:"Lo spurgo di fondo rimuove i fanghi (sali precipitati, ossidi di ferro) che si accumulano nel punto più basso del corpo cilindrico. Va eseguito 1-2 volte al giorno, aprendola valvola per 15-30 secondi. L'acqua di spurgo è alla T di saturazione (es. 184°C a 10 bar) — maneggiarla con cautela. Diverso dallo spurgo di superficie che invece abbassa il TDS."},
+  {q:"Durante la salita a regime, la chiusura degli sfiati del corpo cilindrico va eseguita quando:",opts:["La pressione raggiunge 1 bar","Esce vapore continuo dagli sfiati — tutta l'aria interna è stata eliminata","Il livello raggiunge il 50% dell'indicatore","La temperatura dei fumi al camino supera i 150°C"],c:1,expl:"Gli sfiati vanno tenuti aperti durante il riempimento e il riscaldamento per eliminare l'aria intrappolata nel corpo cilindrico. L'aria è non condensabile e potrebbe creare zone di bassa pressione che danneggiano i tubi. Quando dagli sfiati esce vapore in modo continuo e stabile (non aria mista), tutta l'aria è eliminata e si possono chiudere per permettere alla pressione di salire."},
+  {q:"La pompa di alimento di riserva deve essere testata:",opts:["Solo quando la pompa principale si guasta","Almeno una volta a settimana per verificarne la disponibilità operativa","Solo durante l'ispezione INAIL biennale","Non è necessario testarla — è una riserva"],c:1,expl:"La pompa di riserva DEVE essere testata almeno settimanalmente. Una pompa di riserva mai testata potrebbe essere guasta senza che nessuno lo sappia — e scoprirlo nel momento dell'emergenza (guasto pompa principale) è catastrofico. Il test settimanale garantisce che sia pronta all'uso. Deve anche essere alternata periodicamente con la pompa principale per non lasciarne mai una ferma troppo a lungo."},
+  {q:"Il segnale più precoce di sporcamento delle superfici di scambio è:",opts:["Improvvisa diminuzione della pressione di esercizio","Aumento graduale della temperatura dei fumi al camino (trend crescente nel tempo)","Fumo nero al camino","Aumento brusco del livello dell'acqua in caldaia"],c:1,expl:"Il segnale più precoce è l'aumento graduale della T_fumi (trend lento, settimane-mesi). La fuliggine o il calcare isolano le superfici → meno calore ceduto all'acqua → più calore rimane nei fumi → T_fumi sale. Il fumo nero è un segnale di combustione sbagliata (diverso). La calo di pressione è un segnale tardivo. Monitorare il trend della T_fumi è fondamentale."},
+  {q:"In caso di perdita di vapore da una flangia durante l'esercizio, quando è necessario fermare la caldaia?",opts:["Sempre, qualunque sia l'entità della perdita","Solo se la perdita causa un calo di pressione non compensabile o rischia di colpire il personale","Mai — le perdite da flangia sono normali e gestibili senza fermate","Solo se l'INAIL ordina la fermata dopo l'ispezione"],c:1,expl:"Non ogni perdita richiede un arresto immediato. Criterio: se la perdita causa calo di P non compensabile → fermare. Se rischia di colpire il personale → fermare immediatamente. Se è da parti in pressione strutturali (corpo cilindrico, tubi) → fermare e avvisare INAIL. Una piccola perdita da flangia accessorio che non aumenta → può essere monitorata fino alla manutenzione programmata, purché sia sicura per il personale."},
+  {q:"Lo sfiato del degasatore deve essere:",opts:["Sempre chiuso durante il normale funzionamento per mantenere la pressione interna","Sempre aperto durante il funzionamento — è l'unico modo per evacuare i gas disciolti","Aperto solo durante l'avviamento, poi chiuso","Aperto solo se la conducibilità supera il limite"],c:1,expl:"Lo sfiato del degasatore DEVE essere sempre aperto durante il funzionamento. I gas disciolti (O₂, CO₂) devono poter uscire continuamente. Se lo sfiato è chiuso, i gas si ridisciolgono nell'acqua e la degasazione è inefficace. Risultato: O₂ alto nell'acqua di alimento → corrosione per pitting nelle superfici della caldaia."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm10');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm10',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

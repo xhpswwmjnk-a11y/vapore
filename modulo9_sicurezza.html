@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 09 — Sicurezza sul Lavoro</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 09</div>
+    <div class="header-title">Sicurezza sul Lavoro</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. D.Lgs. 81/2008 — struttura generale</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Datore di lavoro — obblighi</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. Lavoratore — diritti e obblighi</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. RSPP — Responsabile Sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. RLS — Rappresentante Lavoratori</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Medico competente</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. DVR — Documento Valutazione Rischi</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Valutazione del rischio — metodologia</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Rischi in sala caldaia — classificazione</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Rischio esplosione — cause e prevenzione</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Rischio incendio — classificazione fuochi</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Estintori — tipi e uso</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Rischio ustione da vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Rischio intossicazione da CO</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Rischio elettrico in sala caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Rischio rumore</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Rischio chimico — additivi e combustibili</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. DPI — dispositivi di protezione individuale</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Segnaletica di sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. Procedure di emergenza</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. Piano di emergenza</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. Primo soccorso in sala caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Lavori in spazi confinati</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Permesso di lavoro (PDL)</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. ATEX — atmosfere esplosive</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Classificazione zone ATEX</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Prevenzione incendi — normativa</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. CPI — Certificato Prevenzione Incendi</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Stress da calore — rischi lavoro caldo</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Movimentazione manuale carichi</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Ergonomia in sala caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Formazione e informazione — obblighi</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Sorveglianza sanitaria</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. Infortuni — denuncia e registrazione</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. Malattie professionali</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Addestramento antincendio</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. Manutenzione in sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. Lavori elettrici — LOTO</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. Sicurezza ditte esterne (appalti)</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Sanzioni D.Lgs. 81/2008</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Gestione prodotti chimici — SDS</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Prevenzione — cultura della sicurezza</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. D.Lgs. 81/2008 — Struttura Generale</h3>
+    <p>Il <strong>D.Lgs. 81/2008</strong> (Testo Unico sulla Sicurezza sul Lavoro) è il principale riferimento normativo per la sicurezza in tutti i luoghi di lavoro italiani, incluse le sale caldaia. Ha abrogato e sostituito il D.P.R. 547/1955 e numerose altre normative precedenti.</p>
+    <p>Struttura del decreto: 13 Titoli + Allegati tecnici. I titoli principali per la sala caldaia:</p>
+    <ul>
+      <li><strong>Titolo I</strong>: Principi comuni — obblighi, soggetti, DVR, formazione</li>
+      <li><strong>Titolo II</strong>: Luoghi di lavoro — requisiti strutturali, illuminazione, ventilazione</li>
+      <li><strong>Titolo III</strong>: Attrezzature di lavoro e DPI</li>
+      <li><strong>Titolo IV</strong>: Cantieri — applicabile per lavori di manutenzione</li>
+      <li><strong>Titolo IX</strong>: Sostanze pericolose — rischio chimico, agenti cancerogeni</li>
+      <li><strong>Titolo XI</strong>: ATEX — atmosfere esplosive</li>
+    </ul>
+    <p>Il principio cardine del D.Lgs. 81/2008 è la <strong>prevenzione</strong>: eliminare o ridurre i rischi alla fonte, prima di ricorrere ai DPI. I DPI sono l'ultima barriera, non la prima soluzione.</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Datore di Lavoro — Obblighi</h3>
+    <p>Il <strong>datore di lavoro</strong> (proprietario dell'impianto o dirigente con poteri di spesa e organizzazione) ha obblighi non delegabili secondo il D.Lgs. 81/2008:</p>
+    <ul>
+      <li>Elaborare il <strong>DVR</strong> (Documento di Valutazione dei Rischi) — non delegabile</li>
+      <li>Designare il <strong>RSPP</strong> (Responsabile del Servizio di Prevenzione e Protezione) — non delegabile</li>
+      <li>Fornire <strong>formazione, informazione e addestramento</strong> ai lavoratori</li>
+      <li>Fornire i <strong>DPI</strong> adeguati ai rischi identificati</li>
+      <li>Sottoporre i lavoratori a <strong>sorveglianza sanitaria</strong> dove richiesta</li>
+      <li>Garantire la <strong>manutenzione delle attrezzature</strong> in condizioni di sicurezza</li>
+      <li>Consultare l'<strong>RLS</strong> sulle misure di prevenzione</li>
+    </ul>
+    <p>La delega di funzioni al dirigente o preposto è possibile per molti obblighi, ma rimane la responsabilità di sorvegliare che siano effettivamente adempiuti.</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Lavoratore — Diritti e Obblighi</h3>
+    <p>Il <strong>lavoratore</strong> (incluso il conduttore di caldaia) ha sia diritti che obblighi precisi:</p>
+    <p><strong>Obblighi del lavoratore (Art. 20 D.Lgs. 81/2008):</strong></p>
+    <ul>
+      <li>Prendersi cura della propria salute e sicurezza e di quella degli altri</li>
+      <li>Rispettare le disposizioni del datore di lavoro e le istruzioni dei preposti</li>
+      <li>Utilizzare correttamente le attrezzature, i DPI e i dispositivi di sicurezza</li>
+      <li>Segnalare immediatamente al preposto le condizioni pericolose</li>
+      <li>Non rimuovere o modificare i dispositivi di sicurezza</li>
+      <li>Sottoporsi alla sorveglianza sanitaria</li>
+      <li>Partecipare ai programmi di formazione</li>
+    </ul>
+    <p><strong>Diritti del lavoratore:</strong></p>
+    <ul>
+      <li>Ricevere formazione adeguata sui rischi specifici</li>
+      <li>Allontanarsi dal posto di lavoro in caso di pericolo grave e imminente</li>
+      <li>Consultare il DVR e la documentazione di sicurezza</li>
+      <li>Eleggere o essere eletto RLS</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. RSPP — Responsabile del Servizio di Prevenzione e Protezione</h3>
+    <p>L'<strong>RSPP</strong> è il professionista designato dal datore di lavoro per coordinare il Servizio di Prevenzione e Protezione. La sua nomina è un obbligo non delegabile del datore di lavoro.</p>
+    <p>Compiti dell'RSPP:</p>
+    <ul>
+      <li>Individuare i fattori di rischio e le misure di prevenzione</li>
+      <li>Elaborare le misure preventive e protettive e le procedure di sicurezza</li>
+      <li>Proporre i programmi di informazione e formazione</li>
+      <li>Partecipare alle riunioni periodiche di prevenzione e protezione</li>
+      <li>Fornire informazioni ai lavoratori sui rischi</li>
+    </ul>
+    <p>Requisiti: può essere il datore di lavoro stesso (in aziende fino a 30 dipendenti in alcuni settori), un dipendente interno con adeguata formazione, o un professionista esterno. Per la sala caldaia, deve conoscere i rischi specifici degli impianti a pressione, degli agenti chimici e dell'ATEX.</p>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. RLS — Rappresentante dei Lavoratori per la Sicurezza</h3>
+    <p>L'<strong>RLS</strong> è il lavoratore eletto o designato dai colleghi per rappresentarli in materia di salute e sicurezza sul lavoro.</p>
+    <p>Diritti dell'RLS:</p>
+    <ul>
+      <li>Accedere a tutti i luoghi di lavoro</li>
+      <li>Essere consultato preventivamente su DVR, valutazione rischi, organizzazione della sicurezza</li>
+      <li>Ricevere informazioni sugli infortuni e sui rischi</li>
+      <li>Partecipare alla riunione periodica annuale di sicurezza</li>
+      <li>Ricevere formazione specifica (minimo 32 ore iniziali + aggiornamenti)</li>
+    </ul>
+    <p>Numero minimo di RLS: 1 fino a 200 lavoratori, 3 da 201 a 1.000, 6 oltre 1.000. Nelle aziende sotto i 15 dipendenti, l'RLS può essere eletto dall'esterno (RLST — Rappresentante Territoriale).</p>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Medico Competente</h3>
+    <p>Il <strong>medico competente</strong> è il medico specialista in medicina del lavoro che collabora con il datore di lavoro per la sorveglianza sanitaria dei lavoratori esposti a rischi specifici.</p>
+    <p>Compiti principali:</p>
+    <ul>
+      <li>Effettuare le <strong>visite mediche preventive</strong> (prima dell'assunzione o dell'adibizione a mansioni specifiche)</li>
+      <li>Effettuare le <strong>visite mediche periodiche</strong> (frequenza stabilita in base al rischio)</li>
+      <li>Esprimere il <strong>giudizio di idoneità</strong> alla mansione specifica</li>
+      <li>Partecipare alla valutazione dei rischi</li>
+      <li>Informare i lavoratori sul significato della sorveglianza sanitaria</li>
+    </ul>
+    <p>Per il conduttore di caldaie, la sorveglianza sanitaria è richiesta per: esposizione a rumore, rischio chimico (idrazina, solventi), stress termico, movimentazione manuale carichi. Il giudizio di idoneità può essere: idoneo, idoneo con prescrizioni, idoneo parzialmente, non idoneo.</p>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. DVR — Documento di Valutazione dei Rischi</h3>
+    <p>Il <strong>DVR</strong> è il documento che riporta l'esito della valutazione di tutti i rischi presenti in azienda. Deve essere elaborato dal datore di lavoro, in collaborazione con RSPP, medico competente e RLS.</p>
+    <p>Contenuto obbligatorio del DVR (Art. 28 D.Lgs. 81/2008):</p>
+    <ul>
+      <li>Relazione sui rischi per la sicurezza e la salute, con specificazione dei criteri utilizzati</li>
+      <li>Misure di prevenzione e protezione adottate e DPI individuati</li>
+      <li>Programma delle misure da attuare con tempi e responsabilità</li>
+      <li>Procedure per l'attuazione delle misure di prevenzione</li>
+      <li>Ruoli dell'organizzazione aziendale che concorrono alla sicurezza</li>
+    </ul>
+    <p>Il DVR deve essere redatto in forma scritta, datato, firmato e aggiornato ogni volta che cambiano i processi o le attrezzature. Deve essere tenuto in azienda e disponibile per le ispezioni. La mancata elaborazione del DVR è reato penale.</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Valutazione del Rischio — Metodologia</h3>
+    <p>La valutazione del rischio si basa sulla stima di due parametri combinati:</p>
+    <div class="formula">
+      <span>R = P × G</span><br>
+      <small>R = livello di rischio | P = probabilità di accadimento (1=improbabile → 4=molto probabile)<br>G = gravità del danno (1=lieve → 4=gravissimo)</small>
+    </div>
+    <p>Matrice del rischio:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Probabilità\Gravità</th><th>Lieve (1)</th><th>Medio (2)</th><th>Grave (3)</th><th>Gravissimo (4)</th></tr>
+      <tr><td>Improbabile (1)</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+      <tr><td>Possibile (2)</td><td>2</td><td>4</td><td>6</td><td>8</td></tr>
+      <tr><td>Probabile (3)</td><td>3</td><td>6</td><td>9</td><td>12</td></tr>
+      <tr><td>Molto prob. (4)</td><td>4</td><td>8</td><td>12</td><td>16</td></tr>
+    </table></div>
+    <p>Livelli: R≤4 = basso (accettabile). 5≤R≤8 = medio (misure migliorative). 9≤R≤12 = alto (intervento urgente). R=16 = inaccettabile (attività da sospendere).</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Rischi in Sala Caldaia — Classificazione</h3>
+    <p>La sala caldaia presenta un insieme di rischi specifici che devono essere identificati nel DVR:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Categoria</th><th>Rischi specifici</th><th>Priorità</th></tr>
+      <tr><td>Fisici</td><td>Ustioni da vapore/acqua calda, esplosione caldaia, colpo d'ariete, rumore, calore radiante</td><td>Alta</td></tr>
+      <tr><td>Chimici</td><td>CO (monossido carbonio), idrazina, solventi pulizia, acidi decapaggio, gas combustibile</td><td>Alta</td></tr>
+      <tr><td>Elettrici</td><td>Cortocircuiti, contatti accidentali, archi elettrici nei quadri</td><td>Media-Alta</td></tr>
+      <tr><td>Incendio/Esplosione</td><td>Perdite di gas, combustibile, miscele esplosive</td><td>Alta</td></tr>
+      <tr><td>Ergonomici</td><td>Movimentazione carichi, posture incongrue, stress termico</td><td>Media</td></tr>
+      <tr><td>Spazi confinati</td><td>Lavori interni alla caldaia (pulizia, ispezione)</td><td>Alta</td></tr>
+    </table></div>
+    <p>L'<strong>esplosione</strong> e l'<strong>intossicazione da CO</strong> sono i rischi con potenziale di danno massimo — hanno gravità 4 (gravissimo) e richiedono misure di prevenzione prioritarie.</p>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Rischio Esplosione — Cause e Prevenzione</h3>
+    <p>Il rischio di esplosione in sala caldaia può provenire da due fonti principali:</p>
+    <p><strong>1. Esplosione della caldaia per sovrapressione:</strong></p>
+    <ul>
+      <li>Cause: malfunzionamento delle valvole di sicurezza, blocco del pressostato, ostruzione del condotto di scarico</li>
+      <li>Prevenzione: verifica periodica delle valvole di sicurezza, test manuale settimanale, sostituzione secondo le scadenze</li>
+    </ul>
+    <p><strong>2. Esplosione da miscela combustibile-aria:</strong></p>
+    <ul>
+      <li>Cause: perdite di gas + accumulo in spazi chiusi + sorgente di innesco (scintille, fiamme pilota)</li>
+      <li>Prevenzione: rilevatori di gas, purga camera di combustione prima dell'accensione, manutenzione tenute tubazioni</li>
+    </ul>
+    <p>I <strong>limiti di esplosività</strong> del metano: LEL (Lower Explosive Limit) = 5% in aria, UEL (Upper Explosive Limit) = 15% in aria. Fuori da questo range non c'è esplosione. I rilevatori di gas devono allarmare al 20% del LEL = 1% vol. di metano in aria.</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Rischio Incendio — Classificazione dei Fuochi</h3>
+    <p>I fuochi si classificano in categorie in base al tipo di combustibile coinvolto (norma EN 2):</p>
+    <div class="table-wrap"><table>
+      <tr><th>Classe</th><th>Tipo di combustibile</th><th>Esempi in sala caldaia</th></tr>
+      <tr><td>Classe A</td><td>Solidi (legno, carta, tessuti)</td><td>Materiale imballaggio, documentazione</td></tr>
+      <tr><td>Classe B</td><td>Liquidi e solidi liquefacibili</td><td>Nafta, gasolio, lubrificanti</td></tr>
+      <tr><td>Classe C</td><td>Gas infiammabili</td><td>Metano, GPL, gas di processo</td></tr>
+      <tr><td>Classe D</td><td>Metalli combustibili</td><td>Magnesio, alluminio in polvere</td></tr>
+      <tr><td>Classe F</td><td>Oli e grassi da cucina</td><td>Non rilevante per sala caldaia</td></tr>
+      <tr><td>Classe E</td><td>Fuochi elettrici (non è una classe EN2)</td><td>Quadri elettrici in tensione</td></tr>
+    </table></div>
+    <p>Il <strong>triangolo del fuoco</strong> richiede tre elementi: combustibile + comburente (O₂) + calore di innesco. Eliminare uno qualsiasi dei tre spegne l'incendio. Le strategie antincendio agiscono su uno o più lati del triangolo.</p>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Estintori — Tipi e Uso Corretto</h3>
+    <p>Gli estintori si classificano per l'agente estinguente:</p>
+    <ul>
+      <li><strong>CO₂ (anidride carbonica)</strong>: classe B ed E (fuochi elettrici). Non lascia residui, adatto per quadri elettrici e apparecchiature delicate. Non usare su fuochi di classe A (il gas si disperde). Distanza di sicurezza 3 m dall'apparecchiatura elettrica.</li>
+      <li><strong>Polvere ABC</strong>: classi A, B, C. Il più versatile. Lascia residui corrosivi. Usato come estintore generico. Non ideale per apparecchiature elettriche di valore.</li>
+      <li><strong>Schiuma</strong>: classi A e B. Ottimo per nafta e gasolio — forma uno strato coprente che isola il combustibile dall'aria. Non usare su fuochi elettrici (liquido conduttore).</li>
+      <li><strong>Acqua frazionata/nebulizzata</strong>: classe A. Non usare su fuochi di classe B o E.</li>
+    </ul>
+    <div class="callout">
+      <div class="callout-label">Regola fondamentale</div>
+      <p>MAI usare acqua su fuochi di classe B (nafta, gasolio): l'acqua, più densa della nafta, scende sotto il combustibile in fiamme e lo proietta violentemente → allargamento rapido dell'incendio. Usare schiuma o polvere.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Rischio Ustione da Vapore</h3>
+    <p>Il vapore a pressione è uno dei rischi più insidiosi della sala caldaia per la sua invisibilità e la rapidità con cui causa danni gravissimi.</p>
+    <p>Caratteristiche del rischio:</p>
+    <ul>
+      <li>Vapore saturo a 10 bar è a 184°C — causa ustioni di 3° grado in frazioni di secondo</li>
+      <li>Il getto di vapore da una piccola perdita può essere invisibile (vapore surriscaldato) e raggiungere velocità di 100-200 m/s</li>
+      <li>Le perdite da flangia possono non essere visibili fino a che non si avvicina aria umida che condensa il vapore</li>
+    </ul>
+    <p>Misure di prevenzione:</p>
+    <ul>
+      <li>Non avvicinarsi mai alle flange e giunti di una caldaia in pressione senza DPI adeguati</li>
+      <li>Usare uno specchio o una pertica per verificare perdite sospette prima di avvicinarsi</li>
+      <li>Mai aprire valvole bruscamente — farlo lentamente per consentire l'equalizzazione della pressione</li>
+      <li>Indossare guanti termoresistenti, visiera, abbigliamento di cotone (non sintetico)</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Rischio Intossicazione da CO</h3>
+    <p>Il <strong>monossido di carbonio (CO)</strong> è il rischio più subdolo della sala caldaia: gas inodore, incolore, insapore — assolutamente non percepibile senza strumentazione. Si lega all'emoglobina con affinità 250 volte superiore all'ossigeno, impedendo il trasporto di ossigeno nel sangue.</p>
+    <p>Livelli di esposizione e effetti:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Concentrazione CO (ppm)</th><th>Effetti</th><th>Tempo</th></tr>
+      <tr><td>35 ppm</td><td>Limite TLV-TWA (esposizione 8h)</td><td>—</td></tr>
+      <tr><td>200 ppm</td><td>Mal di testa, vertigini</td><td>2-3 ore</td></tr>
+      <tr><td>400 ppm</td><td>Pericoloso, rischio vita</td><td>3 ore</td></tr>
+      <tr><td>1.600 ppm</td><td>Morte possibile</td><td>1 ora</td></tr>
+      <tr><td>6.400 ppm</td><td>Morte rapida</td><td>10-15 min</td></tr>
+    </table></div>
+    <p>Prevenzione: rilevatori di CO fissi con allarme visivo e acustico, manutenzione del bruciatore (ottimizzazione combustione), ventilazione adeguata della sala caldaia. Se scatta l'allarme CO: evacuare immediatamente, non rientrare senza autorespiratore.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Rischio Elettrico in Sala Caldaia</h3>
+    <p>La sala caldaia presenta rischi elettrici specifici amplificati dalla presenza di umidità, vapore e superfici metalliche conduttive:</p>
+    <ul>
+      <li><strong>Shock elettrico</strong>: il contatto con parti in tensione in ambiente umido è più pericoloso perché la resistenza corporea si riduce drasticamente con l'umidità (da ~100.000 Ω a secco a ~1.000 Ω con mani bagnate)</li>
+      <li><strong>Archi elettrici</strong>: nei quadri elettrici, possono causare ustioni anche senza contatto diretto</li>
+      <li><strong>Cortocircuiti</strong>: possono innescare incendi se non protetti da interruttori adeguati</li>
+    </ul>
+    <p>Misure di prevenzione:</p>
+    <ul>
+      <li>Tutti gli impianti elettrici in sala caldaia devono rispettare il grado di protezione IP adeguato all'umidità presente (IP44 minimo, IP55 nelle zone più umide)</li>
+      <li>Messa a terra di tutte le parti metalliche della caldaia e degli accessori</li>
+      <li>Interruttori differenziali (salvavita) su tutti i circuiti</li>
+      <li>MAI eseguire lavori su parti in tensione senza procedure LOTO</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Rischio Rumore</h3>
+    <p>La sala caldaia è un ambiente rumoroso: bruciatori, ventilatori, pompe, scaricatori di condensa e turbine producono livelli sonori che possono superare i limiti normativi.</p>
+    <p>Limiti del D.Lgs. 81/2008 (Titolo VIII):</p>
+    <div class="table-wrap"><table>
+      <tr><th>Livello di esposizione (LEX,8h)</th><th>Obblighi</th></tr>
+      <tr><td>80 dB(A)</td><td>Valore inferiore di azione: informazione, DPI disponibili</td></tr>
+      <tr><td>85 dB(A)</td><td>Valore superiore di azione: DPI obbligatori, sorveglianza sanitaria</td></tr>
+      <tr><td>87 dB(A)</td><td>Valore limite di esposizione: non superabile (tenendo conto dell'attenuazione dei DPI)</td></tr>
+    </table></div>
+    <p>Livelli tipici in sala caldaia: bruciatore in funzione 85-95 dB(A), pompe centrifughe 75-85 dB(A), turbine a vapore 90-110 dB(A). In presenza di bruciatori o turbine è quasi sempre necessario indossare protezioni uditive.</p>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Rischio Chimico — Additivi e Combustibili</h3>
+    <p>In sala caldaia si maneggiano sostanze chimiche pericolose che richiedono precauzioni specifiche:</p>
+    <ul>
+      <li><strong>Idrazina (N₂H₄)</strong>: cancerogena probabile (IARC 2A), tossica per inalazione e contatto. Richiede guanti in neoprene, occhiali, mascherina con filtro P2, ventilazione. Smaltimento come rifiuto speciale pericoloso.</li>
+      <li><strong>Acido cloridrico (HCl) per decapaggio</strong>: corrosivo per pelle e mucose, fumi irritanti. DPI: guanti resistenti agli acidi, visiera, tuta, stivali.</li>
+      <li><strong>NaOH (soda caustica)</strong>: corrosivo, causa gravi ustioni chimiche. Contatto con occhi = rischio cecità. Tenere sempre disponibile acqua per lavaggio immediato.</li>
+      <li><strong>Nafta/gasolio</strong>: irritanti cutanei, vapori tossici, infiammabili. No contatto prolungato senza guanti.</li>
+      <li><strong>Fosfati e additivi trattamento acque</strong>: generalmente a bassa tossicità ma da evitare il contatto prolungato.</li>
+    </ul>
+    <p>Per ogni sostanza pericolosa deve essere disponibile la <strong>Scheda Dati di Sicurezza (SDS)</strong> in lingua italiana, tenuta in sala caldaia e consultabile dai lavoratori.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. DPI — Dispositivi di Protezione Individuale</h3>
+    <p>I <strong>DPI</strong> sono l'ultima barriera di protezione, dopo che le misure collettive e organizzative non sono sufficienti. Devono essere: adeguati al rischio, conformi alle norme CE, mantenuti efficienti, forniti gratuitamente dal datore di lavoro.</p>
+    <p>DPI per la sala caldaia:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Rischio</th><th>DPI</th><th>Marcatura CE</th></tr>
+      <tr><td>Ustioni da calore/vapore</td><td>Guanti termoresistenti, visiera, abbigliamento cotone</td><td>CAT III</td></tr>
+      <tr><td>Rumore</td><td>Cuffie antirumore (SNR≥25dB) o tappi</td><td>CAT II</td></tr>
+      <tr><td>Rischio chimico</td><td>Guanti specifici per il chimico, occhiali, maschera</td><td>CAT III</td></tr>
+      <tr><td>Caduta oggetti</td><td>Scarpe antinfortunistiche S3</td><td>CAT II</td></tr>
+      <tr><td>Lavori in quota</td><td>Imbracatura + linea di vita</td><td>CAT III</td></tr>
+      <tr><td>Polveri/vapori</td><td>Semimascherina FFP2 o FFP3</td><td>CAT III</td></tr>
+    </table></div>
+    <p>I DPI di categoria III (rischi gravi o mortali) richiedono addestramento specifico e documentazione dell'avvenuta consegna con firma del lavoratore.</p>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Segnaletica di Sicurezza</h3>
+    <p>La segnaletica di sicurezza (D.Lgs. 81/2008, Titolo V) deve essere presente in tutta la sala caldaia. I colori e le forme hanno significati precisi:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Tipo</th><th>Forma</th><th>Colori</th><th>Significato</th></tr>
+      <tr><td>Divieto</td><td>Circolare</td><td>Rosso/Bianco</td><td>Azione vietata</td></tr>
+      <tr><td>Avvertimento</td><td>Triangolare</td><td>Giallo/Nero</td><td>Pericolo, rischio</td></tr>
+      <tr><td>Prescrizione</td><td>Circolare</td><td>Blu/Bianco</td><td>Obbligo DPI o azione</td></tr>
+      <tr><td>Salvataggio</td><td>Rettangolare/quadrata</td><td>Verde/Bianco</td><td>Vie di uscita, pronto soccorso</td></tr>
+      <tr><td>Antincendio</td><td>Rettangolare/quadrata</td><td>Rosso/Bianco</td><td>Posizione estintori, idranti</td></tr>
+    </table></div>
+    <p>Esempi obbligatori in sala caldaia: "Vietato l'accesso ai non addetti" (divieto), "Attenzione: alta temperatura" (avvertimento), "Obbligo di indossare guanti" (prescrizione), "Uscita di emergenza" (salvataggio), posizione estintori (antincendio).</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Procedure di Emergenza</h3>
+    <p>Le <strong>procedure di emergenza</strong> definiscono le azioni che il conduttore deve compiere nelle diverse situazioni di crisi. Devono essere affisse in sala caldaia e conosciute da tutti gli addetti:</p>
+    <p><strong>In caso di perdita di gas:</strong></p>
+    <ul>
+      <li>Non usare interruttori o fiamme</li>
+      <li>Chiudere la valvola di intercettazione principale del gas</li>
+      <li>Aprire porte e finestre per ventilare</li>
+      <li>Evacuare il locale</li>
+      <li>Chiamare il numero di emergenza del gestore gas e i Vigili del Fuoco (115)</li>
+    </ul>
+    <p><strong>In caso di incendio:</strong></p>
+    <ul>
+      <li>Allarmare il personale</li>
+      <li>Spegnere il bruciatore e intercettare il combustibile</li>
+      <li>Usare l'estintore appropriato se il fuoco è piccolo e si è addestrati</li>
+      <li>Evacuare e chiamare il 115</li>
+      <li>Non rientrare senza autorizzazione dei Vigili del Fuoco</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Piano di Emergenza</h3>
+    <p>Il <strong>Piano di Emergenza</strong> è il documento che definisce le procedure, le responsabilità e le risorse per gestire le emergenze in azienda. Per la sala caldaia è obbligatorio quando il numero di lavoratori supera determinate soglie o in presenza di rischi specifici.</p>
+    <p>Contenuto minimo del Piano di Emergenza:</p>
+    <ul>
+      <li>Planimetria con vie di esodo, posizione estintori, idranti, cassette di pronto soccorso</li>
+      <li>Procedure specifiche per ogni tipo di emergenza (incendio, perdita gas, esplosione, infortuno grave)</li>
+      <li>Ruoli e responsabilità: addetti all'evacuazione, addetti antincendio, addetti al pronto soccorso</li>
+      <li>Numeri di emergenza: 112 (emergenze), 115 (Vigili del Fuoco), 118 (ambulanza), gestore gas</li>
+      <li>Punto di raccolta esterno sicuro</li>
+      <li>Procedure di conto delle persone dopo l'evacuazione</li>
+    </ul>
+    <p>Il piano deve essere simulato almeno <strong>una volta all'anno</strong> con esercitazione pratica. Il risultato dell'esercitazione deve essere documentato e le eventuali carenze corrette.</p>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Primo Soccorso in Sala Caldaia</h3>
+    <p>La sala caldaia deve avere un cassetta di primo soccorso con il contenuto prescritto dal D.M. 388/2003, proporzionato al numero di lavoratori e al livello di rischio.</p>
+    <p><strong>Ustioni da vapore/calore:</strong></p>
+    <ul>
+      <li>NON bucare le bolle, non applicare ghiaccio, non applicare creme o burro</li>
+      <li>Raffreddare sotto acqua corrente fredda per almeno 20 minuti</li>
+      <li>Coprire con garza sterile non aderente</li>
+      <li>Chiamare il 118 per ustioni significative</li>
+    </ul>
+    <p><strong>Intossicazione da CO:</strong></p>
+    <ul>
+      <li>Allontanare immediatamente la persona dall'ambiente inquinato (porta chi soccorre all'esterno, non viceversa)</li>
+      <li>Posizione semiseduta se cosciente, posizione laterale di sicurezza se incosciente</li>
+      <li>Ossigeno puro se disponibile</li>
+      <li>Chiamare il 118 — l'intossicazione da CO può essere fatale anche ore dopo l'esposizione</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Lavori in Spazi Confinati</h3>
+    <p>I <strong>lavori in spazi confinati</strong> (D.P.R. 177/2011) riguardano direttamente la sala caldaia: l'ingresso nel corpo cilindrico, nei collettori, nei condotti fumi o nei pit di accesso sono tutti lavori in spazio confinato.</p>
+    <p>Pericoli specifici degli spazi confinati in caldaia:</p>
+    <ul>
+      <li>Carenza di ossigeno (l'O₂ può essere consumato dalla corrosione o da gas inerti)</li>
+      <li>Presenza di CO o altri gas tossici residui</li>
+      <li>Alta temperatura residua</li>
+      <li>Difficoltà di evacuazione in caso di malore</li>
+    </ul>
+    <p>Misure obbligatorie (D.P.R. 177/2011):</p>
+    <ul>
+      <li><strong>Analisi dell'atmosfera</strong> prima dell'ingresso: O₂ (18-21%), CO (&lt;35 ppm), gas infiammabili (&lt;10% LEL)</li>
+      <li><strong>Bonifica</strong> dello spazio (ventilazione forzata) prima e durante i lavori</li>
+      <li><strong>Vigilante esterno</strong> sempre presente — non può entrare senza comunicazione e attrezzatura</li>
+      <li><strong>Sistema di recupero</strong> (imbracatura + treppiede + argano) pronto all'uso</li>
+      <li><strong>Permesso di lavoro</strong> firmato dal responsabile</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Permesso di Lavoro (PDL)</h3>
+    <p>Il <strong>Permesso di Lavoro</strong> (Permit to Work) è un documento formale che autorizza l'esecuzione di lavori potenzialmente pericolosi su impianti in esercizio o fuori servizio. È obbligatorio nelle grandi aziende e raccomandato ovunque per i lavori su caldaie.</p>
+    <p>Contenuto di un PDL per lavori su caldaia:</p>
+    <ul>
+      <li>Identificazione dell'attrezzatura (matricola caldaia)</li>
+      <li>Descrizione del lavoro da eseguire</li>
+      <li>Rischi specifici identificati</li>
+      <li>Misure di sicurezza obbligatorie prima dell'inizio (LOTO, bonifica, analisi atmosfera)</li>
+      <li>DPI richiesti</li>
+      <li>Firma del <strong>emittente</strong> (responsabile impianto) e del <strong>ricevente</strong> (responsabile lavori)</li>
+      <li>Orario di inizio e di scadenza</li>
+      <li>Firma di restituzione a fine lavori</li>
+    </ul>
+    <p>Il PDL garantisce che l'impianto sia messo in sicurezza (valvole chiuse, energia isolata) prima dell'inizio dei lavori e che solo le persone autorizzate accedano all'area.</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. ATEX — Atmosfere Esplosive</h3>
+    <p>La direttiva <strong>ATEX</strong> (ATmosphères EXplosibles) — in Italia recepita con D.Lgs. 81/2008, Titolo XI — regola la protezione dei lavoratori dal rischio di esplosione dovuto alla presenza di gas, vapori, nebbie o polveri infiammabili.</p>
+    <p>Un'atmosfera esplosiva si forma quando una sostanza infiammabile (gas, vapore o polvere) è presente nell'aria in concentrazione sufficiente a esplodere in presenza di una sorgente di innesco.</p>
+    <p>In sala caldaia le sostanze che possono formare atmosfere esplosive sono principalmente:</p>
+    <ul>
+      <li>Gas combustibile (metano, GPL) in caso di perdite</li>
+      <li>Vapori di nafta o gasolio nelle vicinanze dei serbatoi e dei bruciatori</li>
+      <li>Polveri di carbone (nelle caldaie a carbone polverizzato)</li>
+    </ul>
+    <p>Il datore di lavoro deve elaborare il <strong>Documento di Protezione contro le Esplosioni</strong> (DPCE), classificare le zone ATEX e scegliere le attrezzature adeguate alla categoria ATEX della zona.</p>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Classificazione delle Zone ATEX</h3>
+    <p>Le zone ATEX per gas e vapori si classificano in base alla frequenza e alla durata della presenza di atmosfera esplosiva:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Zona</th><th>Frequenza atmosfera esplosiva</th><th>Esempi in sala caldaia</th></tr>
+      <tr><td>Zona 0</td><td>Continuamente o per lunghi periodi</td><td>Interno serbatoi nafta</td></tr>
+      <tr><td>Zona 1</td><td>Occasionalmente durante il normale esercizio</td><td>Intorno ai serbatoi nafta, area bruciatori</td></tr>
+      <tr><td>Zona 2</td><td>Non normalmente, solo in caso di anomalia</td><td>Sala caldaia con rischio perdite gas</td></tr>
+    </table></div>
+    <p>Le attrezzature elettriche e meccaniche devono essere certificate per la zona ATEX in cui vengono installate:</p>
+    <ul>
+      <li>Zona 0: categoria 1G (massima protezione)</li>
+      <li>Zona 1: categoria 2G</li>
+      <li>Zona 2: categoria 3G</li>
+    </ul>
+    <p>In zona ATEX è vietato: usare cellulari non antideflagranti, accendere fiamme libere, usare utensili elettrici non certificati ATEX, effettuare saldature senza speciale permesso di lavoro.</p>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Prevenzione Incendi — Normativa</h3>
+    <p>La prevenzione incendi è regolata principalmente dal <strong>D.Lgs. 81/2008</strong> (Titolo I) e dal <strong>D.M. 10.03.1998</strong> (Criteri generali di sicurezza antincendio). Le sale caldaia possono essere soggette a <strong>Certificato di Prevenzione Incendi (CPI)</strong> in base alla potenzialità.</p>
+    <p>Attività soggette a CPI per le sale caldaia (D.P.R. 151/2011, Allegato I):</p>
+    <ul>
+      <li>Impianti per la produzione di calore alimentati a combustibile solido, liquido o gassoso con potenzialità superiore a <strong>116 kW</strong> → categoria B (obbligo notifica e verifica)</li>
+      <li>Potenzialità superiore a <strong>350 kW</strong> → categoria C (obbligo CPI)</li>
+    </ul>
+    <p>Il rispetto delle norme antincendio è verificato dai Vigili del Fuoco. Il CPI ha validità 5 anni e deve essere rinnovato. La sua mancanza è reato.</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. CPI — Certificato di Prevenzione Incendi</h3>
+    <p>Il <strong>CPI</strong> è il provvedimento rilasciato dai Vigili del Fuoco che attesta la conformità dell'attività alle norme di prevenzione incendi. È obbligatorio per le attività elencate nel D.P.R. 151/2011.</p>
+    <p>Procedura per il rilascio:</p>
+    <ul>
+      <li>Presentazione della <strong>SCIA antincendio</strong> (Segnalazione Certificata di Inizio Attività) allo Sportello Unico</li>
+      <li>Allegati tecnici: relazione tecnica, planimetrie, dichiarazioni di conformità degli impianti</li>
+      <li>Sopralluogo dei Vigili del Fuoco (per attività di categoria C)</li>
+      <li>Rilascio del CPI se conformità accertata</li>
+    </ul>
+    <p>Il titolare dell'attività deve comunicare ai VVF le variazioni significative che influenzano le condizioni di prevenzione incendi. In attesa di rinnovo, deve comunque garantire la conformità alle norme antincendio.</p>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Stress da Calore — Rischi del Lavoro Caldo</h3>
+    <p>La sala caldaia è un ambiente caldo, specialmente d'estate. L'esposizione prolungata a calore elevato può causare danni alla salute anche gravi:</p>
+    <ul>
+      <li><strong>Crampi da calore</strong>: spasmi muscolari per perdita di sali. Trattamento: riposo, acqua con sali.</li>
+      <li><strong>Sincope da calore</strong>: perdita di coscienza per riduzione dell'apporto di sangue al cervello. Trattamento: sdraiare il soggetto, sollevare le gambe.</li>
+      <li><strong>Esaurimento da calore</strong>: sudorazione eccessiva, debolezza, nausea. Trattamento: ambiente fresco, liquidi.</li>
+      <li><strong>Colpo di calore</strong>: emergenza medica — T corporea &gt;40°C, cute asciutta e calda, confusione mentale. Chiamare il 118, raffreddare immediatamente.</li>
+    </ul>
+    <p>Misure preventive: pause regolari in ambiente fresco, idratazione costante (acqua + sali minerali), limitare i lavori pesanti nelle ore più calde, rilevatori di temperatura ambiente, formazione sui segni di allarme.</p>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Movimentazione Manuale dei Carichi</h3>
+    <p>In sala caldaia si movimentano manualmente carichi pesanti: sacchi di sale rigenerante (25 kg), bidoni di additivi chimici, attrezzature di manutenzione. Il D.Lgs. 81/2008, Titolo VI, fissa i limiti e le misure preventive.</p>
+    <p>Limiti di peso raccomandati (in condizioni ottimali):</p>
+    <ul>
+      <li>Uomini: 25 kg in zona neutra (altezza nodo mano-spalla), ridotti a 10 kg con postura difficile</li>
+      <li>Donne: 15 kg in zona neutra, ridotti a 7 kg con postura difficile</li>
+    </ul>
+    <p>Tecnica corretta di sollevamento:</p>
+    <ul>
+      <li>Avvicinarsi al carico, piedi divaricati spalla-larghezza</li>
+      <li>Piegare le ginocchia, non la schiena</li>
+      <li>Tenere il carico vicino al corpo</li>
+      <li>Alzarsi con le gambe mantenendo la schiena dritta</li>
+      <li>Non torcere il tronco durante il sollevamento</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Ergonomia in Sala Caldaia</h3>
+    <p>L'<strong>ergonomia</strong> è la disciplina che studia l'adattamento del lavoro alle caratteristiche fisiche e psicologiche del lavoratore. In sala caldaia, le problematiche ergonomiche principali:</p>
+    <ul>
+      <li><strong>Posture incongrue</strong>: lavori di manutenzione in posizioni scomode (curvati, inginocchiati, con le braccia alzate) aumentano il rischio di patologie muscolo-scheletriche</li>
+      <li><strong>Movimentazione di carichi pesanti</strong>: sacchi di sale, bidoni di additivi</li>
+      <li><strong>Lavoro con vibrazioni</strong>: l'uso di attrezzature vibranti per la pulizia</li>
+      <li><strong>Stress da turni</strong>: il conduttore spesso lavora su turni, con alterazione del ritmo sonno-veglia</li>
+    </ul>
+    <p>Misure ergonomiche: usare ausili meccanici per carichi pesanti (muletti, transpallet), pianificare i lavori pesanti nelle ore di massima efficienza, rotazione delle mansioni, postazioni di lettura degli strumenti ergonomicamente posizionate (leggibili senza torcere il collo).</p>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Formazione e Informazione — Obblighi</h3>
+    <p>Il D.Lgs. 81/2008 distingue tre livelli di preparazione alla sicurezza:</p>
+    <ul>
+      <li><strong>Informazione</strong> (Art. 36): il lavoratore riceve notizie sui rischi, sulle misure di prevenzione e sulle procedure di emergenza. Può essere in forma scritta o orale.</li>
+      <li><strong>Formazione</strong> (Art. 37): processo educativo strutturato con verifica dell'apprendimento. Per i lavoratori: minimo 8 ore (settori a basso rischio) o 16 ore (settori ad alto rischio come la sala caldaia). Include rischi generali e specifici.</li>
+      <li><strong>Addestramento</strong>: formazione pratica specifica sull'uso delle attrezzature, dei DPI e sulle procedure operative. Per i DPI di categoria III è obbligatorio e documentato.</li>
+    </ul>
+    <p>Il Accordo Stato-Regioni del 21/12/2011 fissa i contenuti minimi della formazione. Per i conduttori di caldaie, la formazione sulla sicurezza specifica dell'impianto deve essere effettuata prima dell'inizio dell'attività e aggiornata ogni 5 anni.</p>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Sorveglianza Sanitaria</h3>
+    <p>La <strong>sorveglianza sanitaria</strong> è il controllo periodico della salute dei lavoratori esposti a rischi specifici. Per il conduttore di caldaie è richiesta per diversi rischi:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Rischio</th><th>Periodicità visita</th><th>Accertamenti tipici</th></tr>
+      <tr><td>Rumore (>80 dB)</td><td>Annuale o biennale</td><td>Audiometria</td></tr>
+      <tr><td>Rischio chimico</td><td>Annuale</td><td>Esami ematochimici, spirometria</td></tr>
+      <tr><td>Stress termico</td><td>Annuale</td><td>Visita generale, ECG</td></tr>
+      <tr><td>Movimentazione carichi</td><td>Biennale</td><td>Visita osteoarticolare</td></tr>
+    </table></div>
+    <p>Il medico competente esprime il giudizio di idoneità che può essere:</p>
+    <ul>
+      <li>Idoneo</li>
+      <li>Idoneo con prescrizioni (limitazioni specifiche)</li>
+      <li>Idoneo parzialmente (ad alcune mansioni)</li>
+      <li>Non idoneo temporaneamente</li>
+      <li>Non idoneo permanentemente</li>
+    </ul>
+    <p>Il giudizio di non idoneità non equivale automaticamente al licenziamento — il datore di lavoro deve valutare possibili adattamenti della mansione.</p>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Infortuni — Denuncia e Registrazione</h3>
+    <p>Il <strong>infortuno sul lavoro</strong> è un evento traumatico avvenuto per causa violenta in occasione di lavoro che provoca la morte, l'inabilità permanente o l'inabilità temporanea assoluta per più di tre giorni.</p>
+    <p>Obblighi in caso di infortunio:</p>
+    <ul>
+      <li>Il lavoratore infortunato deve <strong>comunicare immediatamente</strong> l'infortunio al datore di lavoro</li>
+      <li>Il datore di lavoro deve <strong>denunciare all'INAIL</strong> entro 2 giorni dall'infortunio (per infortuni con prognosi &gt;3 giorni) o entro 24 ore (per casi mortali o con pericolo di vita)</li>
+      <li>Denuncia all'<strong>autorità di pubblica sicurezza</strong> per infortuni mortali o con pericolo di vita</li>
+      <li>Registrazione nel <strong>Registro Infortuni</strong> (ora sostituito dalla denuncia telematica INAIL)</li>
+    </ul>
+    <p>Dopo l'infortuno è obbligatorio effettuare l'<strong>analisi delle cause</strong> (near miss analysis) per identificare le misure preventive da adottare. Anche i "mancati infortuni" (near miss) devono essere segnalati e analizzati.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Malattie Professionali</h3>
+    <p>Le <strong>malattie professionali</strong> (o tecnopatiche) sono patologie causate dall'esposizione a fattori di rischio lavorativi nel tempo. Si differenziano dagli infortuni per l'insorgenza graduale.</p>
+    <p>Malattie professionali tipiche per i conduttori di caldaie:</p>
+    <ul>
+      <li><strong>Ipoacusia da rumore</strong>: perdita progressiva dell'udito per esposizione cronica a rumore eccessivo</li>
+      <li><strong>Patologie muscolo-scheletriche</strong>: lombalgia, tendiniti, ernie discali da movimentazione e posture scorrette</li>
+      <li><strong>Dermatiti da contatto</strong>: per contatto ripetuto con additivi chimici, solventi, idrocarburi</li>
+      <li><strong>Patologie respiratorie</strong>: per esposizione a fumi, polveri di caldaia, CO cronico</li>
+    </ul>
+    <p>Il lavoratore che sviluppa una malattia professionale deve denunciarla al medico di base e successivamente all'INAIL per il riconoscimento e il risarcimento. La lista delle malattie professionali tabellate è allegata al D.P.R. 1124/1965.</p>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Addestramento Antincendio</h3>
+    <p>Il D.M. 10.03.1998 classifica le aziende in tre livelli di rischio incendio (basso, medio, alto) e stabilisce i requisiti minimi di formazione antincendio per gli addetti:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Livello rischio</th><th>Durata formazione</th><th>Prova pratica</th></tr>
+      <tr><td>Basso</td><td>4 ore</td><td>Uso estintore</td></tr>
+      <tr><td>Medio</td><td>8 ore</td><td>Uso estintore + evacuazione</td></tr>
+      <tr><td>Alto</td><td>16 ore</td><td>Completa con VVF</td></tr>
+    </table></div>
+    <p>La sala caldaia è generalmente classificata a <strong>rischio medio o alto</strong> in presenza di combustibili liquidi (nafta) o grandi quantità di gas. Il conduttore deve essere addestrato sull'uso degli estintori appropriati per la sua sala caldaia e sulla procedura di evacuazione.</p>
+    <p>L'addestramento deve essere ripetuto con <strong>aggiornamenti periodici</strong> (ogni 3 anni per rischio medio, ogni 2 anni per rischio alto) e documentato. Le esercitazioni pratiche con estintori veri (o simulatori) sono parte integrante dell'addestramento.</p>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Manutenzione in Sicurezza</h3>
+    <p>Le attività di <strong>manutenzione</strong> sulla caldaia e sugli accessori presentano rischi aggiuntivi rispetto al normale esercizio. Regole fondamentali:</p>
+    <ul>
+      <li><strong>Messa fuori servizio</strong>: prima di qualsiasi manutenzione sulla caldaia, deve essere messa fuori servizio: spento il bruciatore, ridotta la pressione a zero, drenata l'acqua se necessario, aperto il passo d'uomo</li>
+      <li><strong>Cartello di divieto</strong>: cartello "NON AVVIARE — MANUTENZIONE IN CORSO" su tutte le manovre di avviamento</li>
+      <li><strong>Autorizzazione</strong>: solo personale autorizzato con PDL firmato può effettuare manutenzioni</li>
+      <li><strong>Ispezione pre-ingresso</strong>: analisi dell'atmosfera interna prima di entrare nella caldaia</li>
+      <li><strong>Comunicazione</strong>: il conduttore in servizio deve sapere sempre chi è dentro la caldaia e per quanto tempo</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Lavori Elettrici — LOTO</h3>
+    <p>Il sistema <strong>LOTO</strong> (Lock Out/Tag Out — Blocco e Etichettatura) è la procedura di sicurezza per garantire che le macchine e gli impianti siano completamente de-energizzati prima di effettuare manutenzioni.</p>
+    <p>Procedura LOTO per lavori sulla caldaia:</p>
+    <ul>
+      <li><strong>Lock Out</strong>: blocco fisico di tutti gli interruttori, valvole e sorgenti di energia con lucchetto personale del lavoratore. Ogni lavoratore ha il suo lucchetto — nessuno può rimuovere quello degli altri.</li>
+      <li><strong>Tag Out</strong>: etichetta su ogni blocco che indica chi ha applicato il blocco e perché</li>
+      <li><strong>Verifica</strong>: confermare che l'energia sia assente prima di iniziare (prova degli interruttori, misura della tensione, verifica della pressione)</li>
+      <li><strong>Rimozione</strong>: solo il lavoratore che ha applicato il lucchetto può rimuoverlo alla fine del lavoro</li>
+    </ul>
+    <p>Il LOTO si applica a: energia elettrica, energia idraulica (vapore, acqua in pressione), energia pneumatica, energia meccanica (molle, contrappesi).</p>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Sicurezza Ditte Esterne (Appalti)</h3>
+    <p>Quando ditte esterne entrano in sala caldaia per manutenzioni, ispezioni o lavori, il D.Lgs. 81/2008 (Art. 26) impone obblighi specifici al <strong>committente</strong> (datore di lavoro della sala caldaia):</p>
+    <ul>
+      <li>Verifica dell'idoneità tecnico-professionale dell'appaltatore (iscrizione CCIAA, documentazione sicurezza)</li>
+      <li>Fornitura di informazioni sui rischi specifici dell'ambiente (DVR, rischi specifici sala caldaia)</li>
+      <li>Elaborazione del <strong>DUVRI</strong> (Documento Unico di Valutazione dei Rischi da Interferenza) per gestire i rischi da sovrapposizione tra lavoratori interni ed esterni</li>
+      <li>Coordinamento con l'appaltatore per la sicurezza</li>
+    </ul>
+    <p>Il conduttore in servizio durante i lavori di una ditta esterna è responsabile di garantire che i lavoratori esterni non operino su componenti della caldaia senza le necessarie precauzioni e autorizzazioni.</p>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Sanzioni D.Lgs. 81/2008</h3>
+    <p>Le violazioni del D.Lgs. 81/2008 comportano sanzioni penali e amministrative per datore di lavoro, dirigenti, preposti e anche lavoratori:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Violazione</th><th>Sanzione</th></tr>
+      <tr><td>Mancata elaborazione DVR</td><td>Arresto 3-6 mesi o ammenda 2.500-6.400€ (datore di lavoro)</td></tr>
+      <tr><td>Mancata nomina RSPP</td><td>Arresto 3-6 mesi o ammenda 2.500-6.400€</td></tr>
+      <tr><td>Mancata formazione lavoratori</td><td>Arresto 2-4 mesi o ammenda 1.200-5.200€</td></tr>
+      <tr><td>Mancata sorveglianza sanitaria</td><td>Arresto 2-4 mesi o ammenda 1.200-5.200€</td></tr>
+      <tr><td>Lavoratore: uso scorretto DPI</td><td>Ammenda 150-500€</td></tr>
+      <tr><td>Omicidio colposo/lesioni per violazione norme</td><td>Reclusione fino a 5 anni (omicidio) o 3 anni (lesioni gravi)</td></tr>
+    </table></div>
+    <p>La responsabilità penale è personale e non trasferibile. Anche il lavoratore che non usa i DPI o non rispetta le procedure può essere sanzionato.</p>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Gestione Prodotti Chimici — SDS</h3>
+    <p>La <strong>Scheda Dati di Sicurezza</strong> (SDS o Safety Data Sheet) è il documento obbligatorio che accompagna ogni prodotto chimico pericoloso. Redatta dal produttore secondo il Regolamento REACH (CE 1907/2006) e il Regolamento CLP (CE 1272/2008).</p>
+    <p>Struttura standard della SDS — 16 sezioni:</p>
+    <ul>
+      <li><strong>Sezione 1</strong>: identificazione del prodotto e del fornitore</li>
+      <li><strong>Sezione 2</strong>: identificazione dei pericoli (pittogrammi GHS, frasi H e P)</li>
+      <li><strong>Sezione 3</strong>: composizione/informazioni sugli ingredienti</li>
+      <li><strong>Sezione 4</strong>: misure di primo soccorso</li>
+      <li><strong>Sezione 5</strong>: misure antincendio</li>
+      <li><strong>Sezione 6</strong>: misure in caso di fuoriuscita accidentale</li>
+      <li><strong>Sezione 8</strong>: controllo dell'esposizione e DPI</li>
+      <li><strong>Sezione 13</strong>: considerazioni sullo smaltimento</li>
+    </ul>
+    <p>Le SDS devono essere in lingua italiana, aggiornate, disponibili nella sala caldaia per ogni prodotto chimico usato, consultabili dai lavoratori prima dell'uso.</p>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Prevenzione — Cultura della Sicurezza</h3>
+    <p>La vera sicurezza non si ottiene solo con norme e sanzioni, ma con una <strong>cultura della sicurezza</strong> condivisa da tutti i livelli aziendali. I principi della cultura della sicurezza:</p>
+    <ul>
+      <li><strong>La sicurezza è un valore</strong>, non un ostacolo alla produzione. Il conduttore che segnala un problema è un professionista responsabile, non un "rompiscatole".</li>
+      <li><strong>Segnalazione dei near miss</strong>: ogni "quasi incidente" segnalato e analizzato previene un incidente futuro reale. Il silenzio sui near miss è pericoloso.</li>
+      <li><strong>Apprendimento dagli errori</strong>: l'analisi degli incidenti non deve cercare un colpevole ma identificare i fattori sistemici che hanno portato all'evento.</li>
+      <li><strong>Il conduttore come ultima difesa</strong>: nella catena delle difese (progettazione sicura, procedure, formazione, DPI), il conduttore è l'ultima barriera. Deve avere l'autorità e la responsabilità di fermare i lavori in caso di pericolo.</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. DVR obbligatorio per tutte le aziende — mancata elaborazione è reato penale<br>
+      2. CO è inodore e letale — allarmi CO obbligatori in sala caldaia, evacuare immediatamente<br>
+      3. Lavori in spazio confinato: analisi atmosfera + vigilante esterno + sistema recupero SEMPRE<br>
+      4. LOTO: ogni lavoratore applica il suo lucchetto — nessuno può rimuoverlo se non lui stesso<br>
+      5. Zona ATEX 2: sala caldaia con rischio perdite gas — niente cellulari o utensili non certificati</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Sicurezza sul Lavoro</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"D.Lgs. 81/2008 — i due obblighi NON delegabili del datore di lavoro",a:"1. Elaborare il DVR (Documento di Valutazione dei Rischi).\n2. Designare il RSPP (Responsabile Servizio Prevenzione e Protezione).\nTutti gli altri obblighi possono essere delegati a dirigenti o preposti, ma con responsabilità di sorveglianza del datore."},
+  {q:"DVR — contenuto obbligatorio e cosa succede se manca",a:"Relazione rischi, misure prevenzione/protezione e DPI, programma attuazione, procedure, ruoli organizzativi.\nMancata elaborazione = REATO PENALE: arresto 3-6 mesi o ammenda 2.500-6.400€.\nDeve essere redatto in forma scritta, datato, firmato e aggiornato ad ogni variazione."},
+  {q:"Valutazione del rischio — formula e matrice",a:"R = P × G (Probabilità × Gravità del danno)\nP: 1=improbabile → 4=molto probabile\nG: 1=lieve → 4=gravissimo\nR≤4: basso. 5-8: medio. 9-12: alto (urgente). 16: inaccettabile (sospendere)."},
+  {q:"CO — perché è pericoloso e limiti di esposizione",a:"Inodore, incolore, insapore — non percepibile. Si lega all'emoglobina 250× più dell'O₂.\nLimiti: TLV-TWA=35 ppm (8h). 200 ppm: mal di testa. 400 ppm: pericoloso. 1.600 ppm: morte in 1h.\nProcedura: evacuare immediatamente, non rientrare senza autorespiratore. Chiamare il 118."},
+  {q:"Lavori in spazio confinato — misure obbligatorie (DPR 177/2011)",a:"1. Analisi atmosfera prima ingresso: O₂ 18-21%, CO <35 ppm, gas <10% LEL\n2. Bonifica (ventilazione forzata) prima e durante\n3. Vigilante esterno sempre presente\n4. Sistema recupero (imbracatura + treppiede + argano) pronto all'uso\n5. Permesso di lavoro firmato"},
+  {q:"LOTO — principio fondamentale",a:"Lock Out/Tag Out: de-energizzazione totale prima della manutenzione.\nOgni lavoratore applica il SUO lucchetto personale.\nNESSUNO può rimuovere il lucchetto altrui.\nSi applica a: energia elettrica, vapore/acqua in pressione, energia pneumatica, energia meccanica."},
+  {q:"Classificazione delle zone ATEX per gas",a:"Zona 0: atmosfera esplosiva continuamente → Interno serbatoi nafta → Categoria 1G\nZona 1: atmosfera esplosiva occasionalmente → Attorno serbatoi, area bruciatori → Categoria 2G\nZona 2: solo in caso di anomalia → Sala caldaia con rischio perdite → Categoria 3G\nIn zona ATEX: no cellulari, no fiamme, no utensili non certificati."},
+  {q:"Limiti di esplosività del metano (LEL e UEL)",a:"LEL (Lower Explosive Limit) = 5% vol. in aria\nUEL (Upper Explosive Limit) = 15% vol. in aria\nFuori da questo intervallo non c'è esplosione.\nI rilevatori devono allarmare al 20% del LEL = 1% vol. metano in aria (anticipo sicuro)."},
+  {q:"Classificazione fuochi e estintori corretti",a:"Classe A (solidi): polvere ABC, acqua\nClasse B (liquidi): schiuma, polvere, CO₂\nClasse C (gas): polvere, CO₂\nFuochi elettrici: SOLO CO₂ o polvere\nMAI acqua su classe B (nafta): l'acqua scende sotto la nafta e proietta il fuoco."},
+  {q:"Limiti di rumore D.Lgs. 81/2008",a:"80 dB(A): valore inferiore di azione → informazione, DPI disponibili\n85 dB(A): valore superiore di azione → DPI obbligatori + sorveglianza sanitaria\n87 dB(A): valore limite di esposizione → non superabile (considerando attenuazione DPI)\nAudiometria obbligatoria sopra 80 dB."},
+  {q:"DPI — categorie e obblighi specifici",a:"CAT I: rischi minimi (guanti lavoro leggero)\nCAT II: rischi medi (scarpe S3, cuffie antirumore)\nCAT III: rischi gravi o mortali (guanti chimici, imbracatura, FFP3, visiera)\nCAT III richiede addestramento specifico documentato e firma del lavoratore per la consegna."},
+  {q:"Primo soccorso ustioni da vapore",a:"NON bucare bolle, NON ghiaccio, NON burro/creme.\nRaffreddare con acqua corrente fredda per almeno 20 minuti.\nCoprire con garza sterile non aderente.\nChiamare il 118 per ustioni significative.\nL'acqua fredda corrente è l'unico trattamento corretto immediato."},
+  {q:"RSPP vs RLS — differenze",a:"RSPP (Responsabile Servizio Prevenzione): designato dal DATORE DI LAVORO. Esperto esterno o interno. Coordina la prevenzione e protezione.\nRLS (Rappresentante Lavoratori Sicurezza): eletto dai LAVORATORI. Rappresenta gli interessi dei colleghi. Minimo 32h formazione iniziale."},
+  {q:"Permesso di lavoro (PDL) — contenuto minimo",a:"Identificazione attrezzatura + descrizione lavoro + rischi + misure sicurezza pre-lavoro (LOTO, bonifica) + DPI richiesti + firma emittente (responsabile impianto) + firma ricevente (responsabile lavori) + orario inizio/scadenza + firma restituzione a fine lavori."},
+  {q:"Sorveglianza sanitaria — cosa determina il medico competente",a:"Giudizio di idoneità alla mansione specifica:\n- Idoneo\n- Idoneo con prescrizioni\n- Idoneo parzialmente\n- Non idoneo temporaneamente\n- Non idoneo permanentemente\nNon idoneità ≠ licenziamento: il datore deve valutare adattamenti della mansione."},
+  {q:"Infortuno sul lavoro — obblighi di denuncia",a:"Lavoratore: comunicare IMMEDIATAMENTE al datore di lavoro.\nDatore: denuncia all'INAIL entro 2 giorni (prognosi >3 giorni) o 24 ore (mortale/pericolo vita).\nDenunce all'autorità di PS per mortali o pericolo vita.\nObbligatoria analisi delle cause (near miss analysis)."},
+  {q:"CPI — quando è obbligatorio per la sala caldaia",a:"Potenzialità > 116 kW: categoria B (notifica e verifica VVF)\nPotenzialità > 350 kW: categoria C (obbligo CPI)\nDPR 151/2011. Validità CPI: 5 anni. Mancanza = reato.\nProcedura: SCIA antincendio + documenti tecnici + sopralluogo VVF."},
+  {q:"Rischio chimico in sala caldaia — i più pericolosi",a:"Idrazina: cancerogena (IARC 2A) → guanti neoprene + occhiali + maschera P2 + smaltimento rifiuto speciale.\nHCl (decapaggio): corrosivo → tuta + visiera + guanti acidi.\nNaOH: caustico, ustioni gravi e cecità → immediato lavaggio occhi con acqua.\nSDS in italiano SEMPRE disponibile in sala."},
+  {q:"DUVRI — quando si elabora",a:"Documento Unico Valutazione Rischi da Interferenza: quando ditte ESTERNE lavorano in sala caldaia insieme ai lavoratori interni.\nObblighi committente (Art. 26 D.Lgs. 81/2008): verifica idoneità appaltatore, informazioni sui rischi specifici, elaborazione DUVRI, coordinamento.\nIl conduttore deve garantire che gli esterni non operino senza le necessarie autorizzazioni."},
+  {q:"Segnaletica di sicurezza — forme e colori",a:"Divieto: CIRCOLARE rosso/bianco\nAvvertimento: TRIANGOLARE giallo/nero\nPrescrizione: CIRCOLARE blu/bianco\nSalvataggio/emergenza: RETTANGOLARE verde/bianco\nAntincendio: RETTANGOLARE rosso/bianco\nDa esporre obbligatoriamente in sala caldaia per i rischi identificati."},
+];
+
+const QUESTIONS=[
+  {q:"Quali sono i due obblighi NON delegabili del datore di lavoro secondo il D.Lgs. 81/2008?",opts:["Formazione lavoratori e fornitura DPI","Elaborazione DVR e designazione RSPP","Sorveglianza sanitaria e nomina medico competente","Acquisto estintori e segnaletica di sicurezza"],c:1,expl:"Il D.Lgs. 81/2008 stabilisce che solo DVR (Documento Valutazione Rischi) e designazione RSPP non sono delegabili dal datore di lavoro. Tutti gli altri obblighi possono essere delegati a dirigenti o preposti, ma il datore rimane responsabile del controllo dell'adempimento."},
+  {q:"Il monossido di carbonio (CO) in sala caldaia è pericoloso principalmente perché:",opts:["Ha odore sgradevole che causa disturbi","È esplosivo in concentrazioni superiori al 5%","È inodore e incolore e si lega all'emoglobina 250× più dell'ossigeno","Abbassa la temperatura della sala fino al rischio di congelamento"],c:2,expl:"Il CO è insidioso perché è completamente impercepibile ai sensi umani (inodore, incolore, insapore). Si lega all'emoglobina con affinità 250× superiore all'O₂, impedendo il trasporto di ossigeno nel sangue. 400 ppm per poche ore può essere mortale. In caso di allarme CO: evacuare immediatamente."},
+  {q:"Per lavori all'interno del corpo cilindrico di una caldaia (spazio confinato), è obbligatorio:",opts:["Solo indossare casco e guanti termici","Analisi dell'atmosfera + vigilante esterno sempre presente + sistema recupero pronto","Solo avere il permesso del responsabile dell'impianto","Avvisare l'INAIL prima di entrare"],c:1,expl:"I lavori in spazio confinato (DPR 177/2011) richiedono: analisi atmosfera pre-ingresso (O₂, CO, gas infiammabili), bonifica con ventilazione forzata, vigilante esterno sempre presente (non può entrare senza comunicazione), sistema di recupero (imbracatura + argano), permesso di lavoro firmato."},
+  {q:"Il sistema LOTO (Lock Out/Tag Out) prevede che il lucchetto personale del lavoratore:",opts:["Possa essere rimosso dal responsabile in caso di emergenza","Possa essere rimosso da qualsiasi collega a fine turno","Possa essere rimosso SOLO dal lavoratore che lo ha applicato","Possa essere rimosso da RSPP o medico competente"],c:2,expl:"Il principio fondamentale del LOTO è che SOLO il lavoratore che ha applicato il suo lucchetto personale può rimuoverlo. Nessun altro — neanche il responsabile o il datore di lavoro — può rimuovere il lucchetto altrui. Questo garantisce che il lavoratore che ha bloccato l'impianto sia l'unico a riaprirlo quando il lavoro è completato in sicurezza."},
+  {q:"In sala caldaia alimentata a metano, la zona ATEX corretta è generalmente:",opts:["Zona 0 — atmosfera esplosiva in modo continuo","Zona 1 — atmosfera esplosiva occasionalmente durante normale esercizio","Zona 2 — atmosfera esplosiva solo in caso di anomalia","Non è zona ATEX — il metano non è classificato come gas pericoloso"],c:2,expl:"La sala caldaia alimentata a metano è normalmente classificata Zona 2: atmosfera esplosiva presente non normalmente ma solo in caso di anomalia (perdita di gas). Le zone attorno ai serbatoi di nafta possono essere Zona 1. In Zona 2 sono vietati cellulari non certificati, fiamme libere, utensili elettrici non ATEX."},
+  {q:"Per un incendio di classe B (nafta in fiamme), quale estintore NON va usato?",opts:["CO₂","Schiuma","Polvere ABC","Acqua"],c:3,expl:"L'acqua NON va mai usata su fuochi di classe B (liquidi infiammabili come nafta e gasolio). L'acqua, più densa della nafta, scende sotto il combustibile ancora in fiamme e lo proietta violentemente, allargando l'incendio. Usare schiuma (crea strato coprente), CO₂ o polvere ABC."},
+  {q:"Il valore limite di esposizione al rumore che non deve essere superato (considerando i DPI) è:",opts:["75 dB(A)","80 dB(A)","85 dB(A)","87 dB(A)"],c:3,expl:"87 dB(A) è il valore limite di esposizione LEX,8h — non deve essere superato tenendo conto dell'attenuazione dei DPI. 80 dB(A) è il valore inferiore di azione (DPI disponibili, informazione). 85 dB(A) è il valore superiore di azione (DPI obbligatori, sorveglianza sanitaria)."},
+  {q:"La mancata elaborazione del DVR comporta:",opts:["Solo un avviso scritto dell'ASL","Ammenda di massimo 500€","Reato penale: arresto 3-6 mesi o ammenda 2.500-6.400€","Solo obbligo di elaborarlo entro 30 giorni"],c:2,expl:"La mancata elaborazione del DVR è un REATO PENALE per il datore di lavoro: arresto da 3 a 6 mesi o ammenda da 2.500 a 6.400€. Il DVR deve essere redatto PRIMA di iniziare l'attività, non può essere rimandato. Anche un DVR presente ma non aggiornato può costituire violazione."},
+  {q:"In caso di ustione da vapore, il primo soccorso corretto prevede:",opts:["Applicare ghiaccio sulla lesione","Bucare le bolle per far uscire il liquido","Raffreddare con acqua corrente fredda per almeno 20 minuti","Applicare burro o crema grassa sulla lesione"],c:2,expl:"L'unico trattamento corretto immediato è raffreddare sotto acqua corrente fredda per ALMENO 20 minuti. NON usare ghiaccio (causa vasocostrizione e aggrava il danno), NON bucare le bolle (proteggono dalla infezione), NON applicare creme o burro (trattengono il calore e facilitano infezioni)."},
+  {q:"Il LEL (Lower Explosive Limit) del metano è:",opts:["1% in aria","5% in aria","10% in aria","15% in aria"],c:1,expl:"Il LEL del metano è 5% in volume nell'aria. L'UEL è 15%. Fuori da questo intervallo (sotto il 5% o sopra il 15%) la miscela non è esplosiva. I rilevatori di gas devono allarmare al 20% del LEL = 1% vol. di metano in aria, per avere un margine di sicurezza adeguato prima di raggiungere la zona esplosiva."},
+  {q:"Il DUVRI deve essere elaborato quando:",opts:["Si acquistano nuovi DPI","Ditte esterne lavorano in sala caldaia insieme ai lavoratori interni","Si supera il limite di rumore di 85 dB","Si installa un nuovo rilevatore di CO"],c:1,expl:"Il DUVRI (Documento Unico Valutazione Rischi da Interferenza) è obbligatorio quando ci sono interferenze tra lavoratori di diverse aziende nello stesso luogo (Art. 26 D.Lgs. 81/2008). Il committente deve verificare l'idoneità dell'appaltatore, fornire informazioni sui rischi specifici, elaborare il DUVRI e coordinare le attività."},
+  {q:"La segnaletica triangolare gialla con simbolo nero indica:",opts:["Obbligo di indossare un DPI","Azione vietata","Pericolo/avvertimento di rischio","Via di evacuazione"],c:2,expl:"Triangolo giallo/nero = segnaletica di AVVERTIMENTO/PERICOLO. Indica un rischio specifico (alta temperatura, tensione elettrica, gas esplosivo, ecc.). Circolare rosso/bianco = divieto. Circolare blu/bianco = obbligo (DPI). Rettangolare verde/bianco = salvataggio/emergenza."},
+  {q:"Il medico competente esprime il giudizio di 'idoneo con prescrizioni'. Questo significa che:",opts:["Il lavoratore deve cambiare mansione","Il lavoratore può svolgere la mansione con alcune limitazioni specifiche","Il lavoratore deve essere immediatamente licenziato","Il lavoratore non può lavorare per 30 giorni"],c:1,expl:"'Idoneo con prescrizioni' significa che il lavoratore può svolgere la mansione specifica MA con alcune limitazioni (es. non sollevare pesi superiori a 10 kg, non lavorare in ambienti con T>30°C, ecc.). Il datore di lavoro deve adeguare la mansione alle prescrizioni. Non equivale a licenziamento."},
+  {q:"La potenzialità soglia per l'obbligo di CPI (Certificato Prevenzione Incendi) per le sale caldaia è:",opts:["50 kW","116 kW","350 kW","1.000 kW"],c:2,expl:"Sopra 350 kW di potenzialità (categoria C del DPR 151/2011) la sala caldaia richiede CPI rilasciato dai Vigili del Fuoco. Tra 116 kW e 350 kW (categoria B) c'è obbligo di notifica e verifica VVF ma non sempre CPI completo. Sotto 116 kW generalmente esente."},
+  {q:"In caso di perdita di gas metano, la prima azione corretta è:",opts:["Aprire le finestre e accendere la luce per vedere meglio","Chiudere la valvola principale del gas PRIMA di qualsiasi altra azione","Chiamare subito i VVF dal telefono fisso della sala caldaia","Usare un estintore CO₂ per diluire il gas"],c:1,expl:"Prima azione: chiudere la valvola principale di intercettazione del gas. Poi aprire porte e finestre per ventilare. NON usare interruttori (scintille!), NON accendere luci, NON usare fiamme. Evacuare il locale. Chiamare i VVF (115) e il gestore gas dall'esterno."},
+  {q:"I DPI di Categoria III richiedono obbligatoriamente:",opts:["Solo la marcatura CE","Addestramento specifico del lavoratore documentato con firma","Solo il DPI corretto per il rischio","Un certificato medico prima dell'uso"],c:1,expl:"I DPI di Categoria III (rischi gravi o mortali: imbracatura anticaduta, guanti chimici per sostanze pericolose, semimaschere FFP3, visiere anti-calore) richiedono addestramento specifico del lavoratore, documentato con firma. La consegna deve essere registrata con firma del lavoratore. Non basta fornirli — bisogna assicurarsi che vengano usati correttamente."},
+  {q:"Il piano di emergenza deve essere simulato almeno:",opts:["Una volta ogni 5 anni","Una volta ogni 3 anni","Una volta all'anno con esercitazione pratica documentata","Solo quando cambia il personale"],c:2,expl:"Il piano di emergenza deve essere simulato almeno UNA VOLTA ALL'ANNO con esercitazione pratica. Il risultato deve essere documentato e le carenze corrette. Le esercitazioni senza documentazione non hanno valore ai fini della conformità normativa."},
+  {q:"La sorveglianza sanitaria per esposizione al rumore sopra 80 dB prevede:",opts:["Solo una visita medica generica all'assunzione","Audiometria periodica (annuale o biennale) per monitorare la funzione uditiva","Solo la fornitura obbligatoria di cuffie antirumore","Visite mensili con spirometria"],c:1,expl:"Per esposizione a rumore sopra 80 dB è obbligatoria la sorveglianza sanitaria con audiometria periodica. Tra 80-85 dB: audiometria ogni 2 anni. Sopra 85 dB: annuale. L'audiometria rileva precocemente la perdita uditiva da rumore (ipoacusia professionale) quando è ancora parzialmente reversibile con la riduzione dell'esposizione."},
+  {q:"In caso di intossicazione da CO, la prima azione di chi soccorre è:",opts:["Entrare immediatamente nella stanza per soccorrere il collega","Aprire tutte le finestre senza uscire per mantenere la supervisione","Portare il lavoratore intossicato all'ESTERNO — non portare il soccorritore dentro","Somministrare subito acqua e zucchero per aiutare il recupero"],c:2,expl:"Il soccorritore NON deve entrare in un ambiente con CO senza autorespiratore — rischierebbe di intossicarsi a sua volta. La regola è: portare il paziente fuori dall'ambiente contaminato. Solo i soccorritori con autorespiratore (Vigili del Fuoco, SUEM) possono entrare. Chiamare il 118 — l'intossicazione da CO può essere fatale ore dopo."},
+  {q:"Il RLS (Rappresentante Lavoratori Sicurezza) è:",opts:["Nominato dal datore di lavoro tra i dipendenti più anziani","Eletto o designato dai lavoratori per rappresentarli in materia di sicurezza","Nominato dall'ASL in ogni azienda","Un consulente esterno di sicurezza pagato dall'azienda"],c:1,expl:"L'RLS è eletto o designato dai LAVORATORI (non dal datore di lavoro). Rappresenta gli interessi dei colleghi in materia di salute e sicurezza. Ha diritto di accesso a tutti i luoghi di lavoro, di consultazione sul DVR, e di partecipazione alla riunione annuale di sicurezza. Deve ricevere formazione specifica di almeno 32 ore."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm9');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm9',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

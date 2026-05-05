@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 06 — Trattamento Acque</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 06</div>
+    <div class="header-title">Trattamento Acque</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. Perché trattare l'acqua di caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Durezza dell'acqua — tipi e misura</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. pH — definizione e importanza</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. Conducibilità elettrica</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. TDS — solidi disciolti totali</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Ossigeno disciolto — pericoli</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. Anidride carbonica disciolta</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Silice — problemi nelle turbine</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Addolcimento — scambio ionico</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Rigenerazione resine — procedura</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Demineralizzazione — letti misti</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Osmosi inversa</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Degasazione termica</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Degasazione con membrane</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Idrazina — dosaggio e sicurezza</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Fosfati — trattamento in caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Ammine — protezione circuito vapore</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. Inibitori di corrosione</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Disperdenti e sequestrati</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. Analisi chimiche dell'acqua</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. Limiti di qualità acqua caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. Limiti qualità acqua di alimento</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Limiti qualità vapore prodotto</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Spurgo — calcolo portata</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. Recupero condense</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Serbatoio d'acqua demineralizzata</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Degasatore termico — costruzione</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. Incrostazioni — meccanismo formazione</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Corrosione per ossigeno — meccanismo</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Corrosione acida e alcalina</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Corrosione da acido solforico</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Corrosione galvanica in caldaia</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Pulizia chimica (decapaggio)</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. Passivazione superfici interne</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. Conservazione caldaia ferma</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Analisi acque — strumenti</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. Laboratorio acque — frequenza analisi</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. Schiuma e priming — cause chimiche</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. Ebullioscopia e concentrazione sali</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Fattore di concentrazione</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Normativa acque di caldaia (UNI)</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Impatto ambientale acque di scarico</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. Perché Trattare l'Acqua di Caldaia</h3>
+    <p>L'acqua di rete non è mai pura: contiene sali disciolti, gas disciolti, solidi in sospensione e microrganismi. Nella caldaia, l'acqua viene continuamente riscaldata e concentrata per evaporazione. I sali che nell'acqua fredda sono invisibili diventano progressivamente più concentrati fino a precipitare sulle superfici più calde — le superfici di riscaldamento.</p>
+    <p>Le conseguenze di un'acqua non trattata:</p>
+    <ul>
+      <li><strong>Incrostazioni calcaree</strong> — isolano le superfici di scambio, riducono il rendimento e possono portare alla rottura strutturale del focolare</li>
+      <li><strong>Corrosione</strong> — l'ossigeno disciolto e il pH scorretto attaccano il metallo, creando perdite e riducendo la vita dell'impianto</li>
+      <li><strong>Priming</strong> — l'alta concentrazione di sali abbassa la tensione superficiale, favorendo il trascinamento di gocce d'acqua nel vapore</li>
+      <li><strong>Depositi nelle turbine</strong> — la silice e i sali trascinati dal vapore si depositano sulle palette danneggiandole</li>
+    </ul>
+    <p>Il trattamento dell'acqua è quindi una questione di sicurezza, di efficienza energetica e di longevità dell'impianto simultaneamente.</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Durezza dell'Acqua — Tipi e Misura</h3>
+    <p>La <strong>durezza</strong> è la concentrazione di ioni calcio (Ca²⁺) e magnesio (Mg²⁺) disciolti nell'acqua. Questi sono i principali responsabili delle incrostazioni calcaree nelle caldaie.</p>
+    <ul>
+      <li><strong>Durezza temporanea</strong> (o carbonatica): dovuta a bicarbonati di calcio e magnesio Ca(HCO₃)₂. Quando riscaldati, questi si decompongono e precipitano come carbonato di calcio (CaCO₃) — il calcare bianco delle caldaie. Si chiama "temporanea" perché può essere eliminata per bollitura.</li>
+      <li><strong>Durezza permanente</strong> (o non carbonatica): dovuta a solfati e cloruri di calcio e magnesio (CaSO₄, MgSO₄). Non precipita per bollitura, rimane in soluzione anche ad alta temperatura. Più difficile da trattare.</li>
+      <li><strong>Durezza totale</strong> = temporanea + permanente</li>
+    </ul>
+    <p>Unità di misura: gradi francesi (°f) dove 1 °f = 10 mg/L di CaCO₃. Anche: ppm di CaCO₃, mmol/L, meq/L. Per le caldaie si richiede in genere durezza &lt; 0,02 mmol/L nell'acqua di alimento.</p>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. pH — Definizione e Importanza in Caldaia</h3>
+    <p>Il <strong>pH</strong> misura l'acidità o basicità di una soluzione su scala logaritmica da 0 a 14. pH=7 neutro, &lt;7 acido, &gt;7 alcalino (basico).</p>
+    <p>In caldaia il pH è critico perché:</p>
+    <ul>
+      <li>pH &lt; 7 → l'acqua è acida → corrosione generalizzata dell'acciaio. Per ogni unità di pH in meno, la velocità di corrosione aumenta di ~10 volte.</li>
+      <li>pH 8,5-9,5 → zona ottimale per l'acqua di alimento. L'acciaio forma uno strato protettivo di ossido (magnetite Fe₃O₄) che rallenta la corrosione.</li>
+      <li>pH 10-11 → zona ottimale per l'acqua in caldaia. La magnetite è stabile, la corrosione è minima.</li>
+      <li>pH &gt; 12 → corrosione alcalina caustica, particolarmente pericolosa sotto i depositi (corrosione locale intensa).</li>
+    </ul>
+    <p>Il pH si regola con: aggiunta di idrossido di sodio (NaOH) per alzarlo, aggiunta di acido solforico diluito per abbassarlo. In pratica si usa quasi sempre la via alcalina.</p>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Conducibilità Elettrica</h3>
+    <p>La <strong>conducibilità elettrica</strong> dell'acqua misura la capacità di condurre corrente, che dipende direttamente dalla concentrazione di ioni (sali disciolti) presenti. Si misura in μS/cm (microsiemens per centimetro) o mS/cm.</p>
+    <p>Acqua pura (distillata): ~0,05 μS/cm. Acqua di rete tipica: 200-800 μS/cm. Acqua di caldaia concentrata: fino a 3.000-5.000 μS/cm.</p>
+    <p>La conducibilità è il parametro più rapido da misurare per valutare la qualità dell'acqua. Aumenta proporzionalmente alla concentrazione di sali — permette di controllare:</p>
+    <ul>
+      <li>La qualità dell'acqua demineralizzata (deve essere &lt; 0,1-1 μS/cm)</li>
+      <li>Il livello di concentrazione dell'acqua in caldaia (trigger per lo spurgo)</li>
+      <li>La contaminazione delle condense (aumento improvviso di conducibilità = perdita di scambiatore o contaminazione)</li>
+    </ul>
+    <p>I moderni sistemi di trattamento acque hanno analizzatori di conducibilità in continuo che controllano automaticamente la qualità dell'acqua di alimento e la quantità di spurgo necessaria.</p>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. TDS — Solidi Disciolti Totali</h3>
+    <p>Il <strong>TDS</strong> (Total Dissolved Solids) è la concentrazione totale di tutte le sostanze disciolte nell'acqua, espressa in mg/L o ppm. Include: sali, minerali, metalli, ioni organici.</p>
+    <p>Il TDS è strettamente correlato alla conducibilità: TDS (mg/L) ≈ conducibilità (μS/cm) × 0,5÷0,7 (fattore empirico che dipende dalla composizione).</p>
+    <p>Importanza in caldaia:</p>
+    <ul>
+      <li>TDS elevato → alta concentrazione di sali → rischio incrostazioni e priming</li>
+      <li>TDS dell'acqua in caldaia = TDS acqua di alimento × fattore di concentrazione</li>
+      <li>Lo spurgo deve essere regolato per mantenere il TDS in caldaia entro i limiti normativi</li>
+    </ul>
+    <div class="formula">
+      <span>TDS_caldaia = TDS_alimento × FC</span><br>
+      <small>FC = Fattore di Concentrazione = TDS_caldaia / TDS_acqua_reintegro</small>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Ossigeno Disciolto — Pericoli in Caldaia</h3>
+    <p>L'<strong>ossigeno disciolto</strong> nell'acqua è il principale agente corrosivo delle caldaie. Anche concentrazioni minime (pochi ppb) possono causare corrosione significativa alle alte temperature di esercizio.</p>
+    <p>Il meccanismo:</p>
+    <ul>
+      <li>O₂ + H₂O + 2Fe → 2Fe(OH)₂ (idrossido ferroso) → poi ossida ulteriormente a Fe₂O₃ (ruggine) o Fe₃O₄ (magnetite)</li>
+      <li>Alle alte temperature la corrosione per O₂ è molto più rapida che a freddo</li>
+      <li>Si manifesta come <strong>pitting</strong>: crateri localizzati che penetrano nel metallo molto più rapidamente della corrosione generalizzata</li>
+    </ul>
+    <p>Valori limite: &lt; 10 μg/L (10 ppb) per caldaie industriali standard. &lt; 7 μg/L per caldaie ad alta pressione. Valori tipici con buona degasazione: 5-10 μg/L.</p>
+    <p>Si elimina principalmente con la <strong>degasazione termica</strong> + dosaggio di <strong>idrazina</strong> o altri sequestranti chimici dell'ossigeno come il DEHA (dietilidrossilammina) o l'acido ascorbico.</p>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Anidride Carbonica Disciolta</h3>
+    <p>L'<strong>anidride carbonica</strong> (CO₂) disciolta nell'acqua forma acido carbonico (H₂CO₃) che abbassa il pH e causa corrosione:</p>
+    <div class="formula">
+      <span>CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻</span>
+    </div>
+    <p>La CO₂ è presente nell'acqua di rete disciolta dall'atmosfera. In caldaia, i bicarbonati si decompongono liberando CO₂ e aumentandone la concentrazione nei fumi:</p>
+    <div class="formula">
+      <span>Ca(HCO₃)₂ → CaCO₃↓ + H₂O + CO₂↑</span>
+    </div>
+    <p>La CO₂ liberata si dissolve nel vapore e nelle condense → abbassa il pH delle condense → corrosione delle tubazioni di ritorno condense (in genere in rame o acciaio). Per questo il pH delle condense deve essere monitorato separatamente dall'acqua di caldaia.</p>
+    <p>Si elimina con: degasazione termica (la CO₂ è volatile), alcalinizzazione con ammine volatili che neutralizzano l'acidità nelle condense.</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Silice — Problemi nelle Turbine</h3>
+    <p>La <strong>silice</strong> (SiO₂) disciolta nell'acqua è un problema specifico degli impianti con turbine a vapore. A basse pressioni non è particolarmente problematica, ma ad alta pressione si volatilizza e viaggia con il vapore.</p>
+    <p>Il problema: la silice ha una <strong>volatilità che aumenta con la pressione</strong>. Sopra certi valori di pressione, la silice si trasferisce preferenzialmente nella fase vapore. Nell'espansione in turbina, la pressione scende e la silice si deposita sulle palette formando incrostazioni di quarzo durissimo (9 su scala Mohs).</p>
+    <p>Le incrostazioni di silice sulle palette della turbina:</p>
+    <ul>
+      <li>Alterano il profilo aerodinamico → riduzione del rendimento</li>
+      <li>Aumentano il peso delle palette → vibrazioni e possibile rottura per fatica</li>
+      <li>Sono quasi impossibili da rimuovere chimicamente (solubili solo in HF — acido fluoridrico, estremamente pericoloso)</li>
+    </ul>
+    <p>Limite: SiO₂ &lt; 20 ppb per caldaie ad alta pressione, &lt; 0,02 mg/L per generatori che alimentano turbine. Richiede demineralizzazione completa dell'acqua.</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Addolcimento — Scambio Ionico</h3>
+    <p>L'<strong>addolcimento</strong> è il processo che rimuove gli ioni calcio e magnesio dall'acqua sostituendoli con ioni sodio, mediante resine a scambio ionico. È il trattamento di base per la quasi totalità delle caldaie industriali.</p>
+    <p>Principio: le resine cationiche (in forma Na⁺) trattengono gli ioni Ca²⁺ e Mg²⁺ dell'acqua e rilasciano Na⁺ in cambio:</p>
+    <div class="formula">
+      <span>2 R-Na + Ca²⁺ → R₂-Ca + 2Na⁺</span><br>
+      <span>2 R-Na + Mg²⁺ → R₂-Mg + 2Na⁺</span>
+    </div>
+    <p>Il sodio non precipita nelle caldaie — la durezza zero è l'obiettivo. L'acqua addolcita ha:</p>
+    <ul>
+      <li>Durezza = 0 (nessuna incrostazione calcarea)</li>
+      <li>Stessa conducibilità dell'acqua di partenza (i sali di sodio sono altrettanto ionizzati)</li>
+      <li>Stesso TDS dell'acqua di partenza</li>
+    </ul>
+    <p>L'addolcimento non rimuove i sali di sodio, quindi non riduce la conducibilità e non previene il priming in caldaie ad alta pressione. Per quelle è necessaria la demineralizzazione.</p>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Rigenerazione delle Resine — Procedura</h3>
+    <p>Le resine a scambio ionico si esauriscono quando tutti i siti di scambio Na⁺ sono stati sostituiti da Ca²⁺ e Mg²⁺. Devono essere periodicamente <strong>rigenerate</strong> con soluzione salina (NaCl):</p>
+    <div class="formula">
+      <span>R₂-Ca + 2NaCl → 2 R-Na + CaCl₂ (scarico)</span><br>
+      <span>R₂-Mg + 2NaCl → 2 R-Na + MgCl₂ (scarico)</span>
+    </div>
+    <p>Procedura di rigenerazione:</p>
+    <ul>
+      <li><strong>Controlavaggio</strong>: acqua lavata controcorrente per rimuovere i fanghi accumulati e rigonfiare la resina (10-15 minuti)</li>
+      <li><strong>Rigenerazione</strong>: passaggio lento di soluzione salina concentrata (~10%) (30-60 minuti)</li>
+      <li><strong>Lavaggio lento</strong>: acqua per rimuovere l'eccesso di sale (20-30 minuti)</li>
+      <li><strong>Lavaggio veloce</strong>: acqua per completare la pulizia fino a durezza = 0 in uscita</li>
+      <li><strong>Messa in servizio</strong>: ripresa del normale funzionamento</li>
+    </ul>
+    <p>La quantità di sale necessaria per la rigenerazione: circa 80-120 g di NaCl per ogni litro di resina per grammo-equivalente di durezza rimossa.</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Demineralizzazione — Letti Misti</h3>
+    <p>La <strong>demineralizzazione</strong> rimuove praticamente tutti i sali disciolti dall'acqua, producendo acqua con conducibilità &lt; 0,1 μS/cm. È indispensabile per caldaie ad alta pressione e per impianti con turbine.</p>
+    <p>Processo con <strong>letti separati</strong>:</p>
+    <ul>
+      <li>Colonna catonica forte (H⁺): rimuove tutti i cationi (Ca²⁺, Mg²⁺, Na⁺, K⁺) sostituendoli con H⁺</li>
+      <li>Degasatore: rimuove la CO₂ liberata</li>
+      <li>Colonna anionica forte (OH⁻): rimuove tutti gli anioni (Cl⁻, SO₄²⁻, HCO₃⁻, SiO₂) sostituendoli con OH⁻</li>
+    </ul>
+    <p>I due ioni H⁺ e OH⁻ si combinano formando H₂O pura.</p>
+    <p>Il <strong>letto misto</strong> combina resine cationiche e anioniche in un'unica colonna, producendo acqua di qualità superiore (conducibilità &lt; 0,05 μS/cm). La rigenerazione del letto misto è più complessa (separazione delle resine prima della rigenerazione).</p>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Osmosi Inversa</h3>
+    <p>L'<strong>osmosi inversa</strong> (RO) è un processo di separazione membranale che rimuove il 95-99% dei sali disciolti applicando una pressione superiore alla pressione osmotica dell'acqua da trattare.</p>
+    <p>Principio: in condizioni normali, il solvente (acqua) passa dalla soluzione diluita a quella concentrata attraverso una membrana semipermeabile (osmosi). Applicando una pressione esterna superiore alla pressione osmotica (~10-30 bar per acqua di rete), il flusso si inverte: l'acqua pura passa attraverso la membrana lasciando i sali concentrati sul lato alimentazione.</p>
+    <p>Caratteristiche:</p>
+    <ul>
+      <li>Rimozione: 95-99% di sali, 99%+ di silice, batteri e virus</li>
+      <li>Produce due flussi: <strong>permeato</strong> (acqua purificata, ~75% del flusso) e <strong>concentrato</strong> (acqua di scarto salata, ~25%)</li>
+      <li>Le membrane si intasano se l'acqua contiene solidi in sospensione → richiede prefiltrazione</li>
+      <li>L'acqua in uscita (permeato) è leggermente acida → spesso seguita da letto misto per demineralizzazione completa</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Degasazione Termica</h3>
+    <p>La <strong>degasazione termica</strong> è il processo principale per rimuovere l'ossigeno disciolto e la CO₂ dall'acqua di alimento sfruttando il principio fisico della Legge di Henry: la solubilità dei gas diminuisce all'aumentare della temperatura.</p>
+    <p>A 100°C (pressione atmosferica) la solubilità dell'ossigeno nell'acqua è praticamente zero. A pressione leggermente superiore (1,2 bar) e temperatura corrispondente (105°C) si ottiene una degasazione completa.</p>
+    <p>Il <strong>degasatore termico</strong> è un serbatoio dove l'acqua viene portata alla temperatura di saturazione alla pressione di esercizio (tipicamente 105-130°C a 1,2-2,7 bar). L'acqua viene distribuita in finissimi spruzzi o su vassoi per massimizzare la superficie di contatto con il vapore riscaldante. I gas liberati (O₂ e CO₂) escono attraverso una valvola di sfiato in atmosfera.</p>
+    <p>Dopo la degasazione termica, il tenore residuo di O₂ è tipicamente 5-10 μg/L. Per ridurlo ulteriormente si aggiunge idrazina.</p>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Degasazione con Membrane</h3>
+    <p>La <strong>degasazione con membrane</strong> è un'alternativa moderna alla degasazione termica, che rimuove i gas disciolti a temperatura ambiente senza riscaldare l'acqua.</p>
+    <p>Principio: l'acqua scorre sul lato interno di membrane di polipropilene microporoso. Sul lato esterno della membrana viene mantenuto un vuoto parziale (o inertizzazione con azoto). I gas disciolti (O₂, CO₂, N₂) diffondono attraverso i micropori e vengono evacuati, mentre l'acqua non può attraversare la membrana.</p>
+    <p>Vantaggi rispetto alla degasazione termica:</p>
+    <ul>
+      <li>Funziona a temperatura ambiente — nessun consumo di vapore per il riscaldamento</li>
+      <li>Dimensioni compatte</li>
+      <li>Nessun rischio di cavitazione nelle pompe downstream</li>
+    </ul>
+    <p>Svantaggi: costo elevato, le membrane si deteriorano con solventi e ossidanti forti, richiede sistema di vuoto o azoto. Usata principalmente per impianti di media/alta pressione con acqua già trattata.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Idrazina — Dosaggio e Sicurezza</h3>
+    <p>L'<strong>idrazina</strong> (N₂H₄) è il reagente chimico classicamente usato per eliminare l'ossigeno residuo dopo la degasazione termica e per passivare le superfici metalliche:</p>
+    <div class="formula">
+      <span>N₂H₄ + O₂ → N₂ + 2H₂O</span><br>
+      <small>L'idrazina reagisce con l'ossigeno producendo solo azoto e acqua — nessun prodotto secondario indesiderato</small>
+    </div>
+    <p>Dosaggio tipico: 0,05-0,2 mg/L in eccesso rispetto all'ossigeno da eliminare. Si verifica la corretta presenza di idrazina analizzando l'acqua di caldaia (deve esserci una piccola quota residua non reagita).</p>
+    <div class="callout">
+      <div class="callout-label">Sicurezza — sostanza cancerogena</div>
+      <p>L'idrazina è classificata come sostanza <strong>cancerogena probabile</strong> (IARC Gruppo 2A). Richiede: DPI completi (guanti, occhiali, mascherina), ventilazione adeguata, formazione specifica degli operatori, smaltimento come rifiuto speciale. Alcune aziende la stanno sostituendo con DEHA (dietilidrossilammina) o acido ascorbico, meno tossici ma meno efficaci ad alta temperatura.</p>
+    </div>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Fosfati — Trattamento in Caldaia</h3>
+    <p>Il trattamento con <strong>fosfati</strong> è uno dei metodi più diffusi per il controllo delle incrostazioni nelle caldaie industriali a media pressione. Si aggiunge fosfato disodico (Na₂HPO₄) o trisodico (Na₃PO₄) all'acqua di caldaia.</p>
+    <p>Meccanismo:</p>
+    <ul>
+      <li>I fosfati reagiscono con il calcio residuo formando <strong>idrossiapatite</strong> Ca₅(OH)(PO₄)₃ — un precipitato morbido, non aderente, facilmente rimovibile con lo spurgo</li>
+      <li>Invece di incrostazioni dure di CaCO₃, si forma un fango soffice che viene eliminato dallo spurgo di fondo</li>
+      <li>I fosfati tamponano il pH mantenendolo nel range ottimale 10-11</li>
+    </ul>
+    <p>La concentrazione ottimale di fosfati nell'acqua di caldaia è 10-30 mg/L come PO₄³⁻. Troppi fosfati → precipitazione di fosfato di magnesio → potenziali incrostazioni. Troppo pochi → il calcio residuo precipita come carbonato (incrostazione dura).</p>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Ammine — Protezione del Circuito Vapore e Condense</h3>
+    <p>Le <strong>ammine volatili</strong> sono sostanze che si volatilizzano nell'acqua di caldaia, viaggiano con il vapore e si ridissolvono nelle condense, neutralizzando l'acidità causata dalla CO₂ e proteggendo le tubazioni di ritorno dalla corrosione.</p>
+    <p>Tipi principali:</p>
+    <ul>
+      <li><strong>Morfolina</strong>: la più usata. Si distribuisce uniformemente in tutto il circuito, pH delle condense ~9. Biodegradabile.</li>
+      <li><strong>Cicloesilammina</strong>: si accumula preferenzialmente nelle prime condense — più adatta per proteggere le utenze vicine alla caldaia.</li>
+      <li><strong>Ottadecilammina</strong>: forma un film monomolecolare sulle superfici metalliche che le protegge fisicamente dalla corrosione. Usata come additivo di film.</li>
+    </ul>
+    <p>Il dosaggio si regola per mantenere il pH delle condense tra 8,5 e 9,5. Troppa ammina → pH eccessivo → corrosione alcalina del rame nelle tubazioni di condense.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. Inibitori di Corrosione</h3>
+    <p>Gli <strong>inibitori di corrosione</strong> riducono o prevengono la corrosione dei metalli nell'acqua di caldaia e nelle condense mediante diversi meccanismi:</p>
+    <ul>
+      <li><strong>Inibitori anodici</strong> — formano un film passivante sull'anodo della cella di corrosione, bloccando la reazione di ossidazione del metallo. Esempi: cromati, nitrati, molibdati (attenzione: i cromati sono tossici, sostituiti da molibdati).</li>
+      <li><strong>Inibitori catodici</strong> — bloccano la reazione catodica (riduzione dell'ossigeno). Esempi: sali di zinco, polifosfati.</li>
+      <li><strong>Inibitori di adsorbimento (film)</strong> — si adsorbono fisicamente sulla superficie metallica formando un film protettivo. Esempi: ammine grasse (ottadecilammina), silicati.</li>
+      <li><strong>Idrazina e DEHA</strong> — rimuovono l'agente corrosivo (O₂) direttamente dalla soluzione prima che possa attaccare il metallo.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Disperdenti e Sequestrati</h3>
+    <p>I <strong>disperdenti</strong> e i <strong>sequestrati</strong> sono additivi che prevengono o limitano la formazione di incrostazioni agendo in modo diverso dalle resine a scambio ionico:</p>
+    <ul>
+      <li><strong>Disperdenti poliacrilici (PA, AMPS)</strong>: si adsorbono sui cristalli di sali che si stanno formando, ne distorcono la struttura cristallina e impediscono l'aggregazione. I cristalli rimangono piccoli e in sospensione invece di aderire alle pareti. Dosaggi minimi: 1-5 mg/L.</li>
+      <li><strong>Sequestrati (chelanti)</strong>: si legano agli ioni Ca²⁺ e Mg²⁺ formando complessi stabili solubili che non possono precipitare. Esempi: EDTA (etilendiaminotetraacetico), NTA. Efficaci ma costosi — usati principalmente per impianti di piccola potenza.</li>
+    </ul>
+    <p>I disperdenti non sostituiscono l'addolcimento ma lo integrano, catturando la durezza residua e i sali che sfuggono all'addolcitore. Sono sempre presenti nei trattamenti polifunzionali commerciali (prodotti multicomponente che combinano disperdente + sequestrante + alcalinizzante + antiossigeno).</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. Analisi Chimiche dell'Acqua</h3>
+    <p>Le principali analisi che il conduttore deve saper eseguire o far eseguire:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Parametro</th><th>Metodo tipico</th><th>Frequenza</th></tr>
+      <tr><td>Durezza totale</td><td>Titolazione EDTA con indicatore nero eriocromo</td><td>Giornaliera</td></tr>
+      <tr><td>pH</td><td>pHmetro elettronico o cartine</td><td>Giornaliera</td></tr>
+      <tr><td>Conducibilità</td><td>Conduttimetro</td><td>Giornaliera/continua</td></tr>
+      <tr><td>Alcalinità P e M</td><td>Titolazione acido-base</td><td>Settimanale</td></tr>
+      <tr><td>Cloruri</td><td>Titolazione argentimetrica</td><td>Settimanale</td></tr>
+      <tr><td>Fosfati</td><td>Spettrofotometria</td><td>Settimanale</td></tr>
+      <tr><td>Silice</td><td>Spettrofotometria molibdato</td><td>Mensile</td></tr>
+      <tr><td>Ossigeno disciolto</td><td>Sonda elettrochimica o Winkler</td><td>Giornaliera</td></tr>
+    </table></div>
+    <p>Le analisi più critiche (durezza, pH, conducibilità) devono essere eseguite giornalmente dal conduttore e annotate nel registro. Le analisi più complesse (silice, metalli) possono essere affidate a laboratori esterni.</p>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. Limiti di Qualità Acqua di Caldaia</h3>
+    <p>I limiti dell'acqua nel corpo cilindrico variano in base alla pressione di esercizio:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Parametro</th><th>P ≤ 20 bar</th><th>20-40 bar</th><th>&gt; 40 bar</th></tr>
+      <tr><td>pH (25°C)</td><td>10,5-11,5</td><td>10-11</td><td>9,5-10,5</td></tr>
+      <tr><td>Conducibilità (μS/cm)</td><td>≤ 5.000</td><td>≤ 2.000</td><td>≤ 500</td></tr>
+      <tr><td>Silice (mg/L SiO₂)</td><td>≤ 20</td><td>≤ 5</td><td>≤ 0,5</td></tr>
+      <tr><td>Fosfati (mg/L PO₄)</td><td>10-30</td><td>5-15</td><td>2-10</td></tr>
+      <tr><td>Idrazina residua (μg/L)</td><td>10-50</td><td>10-30</td><td>5-20</td></tr>
+    </table></div>
+    <p>All'aumentare della pressione i limiti si fanno sempre più restrittivi perché: le temperature sono più alte (la corrosione è più aggressiva), il vapore deve essere di qualità superiore per le turbine, il costo di un danno è molto maggiore.</p>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. Limiti di Qualità Acqua di Alimento</h3>
+    <p>L'acqua di alimento entra nella caldaia dopo tutti i trattamenti di condizionamento. I suoi limiti dipendono dalla pressione:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Parametro</th><th>P ≤ 20 bar</th><th>20-60 bar</th><th>&gt; 60 bar</th></tr>
+      <tr><td>pH (25°C)</td><td>8,5-9,5</td><td>8,5-9,5</td><td>9,0-9,5</td></tr>
+      <tr><td>Durezza totale (mmol/L)</td><td>≤ 0,05</td><td>≤ 0,01</td><td>≈ 0</td></tr>
+      <tr><td>Ossigeno disciolto (μg/L)</td><td>≤ 50</td><td>≤ 10</td><td>≤ 7</td></tr>
+      <tr><td>Conducibilità (μS/cm)</td><td>≤ 200</td><td>≤ 50</td><td>≤ 5</td></tr>
+      <tr><td>Ferro totale (μg/L)</td><td>≤ 200</td><td>≤ 50</td><td>≤ 20</td></tr>
+      <tr><td>Rame totale (μg/L)</td><td>≤ 50</td><td>≤ 20</td><td>≤ 5</td></tr>
+    </table></div>
+    <p>Per caldaie ad alta pressione (&gt;60 bar), l'acqua di alimento è praticamente equivalente all'acqua distillata. Qualsiasi impurità significativa si concentra in caldaia e può causare danni gravi in tempi brevi.</p>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Limiti di Qualità del Vapore Prodotto</h3>
+    <p>Il vapore prodotto deve rispettare limiti di purezza per proteggere le utenze a valle:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Parametro</th><th>Vapore industriale</th><th>Vapore per turbine</th></tr>
+      <tr><td>Conducibilità (μS/cm)</td><td>≤ 10</td><td>≤ 0,3</td></tr>
+      <tr><td>Silice (μg/L)</td><td>≤ 500</td><td>≤ 20</td></tr>
+      <tr><td>Sodio (μg/L)</td><td>≤ 500</td><td>≤ 10</td></tr>
+      <tr><td>Ferro (μg/L)</td><td>≤ 200</td><td>≤ 20</td></tr>
+    </table></div>
+    <p>La qualità del vapore dipende dalla qualità dell'acqua di caldaia e dall'efficienza del sistema di separazione vapore/acqua (duomo, separatori cicloni). Il priming porta acqua di caldaia concentrata nel vapore, peggiorando immediatamente tutti i parametri del vapore.</p>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Spurgo — Calcolo della Portata</h3>
+    <p>Lo <strong>spurgo</strong> deve essere dimensionato per mantenere la concentrazione dei sali in caldaia entro i limiti. Il calcolo si basa sul <strong>fattore di concentrazione</strong>:</p>
+    <div class="formula">
+      <span>FC = TDS_caldaia / TDS_reintegro</span><br>
+      <span>FC = 1 / (% spurgo / 100)</span><br>
+      <small>FC tipico: 10-20 per caldaie industriali standard</small>
+    </div>
+    <p>La portata di spurgo necessaria:</p>
+    <div class="formula">
+      <span>% spurgo = TDS_reintegro / (TDS_max_caldaia - TDS_reintegro) × 100</span><br>
+      <small>TDS_max_caldaia = limite massimo TDS nell'acqua di caldaia</small>
+    </div>
+    <p>Esempio: TDS acqua di alimento = 200 mg/L, TDS massimo in caldaia = 3.000 mg/L:<br>
+    % spurgo = 200 / (3.000-200) × 100 = <strong>7,1%</strong> della produzione di vapore</p>
+    <p>Lo spurgo rappresenta una perdita termica: l'acqua scaricata è calda (alla T di saturazione) e deve essere sostituita con acqua fredda. Un fattore di concentrazione più alto riduce la portata di spurgo ma richiede acqua di alimento di qualità superiore.</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Recupero Condense</h3>
+    <p>Le <strong>condense</strong> sono l'acqua che si forma dalla condensazione del vapore nelle utenze. Sono già trattate chimicamente, calde (~80-100°C) e praticamente esenti da durezza. Il loro recupero è economicamente molto vantaggioso:</p>
+    <ul>
+      <li><strong>Risparmio energetico</strong>: l'acqua calda richiede meno energia per essere riportata in caldaia rispetto all'acqua fredda di reintegro</li>
+      <li><strong>Risparmio trattamento chimico</strong>: le condense non richiedono addolcimento o demineralizzazione</li>
+      <li><strong>Riduzione dello spurgo</strong>: le condense hanno TDS bassissimo → si può aumentare il fattore di concentrazione → meno spurgo → meno perdite</li>
+    </ul>
+    <p>Rischi del recupero condense: contaminazione delle condense da perdite negli scambiatori (idrocarburi, prodotti di processo). La conducibilità delle condense deve essere monitorata in continuo: un aumento improvviso indica contaminazione. In caso di contaminazione, le condense vanno dirottate allo scarico anziché restituite alla caldaia.</p>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Serbatoio dell'Acqua Demineralizzata</h3>
+    <p>Il <strong>serbatoio di accumulo</strong> dell'acqua demineralizzata (o addolcita) funge da polmone tra l'impianto di trattamento e la caldaia, garantendo la disponibilità continua di acqua di alimento.</p>
+    <p>Problemi specifici dei serbatoi di acqua demineralizzata:</p>
+    <ul>
+      <li><strong>Riassorbimento di CO₂</strong>: l'acqua demineralizzata è molto aggressiva verso la CO₂ atmosferica → abbassamento del pH → corrosione del serbatoio. Soluzione: serbatoi in acciaio inox o con rivestimento, copertura con blanket di azoto, o respiro attraverso filtro a CO₂.</li>
+      <li><strong>Corrosione del serbatoio</strong>: l'acqua pura è corrosiva per l'acciaio al carbonio. I serbatoi sono in acciaio inox 316L o in fibra di vetro.</li>
+      <li><strong>Proliferazione batterica</strong>: l'acqua priva di cloro e con pH neutro è un ottimo terreno per i batteri. Manutenzione periodica e UV-sterilizzazione.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Degasatore Termico — Costruzione</h3>
+    <p>Il <strong>degasatore termico</strong> è il componente che porta l'acqua di alimento alla temperatura di saturazione alla pressione di esercizio per eliminare i gas disciolti. È composto da due sezioni:</p>
+    <ul>
+      <li><strong>Testa degasatrice</strong> (colonna superiore): l'acqua fredda viene spruzzata in finissime goccioline o distribuita su vassoi forati. Il vapore di riscaldamento sale dal basso e riscalda l'acqua portandola alla temperatura di saturazione. I gas liberati (O₂ e CO₂) fuoriescono attraverso una valvola di sfiato in cima alla colonna.</li>
+      <li><strong>Serbatoio di accumulo</strong> (parte inferiore): raccoglie l'acqua degasata, la mantiene calda alla temperatura di saturazione e la fornisce alle pompe di alimento. Deve avere volume sufficiente per garantire l'autonomia dell'impianto durante la rigenerazione degli addolcitori.</li>
+    </ul>
+    <p>La pressione di esercizio del degasatore è tipicamente 1,2-2,7 bar (temperatura 105-130°C). Lo sfogo in atmosfera è fondamentale: se la valvola di sfiato si intasasse, i gas non uscirebbero e l'ossigeno rimarrebbe nell'acqua.</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Incrostazioni — Meccanismo di Formazione</h3>
+    <p>Le incrostazioni si formano per un meccanismo di <strong>inversione di solubilità</strong>: molti sali (CaCO₃, CaSO₄, Mg(OH)₂) diventano <em>meno</em> solubili all'aumentare della temperatura — comportamento opposto alla maggioranza delle sostanze.</p>
+    <p>Sequenza di formazione:</p>
+    <ul>
+      <li>L'acqua si riscalda sulla superficie del tubo → la solubilità del CaCO₃ scende → supera la concentrazione di saturazione</li>
+      <li>Il CaCO₃ inizia a precipitare sulla superficie metallica più calda (nucleazione eterogenea su asperità o ossidi)</li>
+      <li>I cristalli crescono progressivamente formando uno strato aderente</li>
+      <li>Lo strato aumenta lo spessore → peggiora lo scambio termico → la temperatura della superficie aumenta ulteriormente → accelera la precipitazione</li>
+    </ul>
+    <p>Il carbonato di calcio forma incrostazioni a struttura <strong>cristallina dura</strong>. Il solfato di calcio (CaSO₄) forma incrostazioni ancora più dure e aderenti. Il fosfato di calcio precipita come fango morbido facilmente rimovibile (obiettivo del trattamento con fosfati).</p>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Corrosione per Ossigeno — Meccanismo</h3>
+    <p>La corrosione per ossigeno segue una cella elettrochimica dove il ferro è il metallo che si ossida:</p>
+    <div class="formula">
+      <span>Anodo (zona corrosione): Fe → Fe²⁺ + 2e⁻</span><br>
+      <span>Catodo (zona ossigeno): O₂ + 2H₂O + 4e⁻ → 4OH⁻</span><br>
+      <span>Complessivo: 2Fe + O₂ + 2H₂O → 2Fe(OH)₂</span>
+    </div>
+    <p>Il Fe(OH)₂ si ossida ulteriormente a Fe₂O₃ (ruggine, rosso) o Fe₃O₄ (magnetite, nero). La magnetite è protettiva se forma uno strato compatto e aderente — è l'obiettivo del trattamento alcalino.</p>
+    <p>Il <strong>pitting</strong> si forma quando l'ossigeno attacca un punto specifico del metallo (graffi, grani di ossido, eterogeneità): si forma una piccola cella galvanica locale dove il punto attaccato diventa anodo e il metallo circostante catodo. La corrosione si concentra nel punto, formando un cratere sempre più profondo mentre il resto del metallo è protetto.</p>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Corrosione Acida e Alcalina</h3>
+    <p><strong>Corrosione acida</strong> (pH &lt; 7):</p>
+    <ul>
+      <li>L'acido attacca l'acciaio direttamente: Fe + H₂SO₄ → FeSO₄ + H₂↑</li>
+      <li>Corrosione generalizzata e rapida, visibile come diradamento uniforme delle pareti</li>
+      <li>Cause: CO₂ disciolta non trattata, ingresso di acqua acida nel circuito, dosaggio eccessivo di acido per il trattamento</li>
+    </ul>
+    <p><strong>Corrosione alcalina caustica</strong> (pH &gt; 12):</p>
+    <ul>
+      <li>L'idrossido di sodio ad alta concentrazione scioglie lo strato protettivo di magnetite e attacca il metallo</li>
+      <li>Si manifesta principalmente sotto i depositi, dove l'NaOH si concentra per evaporazione locale</li>
+      <li>Molto più insidiosa della corrosione acida perché localizzata e non visibile senza ispezione interna</li>
+      <li>Causa: fosfati insufficienti, pH troppo alto, depositi che concentrano l'alcalinità localmente</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Corrosione da Acido Solforico nei Condotti Fumi</h3>
+    <p>Questo tipo di corrosione colpisce i condotti fumi e il camino delle caldaie alimentate con combustibili contenenti zolfo (nafta ATZ, carbone):</p>
+    <div class="formula">
+      <span>S + O₂ → SO₂ (durante la combustione)</span><br>
+      <span>2SO₂ + O₂ → 2SO₃ (catalisi su superfici metalliche)</span><br>
+      <span>SO₃ + H₂O → H₂SO₄ (acido solforico)</span>
+    </div>
+    <p>L'acido solforico condensa sulle superfici metalliche dei condotti fumi quando la temperatura scende sotto il <strong>punto di rugiada dell'acido</strong> (130-150°C per nafta ATZ, ~50°C per metano).</p>
+    <p>L'acido solforico concentrato corrode rapidissimamente l'acciaio. La prevenzione consiste nel mantenere la temperatura dei fumi sufficientemente alta lungo tutto il percorso fino al camino, usando sistemi di riscaldamento del camino o limitando la portata di aria di infiltrazione.</p>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Corrosione Galvanica in Caldaia</h3>
+    <p>La <strong>corrosione galvanica</strong> si verifica quando due metalli diversi sono in contatto elettrico in presenza di un elettrolita (acqua con sali). Il metallo più attivo (anodo) si corrode mentre il più nobile (catodo) è protetto.</p>
+    <p>Serie galvanica (da più attivo a più nobile): Magnesio > Zinco > Alluminio > Ferro > Acciaio inox > Nichel > Rame > Argento > Oro</p>
+    <p>Problemi tipici in caldaia:</p>
+    <ul>
+      <li>Raccordi in ottone (rame-zinco) collegati a tubazioni in acciaio → lo zinco si corrode preferenzialmente (dezincificazione)</li>
+      <li>Sonde e termocoppie in rame inserite in corpi in acciaio → corrosione dell'acciaio nel punto di contatto</li>
+      <li>Tubi in rame per le condense restituiti alla caldaia → il rame si deposita nelle zone più calde e crea celle galvaniche con l'acciaio</li>
+    </ul>
+    <p>Prevenzione: evitare accoppiamenti galvanici critici, usare isolatori dielettrici nelle giunzioni, mantenere l'acqua demineralizzata (bassa conducibilità = bassa velocità di corrosione galvanica).</p>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Pulizia Chimica — Decapaggio</h3>
+    <p>Il <strong>decapaggio chimico</strong> è la rimozione delle incrostazioni e dei depositi dall'interno della caldaia mediante circolazione di soluzioni acide o chelanti. Si effettua periodicamente (tipicamente ogni 3-7 anni) o quando le incrostazioni hanno ridotto significativamente il rendimento.</p>
+    <p>Procedura tipica:</p>
+    <ul>
+      <li>Ispezione preliminare per quantificare e identificare i depositi</li>
+      <li>Rimozione del gasolio o altra contaminazione superficiale</li>
+      <li>Circolazione di <strong>acido cloridrico diluito</strong> (3-5%) + inibitore di corrosione (protegge il metallo sano dall'attacco dell'acido) → scioglie i carbonati</li>
+      <li>Risciacquo abbondante con acqua demineralizzata</li>
+      <li>Neutralizzazione con soluzione alcalina</li>
+      <li><strong>Passivazione</strong>: circolazione di soluzione alcalina con nitrito di sodio o idrazina per formare uno strato protettivo di magnetite</li>
+    </ul>
+    <p>Il decapaggio deve essere eseguito da ditte specializzate con personale qualificato. L'acido è pericoloso e i fumi di HCl richiedono ventilazione adeguata.</p>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Passivazione delle Superfici Interne</h3>
+    <p>La <strong>passivazione</strong> è la formazione di uno strato protettivo di ossido (principalmente magnetite Fe₃O₄) sulla superficie interna dell'acciaio della caldaia. Questo strato aderente e impermeabile protegge il metallo sottostante dalla corrosione.</p>
+    <p>Condizioni per la formazione della magnetite protettiva:</p>
+    <ul>
+      <li>pH 10-11 (range ottimale per la magnetite)</li>
+      <li>Bassa concentrazione di ossigeno (&lt; 10 μg/L)</li>
+      <li>Temperatura elevata (favorisce la reazione)</li>
+    </ul>
+    <p>In assenza di ossigeno e con pH corretto, l'acciaio reagisce con l'acqua formando magnetite:</p>
+    <div class="formula">
+      <span>3Fe + 4H₂O → Fe₃O₄ + 4H₂</span>
+    </div>
+    <p>La passivazione si effettua intenzionalmente dopo il decapaggio o la prima messa in servizio di una nuova caldaia: circolazione di soluzione alcalina (pH 11-12) con ossigeno scavenger a temperature progressive fino alla temperatura di esercizio.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Conservazione della Caldaia Ferma</h3>
+    <p>Quando la caldaia deve rimanere ferma per un periodo prolungato (oltre 1-2 settimane), le superfici interne devono essere protette dalla corrosione. Due metodi principali:</p>
+    <ul>
+      <li><strong>Conservazione umida</strong>: la caldaia viene riempita completamente con acqua alcalina (pH 11-12) addizionata di ossigeno scavenger (idrazina o DEHA) per eliminare qualsiasi traccia di O₂. Nessun contatto con l'aria. Adatta per fermi brevi-medi (fino a 6 mesi). Richiede un sistema di pressurizzazione per evitare l'ingresso di aria.</li>
+      <li><strong>Conservazione a secco</strong>: la caldaia viene svuotata completamente e asciugata. L'interno viene mantenuto in atmosfera secca con <strong>silica gel</strong> o <strong>azoto</strong> per prevenire la condensazione dell'umidità che causerebbe ossidazione. Adatta per fermi lunghi (&gt;6 mesi).</li>
+    </ul>
+    <p>Il lato fumi deve essere pulito dalla fuliggine prima del fermo (la fuliggine umida è igroscopica e causa corrosione per acidi) e i condotti fumi devono essere sigillati.</p>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Analisi Acque — Strumenti</h3>
+    <p>Gli strumenti principali per le analisi dell'acqua di caldaia:</p>
+    <ul>
+      <li><strong>pHmetro elettronico</strong>: elettrodo di vetro + elettrodo di riferimento. Precisione ±0,01 pH. Richiede calibrazione con buffer standard (pH 4, 7, 9 o 10) prima di ogni sessione. Molto più preciso delle cartine.</li>
+      <li><strong>Conduttimetro</strong>: misura la resistenza elettrica del campione. Risultato in μS/cm o mS/cm. Automaticamente compensato per la temperatura (riferito a 25°C).</li>
+      <li><strong>Fotometro/spettrofotometro</strong>: misura l'assorbimento di luce a specifiche lunghezze d'onda per la determinazione quantitativa di: fosfati, silice, cloruri, ammoniaca, ferro.</li>
+      <li><strong>Sonda a ossigeno disciolto</strong>: elettrochimica (galvanica o polarografica) o ottica. Misura direttamente l'O₂ in μg/L. Richiede calibrazione in aria satura.</li>
+      <li><strong>Kit colorimetrici</strong>: compresse o reagenti liquidi che producono un colore proporzionale alla concentrazione del parametro. Rapidi e adatti all'uso in campo, meno precisi dello spettrofotometro.</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Laboratorio Acque — Frequenza delle Analisi</h3>
+    <p>La frequenza minima delle analisi dipende dalla pressione dell'impianto e dalla tipologia. Schema indicativo:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Analisi</th><th>In caldaia</th><th>Acqua alimento</th><th>Condense</th></tr>
+      <tr><td>Durezza</td><td>—</td><td>Giornaliera</td><td>Settimanale</td></tr>
+      <tr><td>pH</td><td>Giornaliera</td><td>Giornaliera</td><td>Giornaliera</td></tr>
+      <tr><td>Conducibilità</td><td>Giornaliera</td><td>Giornaliera</td><td>Continua</td></tr>
+      <tr><td>Fosfati</td><td>Settimanale</td><td>—</td><td>—</td></tr>
+      <tr><td>Alcalinità</td><td>Settimanale</td><td>Settimanale</td><td>—</td></tr>
+      <tr><td>Cloruri</td><td>Mensile</td><td>Mensile</td><td>—</td></tr>
+      <tr><td>Silice</td><td>Mensile</td><td>Mensile</td><td>—</td></tr>
+      <tr><td>O₂ disciolto</td><td>—</td><td>Giornaliera</td><td>—</td></tr>
+    </table></div>
+    <p>I risultati delle analisi devono essere registrati nel registro giornaliero con data, ora, punto di campionamento e firma del responsabile.</p>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. Schiuma e Priming — Cause Chimiche</h3>
+    <p>La <strong>schiuma</strong> sulla superficie dell'acqua in caldaia è una delle cause principali del priming. Si forma quando tensioattivi o sostanze organiche abbassano la tensione superficiale dell'acqua fino al punto in cui le bolle di vapore non collassano ma persistono formando schiuma.</p>
+    <p>Cause chimiche della schiuma:</p>
+    <ul>
+      <li>Alta concentrazione di sali (TDS elevato) → abbassa la tensione superficiale</li>
+      <li>Contaminazione da oli, idrocarburi, prodotti di processo (perdite negli scambiatori)</li>
+      <li>Proteine e materia organica (vapore per industria alimentare)</li>
+      <li>Schiuma da saponificazione di oli lubrificanti (perdite nei compressori)</li>
+      <li>Eccessivo dosaggio di additivi chimici organici</li>
+    </ul>
+    <p>Rimedi: spurgo di superficie immediato per abbassare il TDS, identificazione e riparazione delle perdite negli scambiatori, dosaggio di antischiuma, riduzione temporanea del carico del bruciatore.</p>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Ebullioscopia e Concentrazione dei Sali</h3>
+    <p>L'<strong>ebullioscopia</strong> è l'innalzamento del punto di ebollizione causato dai sali disciolti nell'acqua. In caldaia questo significa che l'acqua con alta salinità bolle a temperatura leggermente superiore a quella indicata nelle tavole del vapore (calcolate per acqua pura).</p>
+    <div class="formula">
+      <span>ΔT_eb = K_b · m</span><br>
+      <small>K_b = 0,512 °C·kg/mol (costante ebullioscopica acqua) | m = molalità del soluto (mol/kg)</small>
+    </div>
+    <p>L'effetto è piccolo per concentrazioni tipiche di caldaia (0,1-0,5°C) ma non trascurabile per i calcoli precisi. Ha implicazioni pratiche:</p>
+    <ul>
+      <li>La T di saturazione reale è leggermente superiore a quella teorica → il vapore prodotto può avere un lieve surriscaldamento anche senza surriscaldatore</li>
+      <li>La formazione di incrostazioni è più rapida nelle zone a TDS più elevato</li>
+      <li>Il priming peggiorare all'aumentare del TDS per effetto combinato della tensione superficiale ridotta</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Fattore di Concentrazione</h3>
+    <p>Il <strong>fattore di concentrazione</strong> (FC o cicli di concentrazione) indica quante volte i sali disciolti si sono concentrati nell'acqua di caldaia rispetto all'acqua di reintegro:</p>
+    <div class="formula">
+      <span>FC = TDS_caldaia / TDS_reintegro = Conducibilità_caldaia / Conducibilità_reintegro</span><br>
+      <small>Equivalentemente: FC = 1 / (% spurgo / 100)</small>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>FC</th><th>% spurgo</th><th>Risparmio acqua</th><th>Rischio incrostazioni</th></tr>
+      <tr><td>5</td><td>20%</td><td>Basso</td><td>Basso</td></tr>
+      <tr><td>10</td><td>10%</td><td>Medio</td><td>Medio</td></tr>
+      <tr><td>20</td><td>5%</td><td>Alto</td><td>Alto — richiede buon trattamento</td></tr>
+    </table></div>
+    <p>Il FC ottimale dipende dalla qualità dell'acqua di reintegro e dall'efficienza del sistema di trattamento. FC elevato → meno spurgo → meno perdite di acqua e calore → migliore efficienza. Ma richiede acqua di alimento di qualità superiore e limiti TDS in caldaia più restrittivi.</p>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Normativa Acque di Caldaia (UNI)</h3>
+    <p>Le norme UNI di riferimento per il trattamento acque dei generatori di vapore:</p>
+    <ul>
+      <li><strong>UNI 8535</strong>: qualità dell'acqua per generatori di vapore e di acqua calda — definizioni e requisiti</li>
+      <li><strong>UNI 10379</strong>: trattamento dell'acqua nei sistemi di riscaldamento a circuito chiuso — requisiti</li>
+      <li><strong>UNI EN 12952-12</strong>: caldaie a tubi d'acqua — requisiti per la qualità dell'acqua di alimento e dell'acqua di caldaia</li>
+      <li><strong>UNI EN 12953-10</strong>: caldaie a tubi di fumo — requisiti per la qualità dell'acqua di alimento e di caldaia</li>
+    </ul>
+    <p>Le norme EN 12952-12 e EN 12953-10 forniscono tabelle dettagliate dei limiti di qualità dell'acqua per diverse pressioni di esercizio, distinte in base al tipo di caldaia (tubi d'acqua/tubi di fumo) e alla presenza o meno di surriscaldatore.</p>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Impatto Ambientale delle Acque di Scarico</h3>
+    <p>L'impianto di trattamento acque genera diversi tipi di scarichi che devono essere gestiti nel rispetto della normativa ambientale (D.Lgs. 152/2006):</p>
+    <ul>
+      <li><strong>Acque di rigenerazione delle resine</strong>: contengono cloruri, sodio, calcio, magnesio ad alta concentrazione. Prima dello scarico in fognatura: neutralizzazione se pH fuori range, diluizione se TDS elevato.</li>
+      <li><strong>Concentrato da osmosi inversa</strong>: ~25% del flusso di alimentazione con TDS 4× superiore. Smaltimento in fognatura (con autorizzazione) o riutilizzo.</li>
+      <li><strong>Acque di spurgo</strong>: calde (80-100°C) e alcaline. Prima dello scarico: raffreddamento sotto 40°C (limite fognatura) e neutralizzazione del pH (6-9 per legge).</li>
+      <li><strong>Acque di decapaggio esaurite</strong>: acide, contenenti ferro e altri metalli. Classificate come rifiuto speciale pericoloso — smaltimento obbligatorio da parte di ditte autorizzate.</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. Ossigeno disciolto: il più pericoloso. Pitting invisibile → rottura improvvisa. Elimina con degasazione + idrazina<br>
+      2. Durezza zero: obiettivo dell'addolcimento. Ma addolcimento ≠ demineralizzazione (il TDS rimane uguale)<br>
+      3. Spurgo: FC = TDS_caldaia / TDS_reintegro. Più purezza acqua = meno spurgo = meno perdite<br>
+      4. pH ottimale acqua caldaia: 10-11 (magnetite protettiva). Fuori range → corrosione acida o caustica<br>
+      5. Idrazina: efficace ma cancerogena. DPI obbligatori, smaltimento come rifiuto speciale</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Trattamento Acque</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"Perché trattare l'acqua di caldaia — 4 conseguenze di acqua non trattata",a:"1. Incrostazioni calcaree → isolano superfici, rottura focolare\n2. Corrosione (O₂ + pH sbagliato) → perdite, riduzione vita impianto\n3. Priming → gocce d'acqua nel vapore\n4. Depositi di silice nelle turbine → erosione palette"},
+  {q:"Durezza temporanea vs permanente — differenza",a:"Temporanea (carbonatica): Ca(HCO₃)₂ → precipita come CaCO₃ per riscaldamento (il calcare). Eliminabile per bollitura.\nPermanente (non carbonatica): CaSO₄, MgSO₄ → non precipita per bollitura. Più difficile da trattare.\nUnità: gradi francesi (°f) dove 1°f = 10 mg/L di CaCO₃"},
+  {q:"pH ottimale in caldaia e conseguenze fuori range",a:"Acqua alimento: pH 8,5-9,5. Acqua caldaia: pH 10-11 (magnetite Fe₃O₄ protettiva).\npH < 7: corrosione acida generalizzata.\npH > 12: corrosione alcalina caustica sotto i depositi.\nRanges critici da ricordare: 10-11 zona sicura, ±1 = problemi."},
+  {q:"Ossigeno disciolto — perché è pericoloso e come si elimina",a:"Forma pitting: crateri localizzati invisibili fino alla rottura. Limite: <10 μg/L (50 μg/L acqua alimento bassa P).\nElimina con: degasazione termica (principale) + idrazina N₂H₄ come sequestrante chimico residuo.\nN₂H₄ + O₂ → N₂ + 2H₂O (solo azoto e acqua come prodotti)."},
+  {q:"Addolcimento con resine — principio e cosa NON rimuove",a:"Le resine cationiche Na⁺ scambiano Ca²⁺ e Mg²⁺ con Na⁺: R-Na + Ca²⁺ → R-Ca + Na⁺.\nRisultato: durezza = 0. Stessa conducibilità e TDS dell'acqua originale.\nNON rimuove: sali di sodio, solfati, cloruri, silice. Per questo NON sostituisce la demineralizzazione per alte pressioni."},
+  {q:"Demineralizzazione — processo e qualità acqua prodotta",a:"Colonna catonica (H⁺) + degasatore CO₂ + colonna anionica (OH⁻) → H₂O pura.\nAlternativamente: osmosi inversa + letto misto.\nAcqua prodotta: conducibilità < 0,1 μS/cm, TDS ≈ 0, silice ≈ 0.\nObbligatoria per caldaie > 40-60 bar e impianti con turbine."},
+  {q:"Degasatore termico — principio e temperatura di esercizio",a:"Principio: la solubilità dei gas diminuisce aumentando la temperatura (Legge di Henry). A 100°C l'O₂ ha solubilità ≈ 0.\nTemperatura tipica: 105-130°C a 1,2-2,7 bar.\nO₂ residuo: 5-10 μg/L. Per ridurlo ulteriormente: + idrazina."},
+  {q:"Idrazina — reazione, dosaggio e pericolo",a:"N₂H₄ + O₂ → N₂ + 2H₂O. Dosaggio: 0,05-0,2 mg/L in eccesso sull'O₂ da eliminare.\nPERICOLO: cancerogena probabile (IARC Gruppo 2A). Richiede DPI completi, ventilazione, smaltimento come rifiuto speciale.\nAlternative meno tossiche: DEHA, acido ascorbico."},
+  {q:"Trattamento con fosfati — meccanismo",a:"Fosfati + Ca²⁺ → idrossiapatite Ca₅(OH)(PO₄)₃ = fango morbido NON aderente, rimovibile con spurgo di fondo.\nInvece di incrostazioni dure di CaCO₃ si forma un precipitato controllabile.\nConcentrazione ottimale: 10-30 mg/L PO₄³⁻ per basse pressioni."},
+  {q:"Ammine volatili — funzione e tipo principale",a:"Proteggono le tubazioni di condense dalla corrosione da CO₂. Si volatilizzano col vapore e si ridissolvono nelle condense alzandone il pH (obiettivo: 8,5-9,5).\nPrincipale: Morfolina (la più diffusa, biodegradabile, pH condense ~9). Anche: cicloesilammina, ottadecilammina."},
+  {q:"Calcolo spurgo — formula e esempio",a:"% spurgo = TDS_reintegro / (TDS_max_caldaia - TDS_reintegro) × 100\nEsempio: TDS_alimento=200 mg/L, TDS_max_caldaia=3.000 mg/L\n% spurgo = 200/(3.000-200) × 100 = 7,1%\nFattore concentrazione FC = TDS_caldaia / TDS_reintegro = 1 / (% spurgo / 100)"},
+  {q:"Conducibilità elettrica — cosa misura e perché è utile",a:"Concentrazione di ioni (sali disciolti) in μS/cm. Acqua pura: ~0,05 μS/cm. Acqua rete: 200-800 μS/cm. Caldaia concentrata: fino a 5.000 μS/cm.\nUso: controllo qualità acqua demineralizzata (<0,1 μS/cm), trigger spurgo, rilevazione contaminazione condense (aumento improvviso)."},
+  {q:"Pitting — cos'è e come si forma",a:"Crateri localizzati nel metallo causati dall'O₂ disciolto. Meccanismo: O₂ attacca un punto specifico → cella galvanica locale → il punto diventa anodo (si corrode progressivamente) → cratere sempre più profondo mentre il metallo circostante è protetto.\nPericolo: invisibile esternamente fino alla rottura."},
+  {q:"Silice — perché è pericolosa nelle turbine",a:"A pressioni elevate la silice è volatile e si trasferisce nel vapore. Nell'espansione in turbina, precipita sulle palette come quarzo (9 Mohs = quasi diamante).\nEffetti: alterazione profilo aerodinamico, vibrazioni, rischio rottura.\nLimite: < 20 ppb per alte pressioni. Rimovibile solo con HF (pericolosissimo)."},
+  {q:"Osmosi inversa — principio e cosa produce",a:"Pressione > pressione osmotica (10-30 bar) inverte il flusso naturale → acqua pura passa attraverso la membrana semipermeabile lasciando i sali.\nProduce: permeato (~75% flusso, TDS ridotto 95-99%) + concentrato (~25% flusso, TDS × 4).\nRichiede prefiltrazione. Acqua permeato leggermente acida."},
+  {q:"Conservazione caldaia ferma — due metodi",a:"UMIDA: riempire completamente con acqua alcalina pH 11-12 + ossigeno scavenger. Per fermi brevi-medi (< 6 mesi). Nessun contatto aria.\nSECCA: svuotare completamente, asciugare, mantenere atmosfera secca con silica gel o azoto. Per fermi lunghi (> 6 mesi). Lato fumi: pulire fuliggine e sigillare condotti."},
+  {q:"Fattore di concentrazione FC — cosa influenza",a:"FC = TDS_caldaia / TDS_reintegro = 1 / (% spurgo / 100).\nFC alto → meno spurgo → risparmio acqua e calore.\nFC basso → più spurgo → più perdite ma meno rischio incrostazioni.\nFC ottimale: 10-20 per caldaie industriali standard con buon trattamento."},
+  {q:"Corrosione alcalina caustica — quando si verifica",a:"pH > 12 o concentrazione locale di NaOH molto alta sotto i depositi (l'NaOH si concentra per evaporazione locale).\nScioglie la magnetite protettiva e attacca il metallo in modo localizzato e insidioso (non visibile senza ispezione interna).\nCausa: dosaggio eccessivo di alcali, fosfati insufficienti, depositi che concentrano localmente l'alcalinità."},
+  {q:"Decapaggio chimico — scopo e procedura",a:"Rimozione chimica delle incrostazioni dall'interno della caldaia. HCl 3-5% diluito + inibitore di corrosione → scioglie i carbonati senza attaccare il metallo.\nSequenza: controlavaggio → circolazione acido → risciacquo → neutralizzazione alcalina → PASSIVAZIONE.\nEseguire ogni 3-7 anni o quando il rendimento cala significativamente."},
+  {q:"Recupero condense — vantaggi e rischi",a:"Vantaggi: risparmio energetico (acqua già calda), risparmio trattamento chimico (già trattata), riduzione spurgo (TDS basso).\nRischi: contaminazione da perdite negli scambiatori (idrocarburi, prodotti di processo).\nControllo: conducibilità condense in continuo — aumento improvviso = contaminazione → dirottare allo scarico."},
+  {q:"Analisi acque minime giornaliere per il conduttore",a:"Giornaliere (da annotare nel registro): durezza acqua alimento, pH (acqua alimento + caldaia), conducibilità, ossigeno disciolto acqua alimento.\nSettimanali: fosfati, alcalinità, cloruri.\nMensili: silice, metalli.\nTutto registrato con data, ora, punto campionamento, firma."},
+];
+
+const QUESTIONS=[
+  {q:"La durezza temporanea dell'acqua è causata principalmente da:",opts:["Solfato e cloruro di calcio","Bicarbonato di calcio Ca(HCO₃)₂ che precipita come CaCO₃ per riscaldamento","Silice disciolta","Sodio e potassio in soluzione"],c:1,expl:"La durezza temporanea (carbonatica) è causata dai bicarbonati di calcio e magnesio. Quando riscaldati si decompongono: Ca(HCO₃)₂ → CaCO₃↓ + H₂O + CO₂↑. Il carbonato di calcio precipita come calcare bianco sulle superfici di riscaldamento. Si chiama temporanea perché può essere eliminata per bollitura."},
+  {q:"Il pH ottimale dell'acqua nel corpo cilindrico della caldaia è:",opts:["6,5-7,5 (neutro)","8,5-9,5","10-11","12-13"],c:2,expl:"Il pH ottimale in caldaia è 10-11. In questo range l'acciaio forma uno strato protettivo di magnetite (Fe₃O₄) che rallenta la corrosione. pH < 7 causa corrosione acida. pH > 12 causa corrosione alcalina caustica localizzata sotto i depositi, insidiosa perché non visibile senza ispezione interna."},
+  {q:"L'ossigeno disciolto nell'acqua causa principalmente:",opts:["Incrostazioni calcaree sulle superfici","Priming e trascinamento di vapore","Corrosione per pitting — crateri localizzati nel metallo","Aumento della conducibilità elettrica"],c:2,expl:"L'ossigeno disciolto causa il pitting: corrosione localizzata che forma crateri nel metallo. È particolarmente insidiosa perché i crateri non sono visibili esternamente fino alla rottura improvvisa. Anche concentrazioni molto basse (pochi ppb) causano danni significativi alle alte temperature di caldaia."},
+  {q:"L'addolcimento con resine a scambio ionico riduce:",opts:["La durezza dell'acqua (Ca²⁺ e Mg²⁺ → Na⁺)","La conducibilità e il TDS dell'acqua","La silice disciolta","L'ossigeno disciolto"],c:0,expl:"L'addolcimento scambia Ca²⁺ e Mg²⁺ con Na⁺ → durezza = 0. Ma la conducibilità e il TDS restano invariati perché i sali di sodio sono altrettanto ionizzati. Non rimuove silice, solfati, cloruri. Per questo non è sufficiente per caldaie ad alta pressione — serve la demineralizzazione."},
+  {q:"Il degasatore termico rimuove l'ossigeno disciolto perché:",opts:["L'alta pressione espelle i gas dalla soluzione","La solubilità dei gas nell'acqua diminuisce all'aumentare della temperatura (Legge di Henry)","L'acqua viene filtrata attraverso membrane speciali","L'ossigeno reagisce con il vapore"],c:1,expl:"La Legge di Henry afferma che la solubilità dei gas nell'acqua diminuisce all'aumentare della temperatura. A 100°C (pressione atmosferica) la solubilità dell'ossigeno è praticamente zero. Il degasatore porta l'acqua a 105-130°C: l'O₂ e la CO₂ si liberano e vengono evacuati dallo sfiato."},
+  {q:"L'idrazina N₂H₄ usata per eliminare l'ossigeno residuo è:",opts:["Innocua se diluita correttamente","Cancerogena probabile (IARC Gruppo 2A) — richiede DPI e smaltimento come rifiuto speciale","Tossica solo a concentrazioni superiori a 100 mg/L","Biodegradabile e ambientalmente sicura"],c:1,expl:"L'idrazina è classificata come cancerogena probabile (IARC Gruppo 2A). Richiede DPI completi (guanti, occhiali, mascherina), ventilazione adeguata, formazione specifica e smaltimento come rifiuto speciale pericoloso. Alternative meno tossiche: DEHA, acido ascorbico."},
+  {q:"Il trattamento con fosfati in caldaia trasforma le incrostazioni dure di CaCO₃ in:",opts:["Solfato di calcio (ancora più duro)","Idrossiapatite — fango morbido non aderente rimovibile con lo spurgo","Silicato di calcio","Ossido di calcio solubile"],c:1,expl:"I fosfati reagiscono con il calcio formando idrossiapatite Ca₅(OH)(PO₄)₃ — un precipitato morbido e non aderente alle pareti. Invece di incrostazioni dure di CaCO₃ si forma un fango controllabile che viene eliminato periodicamente con lo spurgo di fondo."},
+  {q:"Il fattore di concentrazione FC di una caldaia vale 10. Questo significa che:",opts:["La pressione è 10 volte la pressione di alimento","I sali nell'acqua di caldaia sono 10 volte più concentrati dell'acqua di reintegro, con uno spurgo del 10%","La producibilità è 10 volte la nominale","Il trattamento rimuove il 10% dei sali"],c:1,expl:"FC = TDS_caldaia / TDS_reintegro = 10 → i sali nell'acqua di caldaia sono 10× più concentrati dell'acqua di alimento. Equivalentemente: % spurgo = 100/FC = 10%. FC alto = meno spurgo = risparmio acqua e calore, ma richiede acqua di alimento di qualità superiore."},
+  {q:"Le ammine volatili (es. morfolina) vengono aggiunte all'acqua per:",opts:["Rimuovere l'ossigeno disciolto","Proteggere le tubazioni di condense dalla corrosione da CO₂, alzando il pH delle condense a 8,5-9,5","Ridurre la durezza dell'acqua","Abbassare la conducibilità"],c:1,expl:"Le ammine volatili si volatilizzano col vapore e si ridissolvono nelle condense, neutralizzando l'acidità causata dalla CO₂ (che forma acido carbonico H₂CO₃). Proteggono le tubazioni di ritorno dalla corrosione acida. Obiettivo: pH condense 8,5-9,5."},
+  {q:"La silice è particolarmente pericolosa negli impianti con turbine perché:",opts:["Corrode le turbine per acidità","A alta pressione è volatile e si trasferisce nel vapore, depositandosi sulle palette come quarzo quasi insolubile","Aumenta la conducibilità del vapore","Reagisce con l'acciaio ad alta temperatura"],c:1,expl:"A alta pressione la silice è volatile e si trasferisce nella fase vapore. Nell'espansione in turbina, la pressione scende e la silice precipita sulle palette come quarzo (durezza 9 Mohs). Le incrostazioni di quarzo alterano il profilo aerodinamico, causano vibrazioni e sono quasi impossibili da rimuovere (solubili solo in HF pericolosissimo)."},
+  {q:"La durezza dell'acqua si misura in gradi francesi (°f) dove 1°f equivale a:",opts:["1 mg/L di Ca²⁺","10 mg/L di CaCO₃","1 mmol/L di Ca²⁺ + Mg²⁺","10 ppm di NaCl"],c:1,expl:"1 grado francese (°f) = 10 mg/L di CaCO₃. È l'unità di misura standard per la durezza in Italia. La durezza richiesta per l'acqua di alimento di caldaie industriali è in genere < 0,02 mmol/L, equivalente a < 0,02 °f — praticamente zero."},
+  {q:"Il pitting è più insidioso della corrosione generalizzata perché:",opts:["Si sviluppa più lentamente","È visibile esternamente nelle fasi iniziali","La corrosione è localizzata e crea crateri profondi non visibili esternamente fino alla rottura improvvisa","Attacca solo il rame, non l'acciaio"],c:2,expl:"Il pitting crea crateri localizzati che penetrano nel metallo senza variazioni visibili dall'esterno. Il metallo circostante è anodicamente protetto e può apparire perfettamente integro mentre la parete del tubo è già quasi perforata. La rottura avviene improvvisamente senza segnali di preavviso."},
+  {q:"La conducibilità elettrica dell'acqua demineralizzata in uscita dall'impianto deve essere:",opts:["< 10 μS/cm","< 1 μS/cm","< 0,1 μS/cm","< 200 μS/cm"],c:2,expl:"L'acqua demineralizzata deve avere conducibilità < 0,1 μS/cm (acqua pura). Per confronto: acqua di rete 200-800 μS/cm, acqua addolcita = simile all'acqua di rete. La conducibilità bassissima indica che praticamente tutti i sali ionizzati sono stati rimossi, inclusa la silice."},
+  {q:"Lo spurgo di superficie serve a rimuovere:",opts:["I fanghi sedimentati nel drum inferiore","L'acqua con alta concentrazione di sali disciolti (TDS) dalla superficie libera per prevenire il priming","Il vapore in eccesso durante i picchi di produzione","L'aria dai condotti fumi"],c:1,expl:"Lo spurgo di superficie rimuove l'acqua dalla superficie libera dove i sali disciolti si concentrano (per effetto dell'evaporazione continua) e dove si forma la schiuma. Riduce il TDS e previene il priming. Lo spurgo di fondo invece rimuove i fanghi (precipitati solidi) dal punto più basso del corpo cilindrico."},
+  {q:"La corrosione caustica in caldaia si verifica quando:",opts:["Il pH scende sotto 7","Il pH sale sopra 12 o l'NaOH si concentra localmente sotto i depositi","La temperatura supera la temperatura di saturazione","La conducibilità supera 5.000 μS/cm"],c:1,expl:"La corrosione caustica si verifica con pH > 12 o, più spesso, quando l'NaOH si concentra localmente sotto i depositi per evaporazione, raggiungendo concentrazioni molto elevate anche con pH medio in caldaia nella norma. Scioglie la magnetite protettiva e attacca il metallo in modo localizzato."},
+  {q:"Il recupero delle condense è vantaggioso principalmente perché:",opts:["Le condense sono più pure dell'acqua demineralizzata","Le condense sono già calde, trattate chimicamente e praticamente prive di durezza — risparmio di energia e prodotti chimici","Le condense hanno pH neutro","Le condense non contengono ossigeno disciolto"],c:1,expl:"Le condense sono acqua già trattata (durezza zero, chimicamente condizionata) e calda (80-100°C). Recuperarle significa: risparmio di energia per il riscaldamento, risparmio di addolcimento/demineralizzazione, riduzione dello spurgo (TDS basso). Il rischio è la contaminazione da perdite negli scambiatori, monitorata con la conducibilità in continuo."},
+  {q:"L'osmosi inversa produce due flussi. Quale è corretto?",opts:["Permeato (~25%) con TDS ridotto + concentrato (~75%)","Permeato (~75%) con TDS ridotto + concentrato (~25%) con TDS ~4× superiore","Due flussi uguali al 50% con TDS dimezzato","Un solo flusso purificato e uno scarico gassoso"],c:1,expl:"L'osmosi inversa produce: permeato (~75% del flusso in ingresso) con rimozione del 95-99% dei sali, e concentrato (~25% del flusso) con TDS circa 4 volte superiore all'acqua di alimentazione. Il concentrato deve essere smaltito correttamente, spesso in fognatura con autorizzazione."},
+  {q:"La passivazione delle superfici interne della caldaia produce:",opts:["Uno strato di ruggine (Fe₂O₃) che poi si stacca","Uno strato aderente di magnetite (Fe₃O₄) che protegge il metallo sottostante dalla corrosione","Uno strato di calcare protettivo","Uno strato di fosfato di calcio sulle pareti"],c:1,expl:"La passivazione forma uno strato protettivo di magnetite (Fe₃O₄) quando le condizioni sono pH 10-11, O₂ basso e temperatura elevata. 3Fe + 4H₂O → Fe₃O₄ + 4H₂. La magnetite è aderente, impermeabile e protegge il metallo sottostante. È diversa dalla ruggine (Fe₂O₃) che è porosa e non protettiva."},
+  {q:"Nella conservazione a secco della caldaia ferma si usa:",opts:["Acqua alcalina con pH 11-12 riempiendo completamente","Silica gel o azoto per mantenere l'atmosfera secca e prevenire la condensazione dell'umidità","Acido citrico per prevenire le incrostazioni","Olio antiruggine sulle superfici interne"],c:1,expl:"La conservazione a secco usa silica gel (assorbe l'umidità) o azoto (inerizzzazione dell'atmosfera) per prevenire la condensazione dell'umidità sulle superfici metalliche. È adatta per fermi lunghi (> 6 mesi). La conservazione umida con acqua alcalina + ossigeno scavenger è invece adatta per fermi brevi-medi."},
+  {q:"La conducibilità delle condense in continuo serve principalmente a:",opts:["Misurare la temperatura delle condense","Rilevare immediatamente la contaminazione delle condense da perdite negli scambiatori","Controllare il pH delle condense","Misurare la portata delle condense"],c:1,expl:"Un aumento improvviso della conducibilità delle condense indica contaminazione da perdita in uno scambiatore (idrocarburi, prodotti di processo, acqua salata). Il monitoraggio in continuo permette di rilevare subito la contaminazione e dirottare le condense allo scarico anziché restituirle alla caldaia, prevenendo danni."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm6');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm6',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>

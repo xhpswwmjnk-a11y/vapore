@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Modulo 05 — Normativa e Patenti</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#e8820a;--accent2:#ff9a2e;--adim:rgba(232,130,10,0.15);
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.15);--glass-border2:rgba(255,255,255,0.25);
+  --text:#f0f4ff;--text2:rgba(240,244,255,0.65);--text3:rgba(240,244,255,0.35);
+  --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --mono:#a8d8ea;
+}
+html,body{width:100%;min-height:100%;background:#080c18;color:var(--text);font-family:'Geist',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.header{display:flex;align-items:center;gap:14px;padding:16px 24px;background:rgba(8,12,24,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:20}
+.btn-back{padding:7px 14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:8px;color:var(--text2);font-family:'Geist',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-back:hover{background:var(--glass2);color:var(--text)}
+.header-info{flex:1;min-width:0}
+.header-tag{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
+.header-title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-prog{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.prog-track{width:80px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.prog-pct{font-family:'Geist Mono',monospace;font-size:10px;color:var(--accent);min-width:28px}
+
+.main{flex:1;max-width:820px;width:100%;margin:0 auto;padding:32px 20px 80px}
+
+/* TOC */
+.toc{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:32px;backdrop-filter:blur(16px)}
+.toc-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.toc-item{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 0;transition:color .15s;line-height:1.4}
+.toc-item:hover{color:var(--accent)}
+@media(max-width:500px){.toc-grid{grid-template-columns:1fr}}
+
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-num{width:36px;height:36px;border-radius:10px;background:var(--adim);border:1px solid rgba(232,130,10,.3);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0}
+.section-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--text)}
+.section-done{width:24px;height:24px;border-radius:6px;background:var(--green-dim);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green);opacity:0;transition:opacity .3s;flex-shrink:0}
+.section-done.show{opacity:1}
+
+.teoria-block{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;margin-bottom:14px;backdrop-filter:blur(16px)}
+.teoria-block h3{font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.teoria-block h3::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;margin-top:2px}
+.teoria-block p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:12px;font-weight:300}
+.teoria-block p:last-child{margin-bottom:0}
+.teoria-block ul{margin:8px 0 12px 0;padding-left:0;list-style:none}
+.teoria-block ul li{font-size:14px;color:var(--text2);line-height:1.75;padding-left:18px;position:relative;font-weight:300;margin-bottom:4px}
+.teoria-block ul li::before{content:'·';position:absolute;left:0;color:var(--accent);font-size:18px;line-height:1.4}
+.teoria-block strong{color:var(--text);font-weight:500}
+
+.formula{background:rgba(10,15,35,0.7);border:1px solid rgba(232,130,10,.2);border-radius:10px;padding:16px 20px;margin:14px 0;font-family:'Geist Mono',monospace;font-size:13px;color:var(--mono);letter-spacing:.3px;line-height:1.8}
+.formula span{color:var(--accent2);font-weight:500}
+.formula small{color:var(--text3);font-size:11px}
+
+.table-wrap{overflow-x:auto;margin:14px 0;border-radius:12px;border:1px solid var(--glass-border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:rgba(232,130,10,.08);color:var(--accent);font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--glass-border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.callout-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.callout p{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:0}
+
+.callout-green{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2);border-left-color:var(--green)}
+.callout-green .callout-label{color:var(--green)}
+
+.btn-teoria-done{width:100%;padding:14px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;margin-top:12px}
+.btn-teoria-done:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-teoria-done.done{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.activity-pick{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:28px;backdrop-filter:blur(16px)}
+.activity-pick h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.activity-pick p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.activity-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-activity{flex:1;min-width:140px;padding:16px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.btn-activity:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-activity span:first-child{font-size:24px}
+
+.flashcard-wrap{display:none}
+.flashcard-wrap.active{display:block}
+.fc-progress{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.fc-counter{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text3)}
+.fc-bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;overflow:hidden}
+.fc-bar-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .4s}
+
+.fc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;backdrop-filter:blur(20px);cursor:pointer;min-height:260px;position:relative;perspective:1000px}
+.fc-inner{width:100%;min-height:260px;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;padding:32px 28px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px}
+.fc-back{transform:rotateY(180deg);background:rgba(232,130,10,.06);border:1px solid rgba(232,130,10,.15)}
+.fc-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.fc-back .fc-label{color:var(--accent)}
+.fc-question{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text);line-height:1.4;margin-bottom:12px}
+.fc-answer{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300;white-space:pre-line}
+.fc-hint{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace;margin-top:auto}
+
+.fc-nav{display:flex;gap:10px;margin-top:14px}
+.btn-fc{flex:1;padding:12px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:10px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-fc:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-fc.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+.btn-fc.primary:hover{background:rgba(232,130,10,.22)}
+
+.quiz-wrap{display:none}
+.quiz-wrap.active{display:block}
+.quiz-q-num{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.quiz-question{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:24px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quiz-opt{padding:14px 18px;background:var(--glass);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(.answered){background:var(--glass2);border-color:var(--glass-border2);color:var(--text)}
+.quiz-opt.correct{background:var(--green-dim);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-dim);border-color:rgba(248,113,113,.4);color:var(--red)}
+.quiz-opt.show-correct{background:var(--green-dim);border-color:rgba(74,222,128,.3);color:var(--green)}
+.quiz-opt.answered{cursor:default}
+.opt-letter{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+.quiz-opt.wrong .opt-letter{background:rgba(248,113,113,.2);border-color:rgba(248,113,133,.4);color:var(--red)}
+.quiz-opt.show-correct .opt-letter{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:var(--green)}
+
+.quiz-explanation{background:rgba(10,15,35,0.6);border:1px solid var(--glass-border);border-radius:12px;padding:16px 18px;margin-bottom:16px;display:none}
+.quiz-explanation.show{display:block}
+.expl-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.expl-text{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+
+.recap-wrap{display:none}
+.recap-wrap.active{display:block}
+.recap-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:36px;backdrop-filter:blur(16px);text-align:center}
+.recap-emoji{font-size:52px;margin-bottom:16px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:28px}
+.recap-score{display:inline-flex;align-items:baseline;gap:4px;font-family:'Geist Mono',monospace;margin-bottom:24px}
+.score-num{font-size:60px;font-weight:500;color:var(--accent);line-height:1}
+.score-den{font-size:26px;color:var(--text3)}
+.recap-bar{width:100%;max-width:260px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:0 auto 32px}
+.recap-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+.recap-wrong{text-align:left;margin-bottom:24px}
+.recap-wrong-title{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.wrong-item{background:var(--red-dim);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.wrong-item strong{color:var(--red);display:block;margin-bottom:4px;font-size:11px;font-family:'Geist Mono',monospace}
+.recap-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-recap{flex:1;min-width:120px;padding:13px;background:var(--glass);border:1px solid var(--glass-border2);border-radius:12px;color:var(--text2);font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.btn-recap:hover{background:var(--glass2);border-color:var(--accent);color:var(--accent)}
+.btn-recap.primary{background:var(--adim);border-color:rgba(232,130,10,.3);color:var(--accent)}
+
+@media(max-width:500px){.main{padding:20px 14px 60px}.header{padding:12px 16px}.activity-btns{flex-direction:column}.btn-activity{min-width:unset}}
+
+/* ── QUICK ACCESS BAR ── */
+.quick-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(8,12,24,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:57px;z-index:19;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.qb-label{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.qb-btn{
+  padding:10px 18px;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:24px;color:var(--text2);font-family:'Geist',sans-serif;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+  white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:7px;
+}
+.qb-btn span.qb-ico{font-size:20px;line-height:1}
+.qb-btn:hover,.qb-btn:active{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.qb-btn.teoria{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45);color:#60a5fa}
+.qb-btn.teoria:hover{background:rgba(59,130,246,0.22);border-color:#60a5fa}
+.qb-btn.flash{background:rgba(83,74,183,0.15);border-color:rgba(83,74,183,0.5);color:#a78bfa}
+.qb-btn.flash:hover{background:rgba(83,74,183,0.28);border-color:#a78bfa}
+.qb-btn.quiz{background:rgba(26,122,58,0.15);border-color:rgba(26,122,58,0.5);color:#4ade80}
+.qb-btn.quiz:hover{background:rgba(26,122,58,0.28);border-color:#4ade80}
+.qb-btn.both{background:rgba(192,66,10,0.15);border-color:rgba(192,66,10,0.5);color:#fb923c}
+.qb-btn.both:hover{background:rgba(192,66,10,0.28);border-color:#fb923c}
+.qb-divider{width:1px;height:24px;background:var(--glass-border);flex-shrink:0}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+<header class="header">
+  <button class="btn-back" onclick="window.location.href='index.html'">← Home</button>
+  <div class="header-info">
+    <div class="header-tag">Modulo 05</div>
+    <div class="header-title">Normativa e Patenti</div>
+  </div>
+  <div class="header-prog">
+    <div class="prog-track"><div class="prog-fill" id="hprog" style="width:0%"></div></div>
+    <span class="prog-pct" id="hpct">0%</span>
+  </div>
+</header>
+
+<main class="main">
+  <!-- QUICK ACCESS BAR -->
+  <div class="quick-bar">
+    <span class="qb-label">Vai a →</span>
+    <button class="qb-btn teoria" onclick="jumpToSection('teoria')"><span class="qb-ico">📖</span> Teoria</button>
+    <div class="qb-divider"></div>
+    <button class="qb-btn flash" onclick="jumpToActivity('flash')"><span class="qb-ico">🃏</span> Flashcard</button>
+    <button class="qb-btn quiz" onclick="jumpToActivity('quiz')"><span class="qb-ico">📝</span> Quiz</button>
+    <button class="qb-btn both" onclick="jumpToActivity('both')"><span class="qb-ico">⚡</span> Flash + Quiz</button>
+  </div>
+
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Indice degli argomenti</div>
+  <div class="toc-grid">
+    <div class="toc-item" onclick="gotoSection('#t1')">1. D.M. 21.05.74 — struttura e campo</div>
+    <div class="toc-item" onclick="gotoSection('#t2')">2. Definizioni normative fondamentali</div>
+    <div class="toc-item" onclick="gotoSection('#t3')">3. Classificazione per categoria</div>
+    <div class="toc-item" onclick="gotoSection('#t4')">4. Patente di 1° grado — requisiti</div>
+    <div class="toc-item" onclick="gotoSection('#t5')">5. Patente di 2° grado — requisiti</div>
+    <div class="toc-item" onclick="gotoSection('#t6')">6. Patente speciale — quando serve</div>
+    <div class="toc-item" onclick="gotoSection('#t7')">7. Commissione esaminatrice</div>
+    <div class="toc-item" onclick="gotoSection('#t8')">8. Esame teorico — struttura</div>
+    <div class="toc-item" onclick="gotoSection('#t9')">9. Esame pratico — struttura</div>
+    <div class="toc-item" onclick="gotoSection('#t10')">10. Rinnovo e aggiornamento patente</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Sospensione e revoca patente</div>
+    <div class="toc-item" onclick="gotoSection('#t12')">12. Obbligo di conduzione — art. 27-28</div>
+    <div class="toc-item" onclick="gotoSection('#t13')">13. Responsabilità del datore di lavoro</div>
+    <div class="toc-item" onclick="gotoSection('#t14')">14. Registro delle verifiche</div>
+    <div class="toc-item" onclick="gotoSection('#t15')">15. Denuncia di messa in servizio</div>
+    <div class="toc-item" onclick="gotoSection('#t16')">16. Direttiva PED 2014/68/UE</div>
+    <div class="toc-item" onclick="gotoSection('#t17')">17. Categorie PED e marcatura CE</div>
+    <div class="toc-item" onclick="gotoSection('#t18')">18. D.M. 94/2020 — novità principali</div>
+    <div class="toc-item" onclick="gotoSection('#t19')">19. Legge 615 — patentino termico</div>
+    <div class="toc-item" onclick="gotoSection('#t20')">20. DPR 412/1993 — impianti termici</div>
+    <div class="toc-item" onclick="gotoSection('#t21')">21. INAIL — ruolo e competenze</div>
+    <div class="toc-item" onclick="gotoSection('#t22')">22. ASL — ruolo e competenze</div>
+    <div class="toc-item" onclick="gotoSection('#t23')">23. Verifiche periodiche — scadenze</div>
+    <div class="toc-item" onclick="gotoSection('#t24')">24. Dichiarazione di conformità</div>
+    <div class="toc-item" onclick="gotoSection('#t25')">25. Prodotto P×V — calcolo e uso</div>
+    <div class="toc-item" onclick="gotoSection('#t26')">26. Deroghe e esoneri — quadro generale</div>
+    <div class="toc-item" onclick="gotoSection('#t27')">27. Caldaie escluse dalla normativa</div>
+    <div class="toc-item" onclick="gotoSection('#t28')">28. Obblighi del proprietario/utente</div>
+    <div class="toc-item" onclick="gotoSection('#t29')">29. Sanzioni penali e amministrative</div>
+    <div class="toc-item" onclick="gotoSection('#t30')">30. Incidenti — obbligo di denuncia</div>
+    <div class="toc-item" onclick="gotoSection('#t31')">31. Requisiti impianto di alimento</div>
+    <div class="toc-item" onclick="gotoSection('#t32')">32. Norme UNI e EN applicabili</div>
+    <div class="toc-item" onclick="gotoSection('#t33')">33. Qualifica saldatori in pressione</div>
+    <div class="toc-item" onclick="gotoSection('#t34')">34. Riparazioni parti in pressione</div>
+    <div class="toc-item" onclick="gotoSection('#t35')">35. Cessione e vendita di caldaie usate</div>
+    <div class="toc-item" onclick="gotoSection('#t36')">36. Impianti con più generatori</div>
+    <div class="toc-item" onclick="gotoSection('#t37')">37. Registro antincendio</div>
+    <div class="toc-item" onclick="gotoSection('#t38')">38. D.Lgs. 152/2006 — emissioni</div>
+    <div class="toc-item" onclick="gotoSection('#t39')">39. Autorizzazione alle emissioni</div>
+    <div class="toc-item" onclick="gotoSection('#t40')">40. Storia della normativa italiana</div>
+    <div class="toc-item" onclick="gotoSection('#t41')">41. Confronto normativa EU vs italiana</div>
+    <div class="toc-item" onclick="gotoSection('#t42')">42. Futuro della normativa — tendenze</div>
+  </div>
+</div>
+
+<!-- SEZIONE TEORIA -->
+<div class="section" id="sec-teoria">
+  <div class="section-header">
+    <div class="section-num">T</div>
+    <div class="section-title">Teoria Completa</div>
+    <div class="section-done" id="done-teoria">✓</div>
+  </div>
+
+  <div class="teoria-block" id="t1">
+    <h3>1. D.M. 21.05.74 — Struttura e Campo di Applicazione</h3>
+    <p>Il <strong>Decreto Ministeriale 21 maggio 1974</strong> è il testo normativo principale che regola la costruzione, l'esercizio e la vigilanza dei generatori di vapore in Italia. È composto da 74 articoli divisi in capitoli che coprono: requisiti costruttivi, dispositivi di sicurezza, verifiche, conduzione e patenti.</p>
+    <p>Campo di applicazione: tutti i <strong>generatori di vapore</strong> con pressione di esercizio superiore a 0,5 bar e con prodotto P×V (pressione in bar × volume in litri) superiore a determinati limiti. I recipienti sotto questi limiti sono soggetti a normative meno stringenti.</p>
+    <p>Il D.M. 21.05.74 è stato integrato ma non sostituito dalla normativa europea PED. Le due normative coesistono: la PED regola la <strong>costruzione e l'immissione sul mercato</strong>, il D.M. 21.05.74 regola l'<strong>esercizio e la conduzione</strong>.</p>
+  </div>
+
+  <div class="teoria-block" id="t2">
+    <h3>2. Definizioni Normative Fondamentali</h3>
+    <p>Il D.M. 21.05.74 definisce con precisione i termini tecnici usati in tutta la normativa:</p>
+    <ul>
+      <li><strong>Generatore di vapore</strong>: apparecchio destinato a produrre vapore a pressione superiore alla pressione atmosferica per qualsiasi impiego</li>
+      <li><strong>Pressione di bollo (P_b)</strong>: pressione massima di esercizio riportata sulla targa del costruttore</li>
+      <li><strong>Pressione di esercizio (P_e)</strong>: pressione alla quale il generatore viene effettivamente fatto funzionare</li>
+      <li><strong>Superficie di riscaldamento</strong>: area delle superfici che da un lato sono a contatto con i fumi e dall'altro con il fluido, misurata dal lato fumi</li>
+      <li><strong>Producibilità</strong>: massima portata di vapore che il generatore può produrre in condizioni nominali, espressa in kg/h</li>
+      <li><strong>Conduttore</strong>: persona fisica abilitata con apposita patente che sorveglia e conduce il generatore</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t3">
+    <h3>3. Classificazione per Categoria</h3>
+    <p>Il D.M. 21.05.74 classifica i generatori in categorie in base al prodotto P×V (pressione in kg/cm² × volume in litri) che determina l'energia potenziale del generatore:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Categoria</th><th>Prodotto P×V</th><th>Patente richiesta</th><th>Verifiche</th></tr>
+      <tr><td>1ª categoria</td><td>P×V &gt; 30.000</td><td>2° grado</td><td>Complete</td></tr>
+      <tr><td>2ª categoria</td><td>8.000 &lt; P×V ≤ 30.000</td><td>1° grado</td><td>Complete</td></tr>
+      <tr><td>3ª categoria</td><td>P×V ≤ 8.000</td><td>Esonero o patente 1°</td><td>Ridotte</td></tr>
+    </table></div>
+    <p>Il prodotto P×V è il parametro che misura l'energia immagazzinata nel generatore: più alto è P×V, più energia può essere rilasciata in caso di rottura, quindi più stringenti sono i requisiti di sicurezza.</p>
+  </div>
+
+  <div class="teoria-block" id="t4">
+    <h3>4. Patente di 1° Grado — Requisiti</h3>
+    <p>La <strong>patente di 1° grado</strong> abilita alla conduzione di generatori di vapore di 2ª categoria (P×V fino a 30.000) e di tutti i generatori a bassa pressione.</p>
+    <p>Requisiti per l'ammissione all'esame (D.M. 21.05.74, aggiornato con successive circolari):</p>
+    <ul>
+      <li><strong>Età minima</strong>: 18 anni</li>
+      <li><strong>Titolo di studio</strong>: licenza scuola media inferiore (3ª media)</li>
+      <li><strong>Pratica documentata</strong>: almeno <strong>6 mesi</strong> di servizio come fuochista o assistente conduttore su un generatore di vapore, attestata dal datore di lavoro</li>
+      <li><strong>Idoneità fisica</strong>: certificato medico di idoneità alla mansione</li>
+    </ul>
+    <p>La patente di 1° grado abilita anche alla conduzione di generatori ex Art. 43 (funzionamento non presidiato) e alla firma settimanale del registro giornaliero per tali generatori.</p>
+  </div>
+
+  <div class="teoria-block" id="t5">
+    <h3>5. Patente di 2° Grado — Requisiti</h3>
+    <p>La <strong>patente di 2° grado</strong> abilita alla conduzione di generatori di vapore di 1ª categoria (P×V superiore a 30.000), incluse le caldaie di grande potenza delle centrali termoelettriche e dei grandi impianti industriali.</p>
+    <p>Requisiti per l'ammissione all'esame:</p>
+    <ul>
+      <li><strong>Età minima</strong>: 21 anni</li>
+      <li><strong>Titolo di studio</strong>: diploma di scuola media superiore (5 anni) o laurea in ingegneria/scienze</li>
+      <li><strong>Pratica documentata</strong>: almeno <strong>2 anni</strong> di conduzione su generatori di 1ª o 2ª categoria con patente di 1° grado</li>
+      <li>In alternativa: almeno 3 anni di pratica su caldaie di 1ª categoria come assistente, anche senza patente di 1° grado</li>
+    </ul>
+    <p>La patente di 2° grado abilita a tutto ciò che è consentito con la patente di 1° grado, più la conduzione di generatori di 1ª categoria.</p>
+  </div>
+
+  <div class="teoria-block" id="t6">
+    <h3>6. Patente Speciale — Quando Serve</h3>
+    <p>La <strong>patente speciale</strong> (o abilitazione speciale) è richiesta per la conduzione di particolari tipi di impianti che presentano caratteristiche tecniche specifiche non coperte dalle patenti standard:</p>
+    <ul>
+      <li>Generatori a circolazione forzata (once-through) con particolari caratteristiche operative</li>
+      <li>Impianti nucleari (normativa specifica)</li>
+      <li>Particolari generatori ad alta pressione con fluidi diversi dall'acqua</li>
+    </ul>
+    <p>La patente speciale richiede generalmente: possesso della patente di 2° grado, corso specifico di formazione riconosciuto, esame integrativo sulle peculiarità dell'impianto specifico. I requisiti variano in base al tipo di impianto e sono stabiliti caso per caso dalle autorità competenti.</p>
+  </div>
+
+  <div class="teoria-block" id="t7">
+    <h3>7. Commissione Esaminatrice</h3>
+    <p>L'esame per le patenti di conduttore di caldaie si svolge davanti a una <strong>commissione esaminatrice</strong> nominata dalla Regione o dalla Provincia Autonoma competente.</p>
+    <p>Composizione tipica della commissione:</p>
+    <ul>
+      <li>Un funzionario dell'ASL o dell'INAIL (presidente)</li>
+      <li>Un ingegnere o tecnico specializzato in generatori di vapore</li>
+      <li>Eventuale esperto del settore specifico</li>
+    </ul>
+    <p>La commissione valuta sia la parte teorica (questionario scritto o orale) che la parte pratica (dimostrazione di manovre su un generatore reale o simulatore). Il punteggio minimo per il superamento è stabilito dal regolamento d'esame regionale. In caso di bocciatura, il candidato può ripresentarsi dopo un periodo minimo (generalmente 30-60 giorni).</p>
+  </div>
+
+  <div class="teoria-block" id="t8">
+    <h3>8. Esame Teorico — Struttura</h3>
+    <p>La parte teorica dell'esame per la patente di conduttore copre le seguenti aree:</p>
+    <ul>
+      <li><strong>Termodinamica applicata</strong>: calore, vapore, pressione, entalpia, tavole del vapore</li>
+      <li><strong>Combustione e combustibili</strong>: potere calorifico, stechiometria, analisi fumi, rendimento</li>
+      <li><strong>Costruzione delle caldaie</strong>: tipologie, componenti, materiali, circolazione</li>
+      <li><strong>Dispositivi di sicurezza</strong>: valvole, pressostati, livellostati, manometri</li>
+      <li><strong>Normativa</strong>: D.M. 21.05.74, PED, D.Lgs. 81/2008</li>
+      <li><strong>Trattamento acque</strong>: analisi, addolcimento, demineralizzazione, corrosione</li>
+      <li><strong>Conduzione pratica</strong>: avviamento, arresto, gestione anomalie, registro</li>
+    </ul>
+    <p>Il numero di domande e il tempo variano per regione. Tipicamente: 30-50 domande a risposta multipla o aperta, 60-90 minuti di tempo.</p>
+  </div>
+
+  <div class="teoria-block" id="t9">
+    <h3>9. Esame Pratico — Struttura</h3>
+    <p>La parte pratica dell'esame valuta la capacità del candidato di condurre effettivamente un generatore di vapore. Comprende tipicamente:</p>
+    <ul>
+      <li><strong>Identificazione dei componenti</strong>: nominare e descrivere la funzione di valvole, strumenti e dispositivi su un generatore reale</li>
+      <li><strong>Lettura strumenti</strong>: leggere manometri, indicatori di livello, analizzatori</li>
+      <li><strong>Sequenza di avviamento</strong>: eseguire correttamente la procedura di avviamento (purga, accensione, salita a regime)</li>
+      <li><strong>Gestione anomalie simulate</strong>: risposta corretta a situazioni di basso livello, alta pressione, blocco fiamma</li>
+      <li><strong>Analisi acque e fumi</strong>: eseguire misure e interpretare i risultati</li>
+      <li><strong>Registrazione</strong>: compilare correttamente il registro giornaliero</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t10">
+    <h3>10. Rinnovo e Aggiornamento della Patente</h3>
+    <p>La patente di conduttore di caldaie non ha scadenza anagrafica come le patenti automobilistiche. Tuttavia ci sono obblighi di aggiornamento:</p>
+    <ul>
+      <li>In caso di <strong>modifiche normative significative</strong>, le autorità possono richiedere corsi di aggiornamento</li>
+      <li>In caso di <strong>lunga interruzione dell'attività</strong> (generalmente oltre 5 anni), alcune regioni richiedono una verifica delle competenze prima di riprendere la conduzione</li>
+      <li>Il <strong>D.M. 94/2020</strong> ha introdotto nuovi requisiti e alcune regioni hanno recepito obblighi di aggiornamento periodico</li>
+    </ul>
+    <p>La patente è valida su tutto il territorio nazionale. Il titolare deve comunicare qualsiasi variazione all'autorità che l'ha rilasciata (cambio di residenza, ecc.).</p>
+  </div>
+
+  <div class="teoria-block" id="t11">
+    <h3>11. Sospensione e Revoca della Patente</h3>
+    <p>Le autorità competenti possono sospendere o revocare la patente in caso di gravi violazioni:</p>
+    <p><strong>Cause di sospensione</strong> (temporanea):</p>
+    <ul>
+      <li>Accertamento di grave negligenza nella conduzione</li>
+      <li>Violazioni ripetute degli obblighi di registrazione</li>
+      <li>Incidenti riconducibili a comportamento scorretto del conduttore</li>
+      <li>Perdita temporanea dell'idoneità fisica o psichica</li>
+    </ul>
+    <p><strong>Cause di revoca</strong> (definitiva):</p>
+    <ul>
+      <li>Condanne penali per reati connessi alla conduzione</li>
+      <li>Gravi incidenti con dolo o colpa grave accertata</li>
+      <li>Falsificazione di documenti ufficiali (libretto, registro)</li>
+    </ul>
+    <p>Il conduttore con patente sospesa o revocata non può esercitare l'attività di conduzione. Il datore di lavoro che lo impiega comunque è soggetto a sanzioni penali.</p>
+  </div>
+
+  <div class="teoria-block" id="t12">
+    <h3>12. Obbligo di Conduzione — Art. 27-28</h3>
+    <p>Gli articoli 27 e 28 del D.M. 21.05.74 stabiliscono gli obblighi fondamentali di conduzione:</p>
+    <p><strong>Art. 27</strong> — I generatori di 1ª e 2ª categoria devono essere condotti da <strong>personale munito di patente</strong>. Il conduttore deve essere presente durante il funzionamento del generatore.</p>
+    <p><strong>Art. 28</strong> — In caso di assenza del conduttore titolare, la sostituzione deve essere affidata a persona munita di patente di grado almeno uguale. <strong>Non è ammessa la sostituzione con personale non patentato</strong>, nemmeno temporaneamente.</p>
+    <p>Il conduttore deve comunicare immediatamente al responsabile dell'impianto qualsiasi anomalia o malfunzionamento dei dispositivi di sicurezza. Il conduttore non può essere distolto dalla sorveglianza del generatore per attività incompatibili con la sicurezza dell'impianto.</p>
+  </div>
+
+  <div class="teoria-block" id="t13">
+    <h3>13. Responsabilità del Datore di Lavoro</h3>
+    <p>Il <strong>datore di lavoro</strong> (o il proprietario/gestore dell'impianto) ha responsabilità precise e distinte da quelle del conduttore:</p>
+    <ul>
+      <li>Assicurare che il generatore sia costruito, installato e mantenuto secondo le norme</li>
+      <li>Assumere solo conduttori con patente adeguata alla categoria del generatore</li>
+      <li>Fornire al conduttore tutte le istruzioni e i mezzi necessari per la sicura conduzione</li>
+      <li>Effettuare le verifiche periodiche richieste dall'INAIL</li>
+      <li>Tenere aggiornato il libretto matricolare</li>
+      <li>Non imporre al conduttore di operare in condizioni non sicure</li>
+    </ul>
+    <p>La responsabilità penale in caso di incidente può coinvolgere sia il conduttore (per negligenza operativa) che il datore di lavoro (per carenze organizzative, strumentali o manutentive). La Cassazione ha più volte confermato la responsabilità concorrente.</p>
+  </div>
+
+  <div class="teoria-block" id="t14">
+    <h3>14. Registro delle Verifiche</h3>
+    <p>Diverso dal registro giornaliero operativo, il <strong>registro delle verifiche</strong> (o verbale di verifica) documenta le ispezioni periodiche effettuate dall'INAIL o dagli organismi notificati.</p>
+    <p>Ogni verifica produce un verbale che deve contenere:</p>
+    <ul>
+      <li>Data e tipo di verifica eseguita</li>
+      <li>Identificazione del generatore (matricola, tipo, dati tecnici)</li>
+      <li>Esito della verifica (positivo/negativo/con prescrizioni)</li>
+      <li>Eventuali prescrizioni con termine di adempimento</li>
+      <li>Data della prossima verifica prevista</li>
+      <li>Firma del funzionario INAIL o del verificatore abilitato</li>
+    </ul>
+    <p>I verbali di verifica sono allegati al libretto matricolare. In caso di prescrizioni, il proprietario deve adempiervi entro il termine indicato e documentare l'adempimento.</p>
+  </div>
+
+  <div class="teoria-block" id="t15">
+    <h3>15. Denuncia di Messa in Servizio</h3>
+    <p>Prima di mettere in servizio un generatore di vapore nuovo o trasferito da altra sede, il proprietario deve effettuare la <strong>denuncia all'INAIL</strong> (o all'ente territorialmente competente).</p>
+    <p>La denuncia deve essere accompagnata da:</p>
+    <ul>
+      <li>Certificato del costruttore con dati tecnici del generatore</li>
+      <li>Dichiarazione di conformità (marcatura CE per generatori recenti)</li>
+      <li>Disegno di installazione che mostra il posizionamento nel locale</li>
+      <li>Libretto matricolare originale</li>
+    </ul>
+    <p>Dopo la denuncia, l'INAIL effettua la <strong>prima verifica di messa in servizio</strong> (visita interna, verifica dispositivi, prova a caldo) e assegna il <strong>numero di matricola INAIL</strong> che identifica univocamente il generatore nel territorio nazionale per tutta la sua vita operativa.</p>
+  </div>
+
+  <div class="teoria-block" id="t16">
+    <h3>16. Direttiva PED 2014/68/UE</h3>
+    <p>La <strong>Direttiva PED</strong> (Pressure Equipment Directive) 2014/68/UE regola la <strong>progettazione, la fabbricazione e la conformità</strong> delle attrezzature a pressione nell'Unione Europea. Ha sostituito la precedente 97/23/CE.</p>
+    <p>Campo di applicazione: attrezzature a pressione con pressione massima ammissibile PS &gt; 0,5 bar (vapore, gas, liquidi surriscaldati). Include caldaie, serbatoi, tubazioni e accessori di sicurezza.</p>
+    <p>La PED stabilisce i <strong>Requisiti Essenziali di Sicurezza (RES)</strong> che ogni attrezzatura a pressione deve soddisfare prima di essere immessa sul mercato europeo. La conformità ai RES è dimostrata attraverso:</p>
+    <ul>
+      <li>Applicazione delle norme armonizzate europee (EN)</li>
+      <li>Procedure di valutazione della conformità (moduli dalla A alla H)</li>
+      <li>Intervento di un Organismo Notificato per le categorie più elevate</li>
+      <li>Marcatura CE e Dichiarazione di Conformità</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t17">
+    <h3>17. Categorie PED e Marcatura CE</h3>
+    <p>La PED classifica le attrezzature a pressione in <strong>quattro categorie</strong> (I, II, III, IV) in base al rischio, determinato dal tipo di fluido e dal prodotto PS×V (o PS×DN per le tubazioni):</p>
+    <div class="table-wrap"><table>
+      <tr><th>Categoria PED</th><th>Rischio</th><th>Organismo Notificato</th><th>Moduli valutazione</th></tr>
+      <tr><td>Categoria I</td><td>Basso</td><td>Non richiesto</td><td>Modulo A</td></tr>
+      <tr><td>Categoria II</td><td>Medio</td><td>Richiesto per alcuni moduli</td><td>A1, D1, E1</td></tr>
+      <tr><td>Categoria III</td><td>Alto</td><td>Sempre richiesto</td><td>B+D, B+F, H</td></tr>
+      <tr><td>Categoria IV</td><td>Molto alto</td><td>Sempre richiesto</td><td>B+D, B+F, G, H1</td></tr>
+    </table></div>
+    <p>La <strong>marcatura CE</strong> è obbligatoria per tutte le attrezzature PED di categoria I e superiore. Comprende: simbolo CE + numero identificativo dell'Organismo Notificato + anno di apposizione. Senza marcatura CE un generatore non può essere legalmente messo in servizio nell'UE.</p>
+  </div>
+
+  <div class="teoria-block" id="t18">
+    <h3>18. D.M. 94/2020 — Novità Principali</h3>
+    <p>Il <strong>D.M. 6 febbraio 2020 n. 94</strong> ha aggiornato le modalità per il conseguimento delle patenti di conduttore di generatori di vapore, modernizzando il sistema precedente:</p>
+    <ul>
+      <li><strong>Nuovi programmi di esame</strong>: più dettagliati e allineati alle tecnologie moderne (automazione, sistemi di controllo digitali, nuovi combustibili)</li>
+      <li><strong>Formazione strutturata</strong>: percorsi formativi riconosciuti presso enti accreditati come alternativa/integrazione alla pratica sul campo</li>
+      <li><strong>Digitalizzazione</strong>: registro giornaliero in formato digitale accettato in sostituzione di quello cartaceo</li>
+      <li><strong>Reciprocità europea</strong>: procedure per il riconoscimento delle abilitazioni conseguite in altri Paesi UE</li>
+      <li><strong>Aggiornamento periodico</strong>: in alcune regioni introdotto l'obbligo di formazione continua</li>
+    </ul>
+    <p>Il D.M. 94/2020 non ha abrogato il D.M. 21.05.74 per quanto riguarda i requisiti tecnici dei generatori: si sovrappone solo sulla parte relativa alle patenti e alla formazione.</p>
+  </div>
+
+  <div class="teoria-block" id="t19">
+    <h3>19. Legge 615 — Patentino Termico</h3>
+    <p>La <strong>Legge 615/1966</strong> (e il relativo DPR 1391/1970) ha istituito il <strong>patentino di abilitazione per i responsabili degli impianti termici</strong> con potenzialità superiori a 200.000 kcal/h (circa 232 kW).</p>
+    <p>Il patentino della Legge 615 è <strong>diverso e distinto</strong> dalla patente di conduttore di caldaie:</p>
+    <ul>
+      <li>La patente (D.M. 21.05.74) abilita alla <strong>conduzione operativa</strong> del generatore di vapore</li>
+      <li>Il patentino (L. 615) certifica la competenza del <strong>responsabile tecnico dell'impianto termico</strong> per gli aspetti ambientali (emissioni)</li>
+    </ul>
+    <p>Un impianto termico con potenzialità &gt; 200.000 kcal/h deve avere un responsabile con patentino L.615, indipendentemente dall'obbligo o meno della patente di conduttore per il tipo di generatore. I due requisiti possono coesistere sulla stessa persona.</p>
+  </div>
+
+  <div class="teoria-block" id="t20">
+    <h3>20. DPR 412/1993 — Impianti Termici</h3>
+    <p>Il <strong>DPR 412/1993</strong> (e successive modifiche DPR 551/1999) regola il rendimento energetico degli impianti termici per il riscaldamento degli edifici. Riguarda prevalentemente gli impianti di riscaldamento civile ma si interseca con la normativa dei generatori di vapore per alcuni aspetti:</p>
+    <ul>
+      <li>Obbligo di <strong>libretto di impianto</strong> per tutti gli impianti termici</li>
+      <li>Verifiche periodiche del rendimento di combustione (ogni 2-4 anni a seconda della potenza)</li>
+      <li>Requisiti minimi di rendimento per i generatori</li>
+      <li>Gestione e manutenzione degli impianti</li>
+    </ul>
+    <p>Il DPR 412 è spesso citato nelle domande d'esame perché definisce la distinzione tra impianti civili (riscaldamento) e impianti industriali (produzione vapore), con normative applicabili diverse.</p>
+  </div>
+
+  <div class="teoria-block" id="t21">
+    <h3>21. INAIL — Ruolo e Competenze</h3>
+    <p>L'<strong>INAIL</strong> (Istituto Nazionale per l'Assicurazione contro gli Infortuni sul Lavoro) ha assorbito le competenze dell'ex ISPESL nel 2010, diventando l'ente principale per la vigilanza tecnica sui generatori di vapore in Italia.</p>
+    <p>Competenze INAIL sui generatori di vapore:</p>
+    <ul>
+      <li>Ricezione delle denunce di messa in servizio</li>
+      <li>Prima verifica di messa in servizio e assegnazione matricola</li>
+      <li>Verifiche periodiche (ogni 2 anni per integrità e funzionamento, ogni 10 anni prova idraulica)</li>
+      <li>Verifica straordinaria dopo incidenti o riparazioni significative</li>
+      <li>Tenuta del registro nazionale dei generatori di vapore</li>
+      <li>Indagini sugli incidenti</li>
+    </ul>
+    <p>L'INAIL può delegare alcune verifiche agli <strong>Organismi Notificati</strong> accreditati (es. Bureau Veritas, TÜV, DNV) che operano in sua vece con pari valore legale.</p>
+  </div>
+
+  <div class="teoria-block" id="t22">
+    <h3>22. ASL — Ruolo e Competenze</h3>
+    <p>L'<strong>ASL</strong> (Azienda Sanitaria Locale) ha competenze complementari a quelle dell'INAIL nel controllo degli impianti termici, focalizzate sugli aspetti di sicurezza sul lavoro e igiene ambientale:</p>
+    <ul>
+      <li>Ispezioni sulla sicurezza sul lavoro (D.Lgs. 81/2008)</li>
+      <li>Verifica del rispetto delle distanze di sicurezza e dei requisiti dei locali</li>
+      <li>Controllo del registro giornaliero e dei documenti di conduzione</li>
+      <li>Verifica delle patenti dei conduttori</li>
+      <li>Indagini sugli infortuni sul lavoro connessi ai generatori</li>
+    </ul>
+    <p>In caso di ispezione congiunta INAIL-ASL (frequente dopo incidenti), entrambi gli enti hanno poteri sanzionatori autonomi. L'ASL può emettere prescrizioni di adeguamento, disporre la sospensione dell'attività o denunciare all'autorità giudiziaria.</p>
+  </div>
+
+  <div class="teoria-block" id="t23">
+    <h3>23. Verifiche Periodiche — Scadenze</h3>
+    <p>Le verifiche periodiche obbligatorie e le relative scadenze:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Tipo di verifica</th><th>Periodicità</th><th>Chi la esegue</th></tr>
+      <tr><td>Verifica di integrità (visita interna)</td><td>Ogni 2 anni</td><td>INAIL o ON delegato</td></tr>
+      <tr><td>Verifica di funzionamento</td><td>Ogni 2 anni</td><td>INAIL o ON delegato</td></tr>
+      <tr><td>Prova idraulica</td><td>Ogni 10 anni</td><td>INAIL o ON delegato</td></tr>
+      <tr><td>Analisi acque</td><td>Periodicamente (mensile)</td><td>Laboratorio + conduttore</td></tr>
+      <tr><td>Test dispositivi sicurezza</td><td>Settimanale/mensile</td><td>Conduttore (registro)</td></tr>
+    </table></div>
+    <p>Le scadenze decorrono dalla data dell'ultima verifica positiva. La mancata effettuazione delle verifiche nei termini è una violazione grave che può comportare la sospensione immediata dell'esercizio e sanzioni penali per il proprietario.</p>
+  </div>
+
+  <div class="teoria-block" id="t24">
+    <h3>24. Dichiarazione di Conformità</h3>
+    <p>La <strong>Dichiarazione di Conformità UE (DoC)</strong> è il documento con cui il fabbricante dichiara che la sua attrezzatura a pressione è conforme alla Direttiva PED e a tutte le altre direttive applicabili.</p>
+    <p>La dichiarazione deve contenere:</p>
+    <ul>
+      <li>Nome e indirizzo del fabbricante</li>
+      <li>Descrizione del prodotto (tipo, modello, numero di serie)</li>
+      <li>Riferimento alle direttive applicabili e alle norme armonizzate utilizzate</li>
+      <li>Riferimento all'Organismo Notificato (per categorie III e IV)</li>
+      <li>Numero del certificato di esame CE del tipo (se applicabile)</li>
+      <li>Firma del legale rappresentante del fabbricante</li>
+    </ul>
+    <p>La DoC deve accompagnare il generatore per tutta la sua vita e deve essere conservata dal proprietario insieme al libretto matricolare. In assenza di DoC per un generatore che la richiede, il generatore non può essere messo legalmente in servizio in Italia.</p>
+  </div>
+
+  <div class="teoria-block" id="t25">
+    <h3>25. Prodotto P×V — Calcolo e Uso</h3>
+    <p>Il <strong>prodotto P×V</strong> è il parametro normativo che determina la categoria del generatore e di conseguenza il tipo di patente richiesta, la periodicità delle verifiche e altri requisiti.</p>
+    <div class="formula">
+      <span>P×V = P_bollo [kg/cm²] × V [litri]</span><br>
+      <small>P_bollo in kg/cm² (non in bar!) | V = volume totale del corpo cilindrico in litri</small>
+    </div>
+    <p>Attenzione: il D.M. 21.05.74 usa la <strong>pressione in kg/cm²</strong> (non in bar). La conversione: 1 bar ≈ 1,02 kg/cm². Per valori approssimativi si può usare 1 bar ≈ 1 kg/cm².</p>
+    <p>Esempio: caldaia con P_bollo = 12 bar (~12 kg/cm²) e volume 3.000 litri:<br>
+    P×V = 12 × 3.000 = <strong>36.000</strong> → 1ª categoria → richiede patente di <strong>2° grado</strong></p>
+    <p>Esempio 2: caldaia con P_bollo = 5 bar e volume 1.000 litri:<br>
+    P×V = 5 × 1.000 = <strong>5.000</strong> → 3ª categoria → possibile esonero o patente 1°</p>
+  </div>
+
+  <div class="teoria-block" id="t26">
+    <h3>26. Deroghe e Esoneri — Quadro Generale</h3>
+    <p>Il D.M. 21.05.74 prevede una serie di deroghe ed esoneri per i generatori di minore entità o con particolari caratteristiche:</p>
+    <ul>
+      <li><strong>Art. 39</strong>: esonero dalla sorveglianza continua per P≤1 bar, superficie≤100 m², producibilità≤2 t/h</li>
+      <li><strong>Art. 43</strong>: funzionamento non presidiato per P≤15 bar, producibilità≤3 t/h, con PSHH+LSHH+allarmi</li>
+      <li><strong>P×V ≤ 30.000</strong>: sufficiente patente di 1° grado invece del 2°</li>
+      <li><strong>P×V ≤ 8.000</strong>: requisiti ridotti, possibile esonero dalla patente in alcuni casi</li>
+    </ul>
+    <p>Le deroghe non esentano mai completamente dagli obblighi di manutenzione, analisi acque e verifiche periodiche. Esentano dalla presenza continua del conduttore patentato, non dalla responsabilità tecnica e legale dell'impianto.</p>
+  </div>
+
+  <div class="teoria-block" id="t27">
+    <h3>27. Caldaie Escluse dalla Normativa</h3>
+    <p>Alcune tipologie di generatori sono escluse dal campo di applicazione del D.M. 21.05.74 e/o della PED:</p>
+    <ul>
+      <li>Caldaie con P×V ≤ 30 (piccole caldaie domestiche)</li>
+      <li>Apparecchi a pressione per uso domestico con PS ≤ 0,5 bar</li>
+      <li>Attrezzature specificamente destinate alla propulsione navale (soggette a normativa marittima)</li>
+      <li>Attrezzature per uso militare (soggette a normativa specifica delle Forze Armate)</li>
+      <li>Impianti nucleari (normativa atomica)</li>
+      <li>Estintori e bombole per respiratori (normativa specifica)</li>
+    </ul>
+    <p>I generatori esclusi non richiedono la patente di conduttore né le verifiche INAIL, ma rimangono soggetti alle norme generali di sicurezza sul lavoro (D.Lgs. 81/2008).</p>
+  </div>
+
+  <div class="teoria-block" id="t28">
+    <h3>28. Obblighi del Proprietario/Utente</h3>
+    <p>Il <strong>proprietario</strong> (o l'utente, se diverso) ha obblighi di legge che non possono essere delegati interamente al conduttore:</p>
+    <ul>
+      <li>Mantenere il generatore in buono stato di conservazione</li>
+      <li>Richiedere le verifiche periodiche nei termini previsti</li>
+      <li>Adempiere entro i termini alle prescrizioni dell'INAIL</li>
+      <li>Tenere aggiornato il libretto matricolare</li>
+      <li>Assumere conduttori patentati adeguati alla categoria del generatore</li>
+      <li>Comunicare all'INAIL qualsiasi modifica tecnica al generatore</li>
+      <li>Conservare tutta la documentazione tecnica e i verbali di verifica</li>
+      <li>Denunciare immediatamente gli incidenti all'INAIL e all'autorità giudiziaria</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t29">
+    <h3>29. Sanzioni Penali e Amministrative</h3>
+    <p>Le violazioni della normativa sui generatori di vapore comportano sanzioni sia penali che amministrative:</p>
+    <ul>
+      <li><strong>Conduzione senza patente</strong>: reato penale — arresto fino a 3 mesi o ammenda</li>
+      <li><strong>Mancata effettuazione delle verifiche periodiche</strong>: sanzione amministrativa + obbligo di immediata verifica</li>
+      <li><strong>Mancata denuncia di messa in servizio</strong>: sanzione amministrativa</li>
+      <li><strong>Registro non aggiornato</strong>: sanzione amministrativa</li>
+      <li><strong>Incidente con lesioni per negligenza</strong>: reato penale — lesioni colpose, omicidio colposo</li>
+      <li><strong>Riparazioni non autorizzate alle parti in pressione</strong>: sanzione penale + sequestro dell'impianto</li>
+    </ul>
+    <p>Il D.Lgs. 81/2008 prevede sanzioni aggiuntive per le violazioni delle norme di sicurezza sul lavoro, che si cumulano con quelle del D.M. 21.05.74 senza sostituirle.</p>
+  </div>
+
+  <div class="teoria-block" id="t30">
+    <h3>30. Incidenti — Obbligo di Denuncia</h3>
+    <p>In caso di <strong>incidente</strong> (scoppio, esplosione, rottura, ustioni gravi) su un generatore di vapore, esistono obblighi immediati di denuncia:</p>
+    <ul>
+      <li><strong>Autorità di Pubblica Sicurezza</strong> (Polizia o Carabinieri): entro poche ore dall'evento</li>
+      <li><strong>INAIL territorialmente competente</strong>: per l'avvio dell'indagine tecnica</li>
+      <li><strong>ASL</strong>: per gli aspetti di infortunio sul lavoro</li>
+      <li><strong>Autorità Giudiziaria</strong>: in caso di morti o lesioni gravi (automatico tramite Polizia)</li>
+    </ul>
+    <p>Il generatore incidentato deve essere <strong>messo fuori servizio e lasciato nelle condizioni in cui si trova</strong> (salvo pericolo imminente) fino all'ispezione dell'INAIL. Spostare o modificare i componenti prima dell'ispezione è reato (alterazione del corpo del reato). Solo dopo la liberatoria dell'INAIL il generatore può essere riparato o demolito.</p>
+  </div>
+
+  <div class="teoria-block" id="t31">
+    <h3>31. Requisiti Impianto di Alimento</h3>
+    <p>La normativa stabilisce requisiti precisi per l'impianto di alimento (pompe, tubazioni, valvole) che garantiscono l'affidabilità dell'alimentazione d'acqua alla caldaia:</p>
+    <ul>
+      <li>Almeno <strong>due pompe indipendenti</strong>, ciascuna capace di soddisfare il fabbisogno al 200%</li>
+      <li>Le pompe devono poter essere messe in funzione <strong>anche in assenza di energia elettrica</strong> (almeno una pompa azionata da vapore, motore diesel o altra fonte indipendente)</li>
+      <li>La mandata di ogni pompa deve avere: valvola di intercettazione + valvola di non ritorno + manometro</li>
+      <li>L'aspirazione deve avere filtro e valvola di intercettazione</li>
+      <li>Le due pompe devono avere circuiti di aspirazione e mandata separati fino alla giunzione comune in prossimità del generatore</li>
+    </ul>
+    <p>Il requisito della pompa di riserva indipendente dall'energia elettrica è particolarmente importante: in caso di blackout, la caldaia deve poter essere alimentata per procedere all'arresto in sicurezza senza che il livello scenda al di sotto del minimo.</p>
+  </div>
+
+  <div class="teoria-block" id="t32">
+    <h3>32. Norme UNI e EN Applicabili</h3>
+    <p>Le normative tecniche armonizzate UNI e EN definiscono i requisiti tecnici specifici per la costruzione e la verifica dei generatori di vapore. Le principali:</p>
+    <ul>
+      <li><strong>EN 12952</strong>: caldaie a tubi d'acqua — progettazione, costruzione, ispezione</li>
+      <li><strong>EN 12953</strong>: caldaie a tubi di fumo — progettazione, costruzione, ispezione</li>
+      <li><strong>EN 13445</strong>: recipienti a pressione non soggetti a fiamma</li>
+      <li><strong>UNI 4663</strong>: manometri — requisiti costruttivi e di taratura</li>
+      <li><strong>EN 764</strong>: terminologia e simbologia per attrezzature a pressione</li>
+      <li><strong>EN ISO 9606</strong>: qualificazione dei saldatori per la saldatura in pressione</li>
+    </ul>
+    <p>Le norme EN armonizzate conferiscono <strong>presunzione di conformità</strong> alla PED: un generatore costruito secondo EN 12952 o EN 12953 è presunto conforme ai requisiti essenziali di sicurezza della direttiva, senza dover dimostrare la conformità caso per caso.</p>
+  </div>
+
+  <div class="teoria-block" id="t33">
+    <h3>33. Qualifica dei Saldatori in Pressione</h3>
+    <p>Le saldature sulle parti in pressione dei generatori sono operazioni critiche che richiedono saldatori con <strong>qualifica specifica</strong>. La norma di riferimento è EN ISO 9606-1 per la saldatura di acciai.</p>
+    <p>La qualifica di saldatore in pressione:</p>
+    <ul>
+      <li>È personale: certifica le competenze del singolo saldatore</li>
+      <li>È specifica per il processo (MIG, TIG, elettrodo rivestito), il materiale, la posizione di saldatura e lo spessore</li>
+      <li>Ha validità di 3 anni, rinnovabile con test periodici di mantenimento</li>
+      <li>Il saldatore deve avere documentazione della sua qualifica disponibile per le ispezioni</li>
+    </ul>
+    <p>Effettuare saldature sulle parti in pressione di una caldaia senza la qualifica adeguata è illegale e rende la saldatura non certificabile, con conseguente necessità di rifacimento e di nuova verifica INAIL prima della messa in servizio.</p>
+  </div>
+
+  <div class="teoria-block" id="t34">
+    <h3>34. Riparazioni alle Parti in Pressione</h3>
+    <p>Qualsiasi riparazione alle <strong>parti in pressione</strong> (fasciame, fondi, tubi, piastre tubiere, collettori) richiede autorizzazione e verifica specifica:</p>
+    <ul>
+      <li>Prima della riparazione: comunicazione all'INAIL della natura e dell'entità della riparazione</li>
+      <li>Esecuzione da parte di officine qualificate con saldatori certificati</li>
+      <li>Documentazione della riparazione: materiali usati, procedura di saldatura, controlli eseguiti</li>
+      <li>Dopo la riparazione: verifica INAIL straordinaria (visita interna + prova idraulica 1,5 × P_bollo)</li>
+      <li>Solo dopo il verbale positivo dell'INAIL: rimessa in servizio</li>
+    </ul>
+    <p>Le riparazioni eseguite senza autorizzazione e verifica INAIL rendono il generatore illegale. In caso di incidente successivo, la responsabilità penale è aggravata dall'aver operato senza le prescritte verifiche.</p>
+  </div>
+
+  <div class="teoria-block" id="t35">
+    <h3>35. Cessione e Vendita di Caldaie Usate</h3>
+    <p>Il trasferimento di proprietà di un generatore di vapore usato comporta obblighi precisi per garantire la continuità della sicurezza:</p>
+    <ul>
+      <li>Il venditore deve consegnare all'acquirente il <strong>libretto matricolare completo</strong> con tutti i verbali di verifica</li>
+      <li>La <strong>dichiarazione di conformità CE</strong> (per generatori costruiti dopo il 2002) deve seguire il generatore</li>
+      <li>Se il generatore viene <strong>smontato e riassemblato</strong> in una nuova sede, si considera come nuova messa in servizio e richiede nuova denuncia all'INAIL e prova idraulica</li>
+      <li>Il compratore deve comunicare all'INAIL il cambio di proprietà e di sede entro 30 giorni</li>
+      <li>Un generatore privo di libretto o con libretto incompleto non può essere messo legalmente in servizio fino al completamento della documentazione</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t36">
+    <h3>36. Impianti con Più Generatori</h3>
+    <p>Gli impianti con <strong>più generatori</strong> collegati allo stesso collettore vapore presentano questioni normative specifiche:</p>
+    <ul>
+      <li>La categoria (1ª o 2ª) e il tipo di patente richiesto si determinano sul <strong>generatore di potenzialità maggiore</strong> nell'impianto</li>
+      <li>Ogni generatore deve avere il proprio libretto matricolare e i propri dispositivi di sicurezza completi</li>
+      <li>Il conduttore con la patente adeguata al generatore di maggiore categoria è abilitato a condurre tutti i generatori dell'impianto</li>
+      <li>Le valvole di intercettazione tra i generatori e il collettore comune devono essere facilmente manovrabili e chiaramente identificate</li>
+      <li>Il regolamento interno deve definire le procedure per l'avviamento/arresto selettivo di ciascun generatore con più in esercizio contemporaneamente</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t37">
+    <h3>37. Registro Antincendio</h3>
+    <p>Il <strong>registro antincendio</strong> (o piano di emergenza antincendio) è obbligatorio per le attività soggette al <strong>D.Lgs. 151/2011</strong> e al DPR 151/2011 (Regolamento di prevenzione incendi). La sala caldaia rientra nelle attività a rischio di incendio soggette a Certificato di Prevenzione Incendi (CPI) quando la potenzialità supera certi limiti.</p>
+    <p>Contenuto del piano antincendio per la sala caldaia:</p>
+    <ul>
+      <li>Identificazione dei rischi di incendio specifici (combustibili, vapore ad alta pressione, elettricità)</li>
+      <li>Procedure di evacuazione e vie di fuga</li>
+      <li>Posizione e tipo degli estintori (CO₂ per fuochi elettrici, schiuma per nafta)</li>
+      <li>Procedure di arresto di emergenza dell'impianto</li>
+      <li>Nominativi degli addetti all'antincendio formati</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t38">
+    <h3>38. D.Lgs. 152/2006 — Emissioni in Atmosfera</h3>
+    <p>Il <strong>D.Lgs. 152/2006</strong> (Codice Ambientale, Parte V) regola le emissioni in atmosfera degli impianti industriali, inclusi i generatori di vapore con potenzialità termica superiore a 1 MW.</p>
+    <p>Principali obblighi per i generatori soggetti:</p>
+    <ul>
+      <li><strong>Autorizzazione alle emissioni</strong>: obbligatoria prima della messa in servizio</li>
+      <li><strong>Limiti di emissione</strong>: NOx, SO₂, CO, polveri — valori massimi in mg/Nm³</li>
+      <li><strong>Monitoraggio delle emissioni</strong>: misurazioni periodiche obbligatorie (almeno annuali per molti inquinanti)</li>
+      <li><strong>Registro delle emissioni</strong>: documentazione di tutti i controlli eseguiti</li>
+    </ul>
+    <p>Per impianti di grande potenzialità (IPPC/IED — Integrated Pollution Prevention and Control), si applicano le <strong>BAT</strong> (Best Available Techniques) europee, che definiscono i limiti e le tecnologie richieste per minimizzare l'impatto ambientale.</p>
+  </div>
+
+  <div class="teoria-block" id="t39">
+    <h3>39. Autorizzazione alle Emissioni</h3>
+    <p>L'<strong>Autorizzazione alle Emissioni in Atmosfera</strong> (AUA — Autorizzazione Unica Ambientale, o AIA per gli impianti IPPC) è il provvedimento che fissa i limiti di emissione specifici per un impianto.</p>
+    <p>Iter per ottenere l'autorizzazione:</p>
+    <ul>
+      <li>Domanda alla Provincia (o Regione per impianti IPPC) con documentazione tecnica dell'impianto</li>
+      <li>Dichiarazione del combustibile utilizzato e delle caratteristiche del camino</li>
+      <li>Calcolo delle emissioni attese</li>
+      <li>Eventuale sopralluogo dell'autorità</li>
+      <li>Rilascio dell'autorizzazione con i limiti e le condizioni di monitoraggio</li>
+    </ul>
+    <p>L'autorizzazione ha durata variabile (tipicamente 15 anni per AUA) ed è trasferibile al nuovo proprietario in caso di cambio di gestione, con comunicazione all'autorità. Modifiche sostanziali all'impianto richiedono nuova autorizzazione o variante.</p>
+  </div>
+
+  <div class="teoria-block" id="t40">
+    <h3>40. Storia della Normativa Italiana</h3>
+    <p>La normativa italiana sui generatori di vapore ha radici storiche che risalgono ai primi disastri industriali dell'Ottocento:</p>
+    <ul>
+      <li><strong>1859</strong>: prime disposizioni del Regno Sardo sulla sicurezza delle caldaie a vapore</li>
+      <li><strong>1901</strong>: R.D. 28 marzo 1901 — prime norme organiche italiane sui generatori di vapore, in risposta ai frequenti scoppi delle caldaie durante l'industrializzazione</li>
+      <li><strong>1927</strong>: nuovo regolamento più dettagliato</li>
+      <li><strong>1955</strong>: D.P.R. 547/1955 — norme per la prevenzione degli infortuni sul lavoro (ancora in parte vigente)</li>
+      <li><strong>1974</strong>: D.M. 21.05.74 — il testo ancora fondamentale oggi, frutto di decenni di esperienza</li>
+      <li><strong>1997-2002</strong>: recepimento della Direttiva PED europea 97/23/CE</li>
+      <li><strong>2020</strong>: D.M. 94/2020 — aggiornamento dei requisiti per le patenti</li>
+    </ul>
+  </div>
+
+  <div class="teoria-block" id="t41">
+    <h3>41. Confronto Normativa UE vs Italiana</h3>
+    <p>La coesistenza tra normativa europea (PED) e normativa nazionale (D.M. 21.05.74) può creare confusione. Ecco le distinzioni fondamentali:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Aspetto</th><th>Normativa EU (PED)</th><th>Normativa italiana (D.M. 21.05.74)</th></tr>
+      <tr><td>Cosa regolamenta</td><td>Progettazione e fabbricazione</td><td>Esercizio e conduzione</td></tr>
+      <tr><td>Quando si applica</td><td>Costruzione e immissione mercato</td><td>Messa in servizio e uso</td></tr>
+      <tr><td>Chi verifica</td><td>Organismo Notificato</td><td>INAIL</td></tr>
+      <tr><td>Documento chiave</td><td>Dichiarazione conformità CE</td><td>Libretto matricolare INAIL</td></tr>
+      <tr><td>Principio</td><td>Libera circolazione EU</td><td>Sicurezza nazionale</td></tr>
+    </table></div>
+    <p>Un generatore costruito in Germania secondo PED (con marcatura CE) deve comunque essere denunciato all'INAIL e soggetto alle verifiche periodiche italiane per essere esercito in Italia. La PED non esonera dagli obblighi nazionali di esercizio.</p>
+  </div>
+
+  <div class="teoria-block" id="t42">
+    <h3>42. Futuro della Normativa — Tendenze</h3>
+    <p>La normativa sui generatori di vapore è in evoluzione continua, guidata da:</p>
+    <ul>
+      <li><strong>Digitalizzazione</strong>: registro giornaliero digitale, manutenzione predittiva con sensori IoT, ispezioni da remoto con sistemi di monitoraggio continuo</li>
+      <li><strong>Nuovi combustibili</strong>: idrogeno, biogas, ammoniaca — richiedono nuove norme di sicurezza per i bruciatori e i sistemi di rilevamento perdite</li>
+      <li><strong>Efficienza energetica</strong>: normative sempre più stringenti sui rendimenti minimi ammissibili</li>
+      <li><strong>Riduzione emissioni</strong>: limiti NOx e CO₂ sempre più restrittivi, spinta verso caldaie a condensazione e cogenerazione</li>
+      <li><strong>Armonizzazione europea</strong>: tendenza a uniformare le normative nazionali di esercizio all'interno dell'UE</li>
+    </ul>
+    <div class="callout callout-green">
+      <div class="callout-label">5 punti chiave del modulo</div>
+      <p>1. D.M. 21.05.74: regola l'esercizio. PED 2014/68/UE: regola la costruzione<br>
+      2. P×V &gt; 30.000 → 1ª categoria → patente 2° grado. P×V ≤ 30.000 → 2ª categoria → patente 1° grado<br>
+      3. Patente 1° grado: min 18 anni, 3ª media, 6 mesi di pratica<br>
+      4. Incidente: non toccare nulla fino all'ispezione INAIL — è alterazione del corpo del reato<br>
+      5. Conduzione senza patente adeguata = reato penale, indipendentemente dall'assenza di incidenti</p>
+    </div>
+  </div>
+
+    <button class="btn-teoria-done" id="btn-teoria" onclick="teoriaLetta()">
+    ✓ Ho letto tutta la teoria — vai alle attività
+  </button>
+</div>
+
+<!-- ATTIVITÀ -->
+<div class="section" id="sec-activity" style="display:none">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Scegli un'attività</div>
+  </div>
+  <div class="activity-pick">
+    <h3>Come vuoi studiare?</h3>
+    <p>Puoi fare flashcard, quiz, o entrambi in sequenza.</p>
+    <div class="activity-btns">
+      <button class="btn-activity" onclick="startFlash()"><span>🃏</span><span>Flashcard</span><small style="color:var(--text3);font-size:11px">20 carte</small></button>
+      <button class="btn-activity" onclick="startQuiz()"><span>📝</span><span>Quiz</span><small style="color:var(--text3);font-size:11px">20 domande</small></button>
+      <button class="btn-activity" onclick="startBoth()"><span>⚡</span><span>Flashcard + Quiz</span><small style="color:var(--text3);font-size:11px">in sequenza</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="flashcard-wrap" id="fc-wrap">
+  <div class="section-header"><div class="section-num">🃏</div><div class="section-title">Flashcard</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="fc-bar" style="width:5%"></div></div>
+  </div>
+  <div class="fc-card" id="fc-card" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front">
+        <div class="fc-label">Domanda</div>
+        <div class="fc-question" id="fc-q">—</div>
+        <div class="fc-hint">Tocca per vedere la risposta</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Risposta</div>
+        <div class="fc-answer" id="fc-a">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="btn-fc" onclick="fcPrev()">← Precedente</button>
+    <button class="btn-fc primary" onclick="fcNext()">Successiva →</button>
+  </div>
+  <button class="btn-fc" style="width:100%;margin-top:10px" onclick="fcDone()">✓ Flashcard completate</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="section-header"><div class="section-num">📝</div><div class="section-title">Quiz</div></div>
+  <div class="fc-progress">
+    <span class="fc-counter" id="q-counter">1 / 20</span>
+    <div class="fc-bar"><div class="fc-bar-fill" id="q-bar" style="width:5%"></div></div>
+  </div>
+  <div class="quiz-q-num" id="q-num">Domanda 1 di 20</div>
+  <div class="quiz-question" id="q-text">—</div>
+  <div class="quiz-options" id="q-opts"></div>
+  <div class="quiz-explanation" id="q-expl">
+    <div class="expl-label">Spiegazione</div>
+    <div class="expl-text" id="q-expl-text">—</div>
+  </div>
+  <button class="btn-fc primary" id="q-next" style="width:100%;display:none" onclick="nextQuestion()">Prossima domanda →</button>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="recap-wrap" id="recap-wrap">
+  <div class="recap-card">
+    <div class="recap-emoji" id="recap-emoji">🎯</div>
+    <div class="recap-title" id="recap-title">Modulo completato!</div>
+    <div class="recap-sub">Normativa e Patenti</div>
+    <div class="recap-score"><span class="score-num" id="recap-num">0</span><span class="score-den">/20</span></div>
+    <div class="recap-bar"><div class="recap-bar-fill" id="recap-bar-fill" style="width:0%"></div></div>
+    <div class="recap-wrong" id="recap-wrong-wrap" style="display:none">
+      <div class="recap-wrong-title">Domande da ripassare</div>
+      <div id="recap-wrong-list"></div>
+    </div>
+    <div class="recap-btns">
+      <button class="btn-recap" onclick="resetModulo()">🔄 Ricomincia</button>
+      <button class="btn-recap primary" onclick="window.location.href='index.html'">← Torna ai moduli</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+const FLASHCARDS=[
+  {q:"D.M. 21.05.74 vs Direttiva PED — cosa regola ciascuno?",a:"D.M. 21.05.74: regola l'ESERCIZIO e la conduzione dei generatori in Italia (verifiche, patenti, conduzione).\nPED 2014/68/UE: regola la COSTRUZIONE e l'immissione sul mercato europeo (progettazione, marcatura CE).\nUn generatore marcato CE deve comunque rispettare il D.M. 21.05.74 per l'esercizio in Italia."},
+  {q:"Calcolo P×V e classificazione categorie",a:"P×V = P_bollo [kg/cm²] × Volume [litri]\nP×V > 30.000 → 1ª categoria → patente 2° grado\n8.000 < P×V ≤ 30.000 → 2ª categoria → patente 1° grado\nP×V ≤ 8.000 → 3ª categoria → requisiti ridotti\nEs: P=12 bar, V=3.000L → P×V=36.000 → 1ª categoria"},
+  {q:"Requisiti per la patente di 1° grado",a:"Età minima 18 anni. Licenza scuola media inferiore (3ª media). Pratica documentata: almeno 6 mesi come fuochista/assistente. Certificato medico di idoneità. Esame teorico + pratico davanti a commissione regionale."},
+  {q:"Requisiti per la patente di 2° grado",a:"Età minima 21 anni. Diploma superiore (5 anni) o laurea. Pratica: almeno 2 anni con patente 1° grado su caldaie 1ª o 2ª cat. In alternativa: 3 anni pratica su 1ª categoria senza patente 1°. Abilita a 1ª categoria (P×V > 30.000)."},
+  {q:"Cos'è la marcatura CE e quando è obbligatoria?",a:"Simbolo CE + numero Organismo Notificato + anno. Obbligatoria per tutte le attrezzature a pressione PED di categoria I e superiore. Senza marcatura CE un generatore non può essere legalmente messo in servizio nell'UE."},
+  {q:"Cos'è il prodotto P×V e perché si usa?",a:"P_bollo [kg/cm²] × Volume [litri]. Misura l'energia immagazzinata nel generatore e determina: categoria del generatore, tipo di patente richiesta, periodicità delle verifiche, obblighi di conduzione. Più alto P×V = più energia = più requisiti di sicurezza."},
+  {q:"INAIL — competenze sui generatori di vapore",a:"Prima verifica di messa in servizio + matricola INAIL. Verifiche periodiche ogni 2 anni (integrità e funzionamento). Prova idraulica ogni 10 anni. Indagini sugli incidenti. Tenuta registro nazionale. Può delegare agli Organismi Notificati (Bureau Veritas, TÜV, DNV)."},
+  {q:"Cosa fare immediatamente dopo un incidente su un generatore?",a:"1. Denuncia a Polizia/Carabinieri (entro ore). 2. Denuncia INAIL. 3. Denuncia ASL. NON TOCCARE NIENTE fino all'ispezione INAIL (alterazione corpo del reato). Solo dopo liberatoria INAIL si può riparare o demolire."},
+  {q:"Art. 27-28 D.M. 21.05.74 — obbligo conduzione",a:"Art. 27: generatori 1ª e 2ª categoria devono essere condotti da personale patentato, presente durante il funzionamento.\nArt. 28: la sostituzione del conduttore deve essere affidata a persona con patente di grado ALMENO UGUALE. Mai sostituzione con personale non patentato."},
+  {q:"Conduzione senza patente — conseguenza legale",a:"REATO PENALE: arresto fino a 3 mesi o ammenda. La conduzione senza patente adeguata è reato indipendentemente dall'assenza di incidenti. Il datore di lavoro che impiega un conduttore non patentato è anch'esso responsabile penalmente."},
+  {q:"Denuncia di messa in servizio — cosa comprende?",a:"Comunicazione all'INAIL con: certificato costruttore, dichiarazione di conformità CE, disegno di installazione, libretto matricolare originale. Segue prima verifica INAIL e assegnazione matricola INAIL univoca. Obbligatoria anche per trasferimento da altra sede."},
+  {q:"Verifiche periodiche INAIL — periodicità",a:"Verifica di integrità (visita interna): ogni 2 anni.\nVerifica di funzionamento: ogni 2 anni.\nProva idraulica (1,5 × P_bollo): ogni 10 anni o dopo riparazioni parti in pressione.\nAnalisi acque: periodicamente (mensile). Test dispositivi sicurezza: settimanale/mensile."},
+  {q:"Differenza tra patente di conduttore e patentino Legge 615",a:"Patente D.M. 21.05.74: abilita alla CONDUZIONE OPERATIVA del generatore di vapore.\nPatentino L.615: certifica il responsabile tecnico dell'impianto termico per gli aspetti ambientali (emissioni). Obbligatorio se potenzialità > 200.000 kcal/h. I due requisiti possono coesistere sulla stessa persona."},
+  {q:"Categorie PED — quante sono e cosa determinano?",a:"4 categorie (I, II, III, IV) in base al rischio (tipo fluido + prodotto PS×V).\nCategoria I: rischio basso, nessun ON obbligatorio.\nCategoria IV: rischio molto alto, Organismo Notificato sempre obbligatorio con moduli B+D, G o H1."},
+  {q:"Riparazioni alle parti in pressione — procedura obbligatoria",a:"1. Comunicazione INAIL della natura della riparazione. 2. Esecuzione da officine qualificate con saldatori certificati (EN ISO 9606). 3. Documentazione della riparazione. 4. Verifica INAIL straordinaria (visita interna + prova idraulica). 5. Solo dopo verbale positivo: rimessa in servizio."},
+  {q:"Art. 39 vs Art. 43 D.M. 21.05.74 — differenze",a:"Art. 39 - ESONERO TOTALE: P≤1 bar, superficie≤100 m², producibilità≤2 t/h.\nArt. 43 - FUNZIONAMENTO NON PRESIDIATO: P≤15 bar, ≤3.000 kg/h, con PSHH+LSHH+allarmi+registro settimanale.\nEntrambi non esentano da manutenzione e verifiche periodiche."},
+  {q:"Vendita/cessione di caldaia usata — obblighi",a:"Venditore consegna libretto matricolare completo + dichiarazione conformità CE. Se smontata e riassemblata: nuova denuncia INAIL + prova idraulica. Acquirente comunica INAIL il cambio proprietà/sede entro 30 giorni. Caldaia senza libretto non può essere messa in servizio."},
+  {q:"EN 12952 e EN 12953 — cosa sono?",a:"EN 12952: norme armonizzate per caldaie a TUBI D'ACQUA (progettazione, costruzione, ispezione).\nEN 12953: norme armonizzate per caldaie a TUBI DI FUMO.\nConferiscono presunzione di conformità alla PED: generatore costruito secondo queste norme è presunto conforme senza ulteriori dimostrazioni."},
+  {q:"D.Lgs. 152/2006 — obblighi per i generatori",a:"Per potenzialità termica > 1 MW: autorizzazione alle emissioni (AUA), limiti per NOx/SO₂/CO/polveri, monitoraggio periodico, registro delle emissioni. Per impianti IPPC: si applicano le BAT europee con limiti ancora più restrittivi."},
+  {q:"Commissione esaminatrice patente — composizione",a:"Nominata dalla Regione o Provincia Autonoma. Tipicamente: funzionario ASL/INAIL (presidente) + ingegnere/tecnico specializzato in generatori di vapore. Valuta esame teorico (questionario) e pratico (manovre su generatore reale). Bocciatura: ripresentarsi dopo 30-60 giorni."},
+];
+
+const QUESTIONS=[
+  {q:"Il D.M. 21.05.74 e la Direttiva PED 2014/68/UE regolano rispettivamente:",opts:["Entrambi la costruzione dei generatori","D.M. 21.05.74: costruzione. PED: esercizio","D.M. 21.05.74: esercizio e conduzione. PED: costruzione e immissione sul mercato","Entrambi l'esercizio dei generatori"],c:2,expl:"Il D.M. 21.05.74 regola l'ESERCIZIO: verifiche periodiche, conduzione, patenti, obblighi del proprietario. La PED 2014/68/UE regola la COSTRUZIONE: progettazione, fabbricazione, marcatura CE. Le due normative coesistono e si integrano."},
+  {q:"Una caldaia con P_bollo = 12 bar e volume 3.000 litri appartiene a quale categoria?",opts:["3ª categoria (P×V ≤ 8.000)","2ª categoria (8.000 < P×V ≤ 30.000)","1ª categoria (P×V > 30.000)","Non è classificabile con questi dati"],c:2,expl:"P×V = 12 × 3.000 = 36.000, che è maggiore di 30.000 → 1ª categoria. Richiede patente di 2° grado per la conduzione. Attenzione: il calcolo usa kg/cm² (≈ bar per approssimazione)."},
+  {q:"I requisiti minimi per la patente di 1° grado includono:",opts:["21 anni, diploma superiore, 2 anni di pratica","18 anni, licenza media, 6 mesi di pratica documentata","18 anni, diploma superiore, 1 anno di pratica","21 anni, laurea, 3 anni di pratica"],c:1,expl:"Patente di 1° grado: età minima 18 anni, titolo di studio minimo licenza di scuola media inferiore (3ª media), pratica documentata di almeno 6 mesi come fuochista o assistente conduttore, certificato medico. La patente di 2° grado richiede invece 21 anni, diploma superiore e 2 anni di pratica."},
+  {q:"Condurre un generatore di vapore di 1ª categoria senza patente di 2° grado è:",opts:["Solo una violazione amministrativa con multa","Un reato penale — arresto fino a 3 mesi o ammenda","Consentito se il datore di lavoro è presente","Consentito per periodi brevi di emergenza"],c:1,expl:"La conduzione senza patente adeguata è REATO PENALE. Il codice prevede arresto fino a 3 mesi o ammenda. Il reato sussiste indipendentemente dall'assenza di incidenti — è sufficiente la conduzione non autorizzata. Anche il datore di lavoro che impiega il conduttore non patentato è perseguibile."},
+  {q:"Dopo un incidente su un generatore di vapore, il generatore deve essere:",opts:["Immediatamente smontato per valutare i danni","Lasciato nelle condizioni in cui si trova fino all'ispezione INAIL","Riparato d'urgenza prima dell'ispezione","Spostato in un luogo sicuro prima dell'ispezione"],c:1,expl:"Il generatore incidentato deve essere lasciato ESATTAMENTE nelle condizioni in cui si trova (salvo pericolo imminente) fino all'ispezione INAIL. Spostare o modificare componenti prima dell'ispezione è alterazione del corpo del reato — reato penale aggiuntivo."},
+  {q:"La Dichiarazione di Conformità UE è emessa da:",opts:["INAIL dopo la prima verifica","L'Organismo Notificato che ha eseguito i controlli","Il fabbricante del generatore","La Regione o Provincia Autonoma"],c:2,expl:"La Dichiarazione di Conformità UE (DoC) è emessa dal FABBRICANTE che dichiara sotto propria responsabilità che il prodotto è conforme alla PED e alle altre direttive applicabili. L'Organismo Notificato certifica le procedure di valutazione della conformità, ma la dichiarazione formale è del fabbricante."},
+  {q:"La prima verifica INAIL di messa in servizio assegna al generatore:",opts:["Il numero di serie del costruttore","La marcatura CE","Il numero di matricola INAIL che identifica il generatore nel territorio nazionale","Il certificato di conformità PED"],c:2,expl:"La prima verifica INAIL assegna il numero di matricola INAIL univoco che identifica il generatore per tutta la sua vita operativa nel territorio italiano. Questo numero viene inserito nel libretto matricolare e nei verbali di tutte le successive verifiche."},
+  {q:"L'Art. 43 del D.M. 21.05.74 consente il funzionamento non presidiato con:",opts:["Qualsiasi pressione se ci sono i dispositivi automatici","P ≤ 10 bar e producibilità ≤ 2 t/h","P ≤ 15 bar e producibilità ≤ 3.000 kg/h, con PSHH+LSHH+allarmi+registro settimanale","P ≤ 6 bar qualsiasi producibilità"],c:2,expl:"Art. 43: P ≤ 15 bar + producibilità ≤ 3.000 kg/h + PSHH e LSHH funzionanti + allarmi ottico-acustici interni ed esterni + registro giornaliero firmato settimanalmente. Tutte le condizioni devono essere soddisfatte contemporaneamente."},
+  {q:"Le norme EN 12952 e EN 12953 per i generatori di vapore conferiscono:",opts:["La marcatura CE al generatore","Presunzione di conformità alla PED","L'autorizzazione alla messa in servizio INAIL","La patente al costruttore"],c:1,expl:"Le norme armonizzate EN 12952 (tubi d'acqua) e EN 12953 (tubi di fumo) conferiscono presunzione di conformità alla Direttiva PED: un generatore costruito secondo queste norme è presunto conforme ai Requisiti Essenziali di Sicurezza senza dover dimostrare la conformità caso per caso."},
+  {q:"La prova idraulica periodica si effettua ogni:",opts:["2 anni","5 anni","10 anni (o dopo riparazioni alle parti in pressione)","Solo alla prima messa in servizio"],c:2,expl:"La prova idraulica (a 1,5 × P_bollo con acqua, per 30 minuti) si effettua ogni 10 anni nell'ambito delle verifiche periodiche INAIL. Deve essere ripetuta anche dopo ogni riparazione significativa alle parti in pressione, indipendentemente dall'ultima data di esecuzione."},
+  {q:"Il patentino della Legge 615 è richiesto per:",opts:["La conduzione operativa di qualsiasi generatore","Il responsabile tecnico di impianti termici con potenzialità > 200.000 kcal/h","Solo per i generatori di vapore di 1ª categoria","Solo per impianti a gas naturale"],c:1,expl:"Il patentino L.615 certifica il responsabile tecnico degli impianti termici con potenzialità superiore a 200.000 kcal/h (~232 kW) per gli aspetti delle emissioni. È distinto dalla patente di conduttore del D.M. 21.05.74. Un impianto sopra questa soglia richiede entrambi, anche se la caldaia non richiede patente di conduttore (es. Art. 39)."},
+  {q:"Se si deve riparare il fasciame di una caldaia in pressione, il primo passo obbligatorio è:",opts:["Eseguire immediatamente la riparazione con saldatori qualificati","Comunicare all'INAIL la natura della riparazione prima di iniziare","Richiedere un preventivo a tre officine diverse","Annotare sul registro giornaliero l'intenzione di riparare"],c:1,expl:"Prima di qualsiasi riparazione alle parti in pressione è obbligatorio comunicare all'INAIL la natura e l'entità della riparazione. Dopo la riparazione (eseguita da officina qualificata con saldatori certificati EN ISO 9606), l'INAIL effettuerà una verifica straordinaria. Solo dopo il verbale positivo il generatore può essere rimesso in servizio."},
+  {q:"In caso di trasferimento di una caldaia in una nuova sede, l'acquirente deve:",opts:["Comunicare il cambio all'INAIL entro 30 giorni","Richiedere una nuova matricola INAIL","Eseguire una nuova prova idraulica entro 6 mesi","Non ha obblighi specifici se il generatore ha le verifiche aggiornate"],c:0,expl:"L'acquirente deve comunicare all'INAIL il cambio di proprietà e di sede entro 30 giorni. Se il generatore viene smontato e riassemblato, si tratta di nuova messa in servizio con denuncia completa e prova idraulica obbligatoria. Il libretto matricolare completo deve seguire il generatore."},
+  {q:"Le 4 categorie PED sono determinate principalmente da:",opts:["La potenzialità termica del generatore","Il tipo di fluido e il prodotto PS×V (pressione × volume)","La pressione massima ammissibile","Il paese di costruzione"],c:1,expl:"Le categorie PED (I, II, III, IV) si determinano in base al tipo di fluido (liquido/gas, pericoloso/non pericoloso) e al prodotto PS×V per i recipienti, o PS×DN per le tubazioni. Più alto il rischio → categoria più alta → Organismo Notificato obbligatorio con procedure di valutazione più stringenti."},
+  {q:"Il D.Lgs. 152/2006 si applica ai generatori di vapore quando:",opts:["Sempre, per qualsiasi potenzialità","Solo per generatori a nafta con alto contenuto di zolfo","Per potenzialità termica superiore a 1 MW (per le emissioni in atmosfera)","Solo per impianti con camino superiore a 20 m"],c:2,expl:"Il D.Lgs. 152/2006 (Codice Ambientale, Parte V) si applica alle emissioni in atmosfera degli impianti industriali con potenzialità termica superiore a 1 MW. Obbliga all'autorizzazione alle emissioni (AUA), al rispetto dei limiti (NOx, SO₂, CO, polveri) e al monitoraggio periodico."},
+  {q:"La qualifica dei saldatori in pressione (EN ISO 9606) ha durata:",opts:["Illimitata se il saldatore lavora continuativamente","3 anni, rinnovabile con test periodici di mantenimento","1 anno","5 anni"],c:1,expl:"La qualifica di saldatore in pressione secondo EN ISO 9606 ha validità di 3 anni ed è rinnovabile con test di mantenimento periodici. È specifica per processo, materiale, posizione e spessore. Un saldatore non qualificato non può eseguire saldature sulle parti in pressione di una caldaia."},
+  {q:"In un impianto con più generatori collegati allo stesso collettore, il tipo di patente richiesto è determinato da:",opts:["La somma delle potenzialità di tutti i generatori","Il generatore di potenzialità maggiore nell'impianto","Il generatore più vecchio","Il generatore con la pressione più alta"],c:1,expl:"In caso di più generatori, la categoria (e quindi il tipo di patente richiesta) è determinata dal generatore di potenzialità/categoria maggiore. Il conduttore con patente adeguata al generatore più grande è abilitato a condurre tutti i generatori dell'impianto."},
+  {q:"La Dichiarazione di Conformità UE deve essere conservata per:",opts:["Solo fino alla prima verifica INAIL","5 anni dalla messa in servizio","Tutta la vita del generatore — accompagna sempre il generatore","Solo 2 anni come il libretto annuale"],c:2,expl:"La Dichiarazione di Conformità UE (DoC) deve accompagnare il generatore per TUTTA la sua vita operativa. Deve essere conservata insieme al libretto matricolare e disponibile per le ispezioni. In caso di cessione, il venditore la trasmette all'acquirente insieme a tutta la documentazione tecnica."},
+  {q:"L'ASL (Azienda Sanitaria Locale) nel controllo dei generatori di vapore si occupa principalmente di:",opts:["Verifiche tecniche dei componenti in pressione","Sicurezza sul lavoro (D.Lgs. 81/2008), requisiti locali, patenti dei conduttori, infortuni sul lavoro","Rilascio delle patenti di conduttore","Certificazione dei costruttori di caldaie"],c:1,expl:"L'ASL si occupa degli aspetti di sicurezza sul lavoro (D.Lgs. 81/2008): verifica distanze di sicurezza, requisiti locali, patenti dei conduttori, registro giornaliero. Indaga gli infortuni sul lavoro connessi ai generatori. Le verifiche tecniche delle parti in pressione spettano invece all'INAIL."},
+  {q:"Il D.M. 94/2020 ha modificato rispetto al D.M. 21.05.74:",opts:["I requisiti tecnici costruttivi dei generatori","Le modalità per il conseguimento delle patenti di conduttore (programmi esame, formazione, digitalizzazione)","Le periodicità delle verifiche INAIL","I limiti di emissione dei fumi"],c:1,expl:"Il D.M. 94/2020 ha aggiornato SOLO le modalità per il conseguimento delle patenti: nuovi programmi d'esame, percorsi formativi riconosciuti, registro digitale, reciprocità europea. Non ha modificato i requisiti tecnici dei generatori, le verifiche INAIL o i limiti di emissione, che rimangono regolati dal D.M. 21.05.74 e da altre normative."},
+];
+
+let modData={stato:'non_iniziato',pct:0,teoria_letta:false,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};
+let fcIdx=0,qIdx=0,score=0,wrongAnswers=[],afterFlash=false;
+
+function loadData(){try{const r=localStorage.getItem('vlm5');if(r)modData=JSON.parse(r);}catch{}}
+function saveData(){
+  modData.ultima_visita=new Date().toISOString().split('T')[0];
+  localStorage.setItem('vlm5',JSON.stringify(modData));updateProgress();
+}
+function updateProgress(){
+  let p=0;
+  if(modData.teoria_letta)p+=33;
+  if(modData.flash_completate)p+=33;
+  if(modData.quiz_punteggio!==null)p+=34;
+  modData.pct=Math.min(100,p);
+  modData.stato=p>=100?'completato':p>0?'in_corso':'non_iniziato';
+  document.getElementById('hprog').style.width=modData.pct+'%';
+  document.getElementById('hpct').textContent=modData.pct+'%';
+}
+
+function teoriaLetta(){
+  modData.teoria_letta=true;
+  const btn=document.getElementById('btn-teoria');
+  btn.textContent='✓ Teoria letta';btn.classList.add('done');
+  document.getElementById('done-teoria').classList.add('show');
+  saveData();
+  setTimeout(()=>{
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+    document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});
+  },400);
+}
+
+function startFlash(){afterFlash=false;showFlash();}
+function startQuiz(){showQuiz();}
+function startBoth(){afterFlash=true;showFlash();}
+
+function showFlash(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.add('active');
+  fcIdx=0;renderFC();
+}
+function showQuiz(){
+  document.getElementById('sec-activity').style.display='none';
+  document.getElementById('fc-wrap').classList.remove('active');
+  document.getElementById('quiz-wrap').classList.add('active');
+  qIdx=0;score=0;wrongAnswers=[];renderQ();
+}
+
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+FLASHCARDS.length;
+  document.getElementById('fc-bar').style.width=((fcIdx+1)/FLASHCARDS.length*100)+'%';
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped');}
+function fcPrev(){if(fcIdx>0){fcIdx--;renderFC();}}
+function fcNext(){if(fcIdx<FLASHCARDS.length-1){fcIdx++;renderFC();}else{fcDone();}}
+function fcDone(){
+  modData.flash_completate=true;saveData();
+  document.getElementById('fc-wrap').classList.remove('active');
+  if(afterFlash){showQuiz();}else{document.getElementById('sec-activity').style.display='block';document.getElementById('sec-activity').scrollIntoView({behavior:'smooth'});}
+}
+
+function renderQ(){
+  const q=QUESTIONS[qIdx];
+  document.getElementById('q-counter').textContent=(qIdx+1)+' / '+QUESTIONS.length;
+  document.getElementById('q-bar').style.width=((qIdx+1)/QUESTIONS.length*100)+'%';
+  document.getElementById('q-num').textContent='Domanda '+(qIdx+1)+' di '+QUESTIONS.length;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('q-next').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="answerQ(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+}
+function answerQ(i){
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('answered'));
+  if(i===q.c){score++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.c].classList.add('show-correct');wrongAnswers.push({q:q.q,correct:q.opts[q.c]});}
+  document.getElementById('q-expl-text').textContent=q.expl;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('q-next').style.display='block';
+  document.getElementById('q-next').textContent=qIdx<QUESTIONS.length-1?'Prossima domanda →':'Vedi risultati →';
+}
+function nextQuestion(){qIdx++;if(qIdx<QUESTIONS.length){renderQ();}else{showRecap();}}
+
+function showRecap(){
+  modData.quiz_punteggio=score;modData.quiz_totale=QUESTIONS.length;saveData();
+  document.getElementById('quiz-wrap').classList.remove('active');
+  document.getElementById('recap-wrap').classList.add('active');
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('recap-num').textContent=score;
+  setTimeout(()=>{document.getElementById('recap-bar-fill').style.width=pct+'%';},100);
+  if(pct>=80){document.getElementById('recap-emoji').textContent='🏆';document.getElementById('recap-title').textContent='Ottimo risultato!';}
+  else if(pct>=60){document.getElementById('recap-emoji').textContent='👍';document.getElementById('recap-title').textContent='Buon lavoro!';}
+  else{document.getElementById('recap-emoji').textContent='📚';document.getElementById('recap-title').textContent='Ripassare consigliato';}
+  if(wrongAnswers.length>0){
+    document.getElementById('recap-wrong-wrap').style.display='block';
+    document.getElementById('recap-wrong-list').innerHTML=wrongAnswers.map(w=>`<div class="wrong-item"><strong>✗ ${w.q}</strong>Risposta corretta: ${w.correct}</div>`).join('');
+  }
+  document.getElementById('recap-wrap').scrollIntoView({behavior:'smooth'});
+}
+function resetModulo(){modData={stato:'in_corso',pct:33,teoria_letta:true,flash_completate:false,quiz_punteggio:null,quiz_totale:20,ultima_visita:null};saveData();location.reload();}
+
+function initCanvas(){
+  const c=document.getElementById('bg-canvas');const ctx=c.getContext('2d');let W,H;
+  function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  function drawBg(){const g=ctx.createRadialGradient(W*.3,H*.2,0,W*.3,H*.2,W*.8);g.addColorStop(0,'rgba(15,25,60,1)');g.addColorStop(.5,'rgba(8,12,28,1)');g.addColorStop(1,'rgba(4,6,14,1)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+  const FLOWS=Array.from({length:12},()=>({y:Math.random()*H,speed:Math.random()*.15+.04,amp:Math.random()*20+5,freq:Math.random()*.004+.002,phase:Math.random()*Math.PI*2,alpha:Math.random()*.04+.01}));
+  const PARTS=[];for(let i=0;i<120;i++){PARTS.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:-(Math.random()*.45+.06),size:Math.random()*2+.5,type:Math.random()<.35?'water':Math.random()<.55?'steam':'condensa',life:Math.random(),alpha:Math.random()*.5+.2});}
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);drawBg();t+=.004;
+    FLOWS.forEach(f=>{ctx.beginPath();ctx.strokeStyle=`rgba(232,130,10,${f.alpha})`;ctx.lineWidth=.6;for(let x=0;x<W;x+=2){const y=f.y+Math.sin(x*f.freq+t+f.phase)*f.amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();f.y-=f.speed*.12;if(f.y<-50)f.y=H+50;});
+    PARTS.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life+=.003;
+      if(p.life>1||p.y<-10||p.x<-10||p.x>W+10){p.x=Math.random()*W;p.y=H+10;p.life=0;p.type=Math.random()<.35?'water':Math.random()<.55?'steam':'condensa';p.vy=-(Math.random()*.45+.06);p.vx=(Math.random()-.5)*.3;}
+      const fade=p.life<.12?p.life/.12:p.life>.88?(1-p.life)/.12:1;const a=p.alpha*fade;
+      if(p.type==='water'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*.8,0,Math.PI*2);ctx.fillStyle=`rgba(100,160,255,${a})`;ctx.fill();}
+      else if(p.type==='steam'){ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.05})`;ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,240,${a*.22})`;ctx.fill();}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size*.6,0,Math.PI*2);ctx.fillStyle=`rgba(140,200,255,${a*.8})`;ctx.fill();}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{loadData();updateProgress();initCanvas();});
+
+function jumpToSection(target){
+  if(target==='teoria'){
+    const s=document.getElementById('sec-teoria');
+    if(s&&s.style.display!=='none'){s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
+}
+function jumpToActivity(type){
+  // If teoria not yet read, mark it and show activity
+  if(!modData.teoria_letta){
+    modData.teoria_letta=true;
+    document.getElementById('done-teoria').classList.add('show');
+    const btn=document.getElementById('btn-teoria');
+    if(btn){btn.classList.add('done');btn.textContent='✓ Teoria letta';}
+    saveData();
+    document.getElementById('sec-teoria').style.display='none';
+    document.getElementById('sec-activity').style.display='block';
+  }
+  // Now trigger the right activity
+  if(type==='flash') startFlash();
+  else if(type==='quiz') startQuiz();
+  else if(type==='both') startBoth();
+  // Scroll to activity area
+  setTimeout(()=>{
+    const el=document.getElementById('fc-wrap')||document.getElementById('quiz-wrap');
+    if(el&&el.classList.contains('active')) el.scrollIntoView({behavior:'smooth',block:'start'});
+    else{
+      const act=document.getElementById('sec-activity');
+      if(act) act.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
+}
+
+</script>
+</body>
+</html>
