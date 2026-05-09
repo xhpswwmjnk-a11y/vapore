@@ -758,7 +758,17 @@ function renderLib(){
   }).join('')+'</div>';
 }
 
-
+function openImgOverlay(url, name){
+  document.getElementById('imgovimg').src = url;
+  document.getElementById('imgovtitle').textContent = name;
+  document.getElementById('imgov').classList.add('open');
+}
+function closeImgOverlay(e){
+  if(!e || e.target===document.getElementById('imgov') || e.target.classList.contains('img-ov-close')){
+    document.getElementById('imgov').classList.remove('open');
+    document.getElementById('imgovimg').src='';
+  }
+}
 
 </script>
 </body>
