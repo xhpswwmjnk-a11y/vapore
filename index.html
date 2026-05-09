@@ -719,6 +719,21 @@ function getLibIcon(file){
   return '📎';
 }
 
+function openLib(){
+  document.getElementById('libov').style.display='flex';
+  document.getElementById('libsrch').value='';
+  renderLib();
+}
+function closeLib(){document.getElementById('libov').style.display='none';}
+
+function getLibIcon(file){
+  if(!file) return '📄';
+  const ext=file.split('.').pop().toLowerCase();
+  if(ext==='pdf') return '📄';
+  if(['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return '🖼️';
+  return '📎';
+}
+
 function renderLib(){
   const q=document.getElementById('libsrch').value.toLowerCase().trim();
   const el=document.getElementById('liblist');
@@ -741,14 +756,6 @@ function renderLib(){
     const ext=d.file?d.file.split('.').pop().toLowerCase():'';
     const isImg=['jpg','jpeg','png','gif','webp','svg'].includes(ext);
     const url=d.file.startsWith('http')?d.file:base+d.file;
-    if(isImg){
-      return `<div class="lib-card" onclick="openImgOverlay('${url}','${d.name}')">
-        <div class="lib-icon">${icon}</div>
-        <div class="lib-name">${d.name}</div>
-        ${d.desc?`<div class="lib-desc">${d.desc}</div>`:''}
-        <div><span class="lib-tag">${ext.toUpperCase()}</span></div>
-      </div>`;
-    }
     return `<a class="lib-card" href="${url}" target="_blank" rel="noopener">
       <div class="lib-icon">${icon}</div>
       <div class="lib-name">${d.name}</div>
@@ -758,18 +765,7 @@ function renderLib(){
   }).join('')+'</div>';
 }
 
-function openImgOverlay(url, name){
-  document.getElementById('imgovimg').src = url;
-  document.getElementById('imgovtitle').textContent = name;
-  document.getElementById('imgov').classList.add('open');
-}
-function closeImgOverlay(e){
-  if(!e || e.target===document.getElementById('imgov') || e.target.classList.contains('img-ov-close')){
-    document.getElementById('imgov').classList.remove('open');
-    document.getElementById('imgovimg').src='';
-  }
-}
-
 </script>
 </body>
 </html>
+
