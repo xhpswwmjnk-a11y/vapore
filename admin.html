@@ -227,33 +227,33 @@ let images = [];
 let editingId = null;
 
 // ── OTP ──────────────────────────────────────────────────────
-const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-  method: 'POST',
-  headers: {'Content-Type':'application/json'},
-  body: JSON.stringify({
-    chat_id: CHAT_ID,
-    text: `🔐 Codice OTP VaporeLab Admin\n\nIl tuo codice è: ${otpCode}\n\nScade tra 5 minuti.`
-  })
-});
-const data = await res.json();
-if (!data.ok) throw new Error(data.description);
+async function sendOTP() {
+  const btn = document.getElementById('btn-send-otp');
+  btn.disabled = true;
+  btn.textContent = 'Invio in corso...';
 
-function verifyOTP() {
-  const input = document.getElementById('otp-input').value.trim();
-  const fb = document.getElementById('login-feedback');
-  if (!otpCode) {
-    fb.className = 'feedback err';
-    fb.textContent = 'Prima clicca "Invia codice OTP" per ricevere il codice.';
-    return;
-  }
-  if (input === otpCode) {
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'block';
-    loadArticles();
-    otpCode = null;
-  } else {
-    fb.className = 'feedback err';
-    fb.textContent = '❌ Codice errato. Riprova.';
+  otpCode = String(Math.floor(100000 + Math.random() * 900000));
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: `🔐 Codice OTP VaporeLab Admin\n\nIl tuo codice è: ${otpCode}\n\nScade tra 5 minuti.`
+      })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.description);
+    document.getElementById('otp-hint').textContent = '✅ Codice inviato su Telegram!';
+    document.getElementById('otp-hint').style.color = '#4ade80';
+    btn.textContent = '📲 Codice inviato';
+    setTimeout(() => { otpCode = null; }, 300000);
+  } catch(e) {
+    document.getElementById('otp-hint').textContent = '❌ Errore: ' + e.message;
+    document.getElementById('otp-hint').style.color = '#f87171';
+    btn.disabled = false;
+    btn.textContent = '📲 Invia codice OTP';
   }
 }
 
