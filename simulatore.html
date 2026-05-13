@@ -166,29 +166,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text1);font-family:'G
 </head>
 <body>
 <!-- OTP-GATE-HTML-START — cancella da questa riga fino a OTP-GATE-HTML-END per rimuovere il blocco -->
-<div id="otp-gate">
 
-  <!-- Schermata principale: visibile a tutti -->
-  <div class="otp-card">
-    <div class="otp-top">🚧</div>
-    <div class="otp-title">Pagina in costruzione</div>
-    <div class="otp-wip">Questa sezione non è ancora disponibile.<br>Torna presto!</div>
-  </div>
-
-  <!-- Tab ADMIN fisso in basso: cliccalo per aprire il pannello OTP -->
-  <div class="otp-admin-tab" id="otp-admin-tab" onclick="apriAdmin()">⚙ ADMIN</div>
-
-  <!-- Pannello OTP: visibile solo dopo click sul tab ADMIN -->
-  <div class="otp-panel" id="otp-panel">
-    <div class="otp-panel-title">Accesso Admin</div>
-    <div class="otp-panel-sub">Il codice OTP è stato inviato su Telegram.</div>
-    <input class="otp-input" id="otp-input" type="number" maxlength="6" placeholder="Codice OTP" autocomplete="off"/>
-    <button class="otp-btn" id="otp-btn" onclick="verificaOTP()">Accedi →</button>
-    <div class="otp-error" id="otp-error"></div>
-    <div class="otp-timer" id="otp-timer"></div>
-  </div>
-
-</div>
 <!-- OTP-GATE-HTML-END -->
 
 
