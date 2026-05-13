@@ -283,7 +283,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text1);font-family:'G
      2. Cancella il blocco HTML (OTP-GATE-HTML-START → OTP-GATE-HTML-END)
      3. Cancella questo blocco  (OTP-GATE-JS-START   → OTP-GATE-JS-END)
 */
-const OTP_ACTIVE  = true;           // false = blocco disattivato, pagina visibile a tutti
+const OTP_ACTIVE  = false;           // false = blocco disattivato, pagina visibile a tutti
 const BOT_TOKEN   = '8674893871:AAEJeka1CdXjFZ1x-U6veWgplyXw-Lb0D1k';    // token bot Telegram (non esposto nella UI)
 const CHAT_ID     = '8604822312';   // chat ID admin (solo tu ricevi l'OTP)
 const OTP_TTL_MS  = 5 * 60 * 1000; // validità OTP in ms (default: 5 minuti)
