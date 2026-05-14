@@ -2,8 +2,12 @@
 <html lang="it">
 <head>
 <script>
-history.pushState(null, null, location.href); window.addEventListener('popstate', function() {
-history.pushState(null, null, location.href); }); </script> 
+window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+        window.location.reload();
+    }
+});
+</script>
 <meta charset="UTF-8">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
