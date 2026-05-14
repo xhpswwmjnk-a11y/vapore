@@ -104,6 +104,9 @@ function animate(ts) {
   fill.style.width  = pct + '%';
   label.textContent = pct + '%';
   if (pct < 100) {
+    if (document.referrer.includes('app.html')) {
+      window.location.replace('app.html');
+  }
     requestAnimationFrame(animate);
   } else {
     // piccola pausa poi redirect istantaneo
