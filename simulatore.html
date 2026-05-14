@@ -496,18 +496,18 @@ const SCENARI = [
           livello: 'Minimo — appena visibile',
           bruciatore: 'Acceso — 80%',
           pompa: 'In marcia',
-          allarmi: ['⚠️ LSHH — Basso livello']
+          allarmi: ['⚠️ LSLL — Basso livello']
         },
-        situazione: 'Il LSHH è intervenuto spegnendo automaticamente il bruciatore. L\'indicatore mostra ancora un filo d\'acqua nella parte inferiore del vetro. La pompa di alimento è ancora in marcia.',
-        domanda: 'Il LSHH è appena intervenuto e vedi ancora acqua nell\'indicatore. Qual è la tua prima azione?',
+        situazione: 'L\'LSLL è intervenuto spegnendo automaticamente il bruciatore. L\'indicatore mostra ancora un filo d\'acqua nella parte inferiore del vetro. La pompa di alimento è ancora in marcia.',
+        domanda: 'L\'LSLL è appena intervenuto e vedi ancora acqua nell\'indicatore. Qual è la tua prima azione?',
         opzioni: [
-          { testo: 'Resetti immediatamente il LSHH e riavvii il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Riavviare senza aver identificato la causa del basso livello porta a un secondo intervento del LSHH — e se la causa è una perdita, il livello continuerà a scendere.' },
+          { testo: 'Resetti immediatamente L\'LSLL e riavvii il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Riavviare senza aver identificato la causa del basso livello porta a un secondo intervento dell\'LSLL — e se la causa è una perdita, il livello continuerà a scendere.' },
           { testo: 'Verifichi la causa del basso livello, chiudi la valvola di presa vapore e lasci spento il bruciatore', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Bruciatore spento, presa vapore chiusa, impianto in sicurezza. Ora puoi investigare la causa senza pressione sui tempi.' },
           { testo: 'Aumenti la portata della pompa al massimo per recuperare velocemente il livello', esito: 'SBAGLIATO', conseguenza: 'Aumentare la portata senza sapere perché il livello è sceso può mascherare una perdita grave. Prima si identifica la causa.' },
           { testo: 'Aggiungi acqua fredda direttamente dallo spurgo di fondo per raffreddare rapidamente', esito: 'SBAGLIATO', conseguenza: 'Lo spurgo di fondo rimuove acqua, non ne aggiunge. Confondere i sistemi in emergenza è pericoloso.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 1 (si vede ancora acqua): Bloccare il bruciatore (già intervenuto automaticamente) → chiudere la presa vapore → spegnere la pompa di alimento → verificare la causa. Il rearmo manuale del LSHH impone al conduttore questa verifica prima di qualsiasi riavvio.'
+        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 1 (si vede ancora acqua): Bloccare il bruciatore (già intervenuto automaticamente) → chiudere la presa vapore → spegnere la pompa di alimento → verificare la causa. Il rearmo manuale dell\'LSLL impone al conduttore questa verifica prima di qualsiasi riavvio.'
       },
       {
         id: 2,
@@ -516,14 +516,14 @@ const SCENARI = [
           livello: 'Minimo stabile',
           bruciatore: 'Spento',
           pompa: 'In marcia',
-          allarmi: ['⚠️ LSHH attivo', '🔍 Causa da identificare']
+          allarmi: ['⚠️ LSLL attivo', '🔍 Causa da identificare']
         },
         situazione: 'Hai chiuso la presa vapore e lasciato spento il bruciatore. Il livello si è stabilizzato al minimo. Ora devi capire perché il livello è sceso. Hai verificato: la pompa pompa regolarmente, non ci sono perdite visibili sulle tubazioni principali. L\'indicatore di livello non risponde ai test dei rubinetti di prova — dal rubinetto inferiore non esce acqua.',
         domanda: 'L\'indicatore non risponde: dal rubinetto inferiore non esce acqua. Cosa concludi e cosa fai?',
         opzioni: [
           { testo: 'Il livello è nella norma — l\'indicatore funziona così', esito: 'SBAGLIATO', conseguenza: 'Un indicatore che non risponde ai rubinetti di prova non è affidabile. Non puoi conoscere il livello reale.' },
           { testo: 'Il collegamento dell\'indicatore è ostruito — il livello reale potrebbe essere molto più basso di quello mostrato. Fermi la caldaia per ispezione.', esito: 'CORRETTO', conseguenza: 'Diagnosi corretta. Un indicatore con collegamento ostruito mostra un livello falso. Il livello reale potrebbe essere già sotto il focolare.' },
-          { testo: 'Resetti il LSHH e riavvii lentamente per vedere come reagisce il livello', esito: 'SBAGLIATO', conseguenza: 'Riavviare con indicatore non affidabile e causa non identificata è gravemente pericoloso.' },
+          { testo: 'Resetti l\'LSLL e riavvii lentamente per vedere come reagisce il livello', esito: 'SBAGLIATO', conseguenza: 'Riavviare con indicatore non affidabile e causa non identificata è gravemente pericoloso.' },
           { testo: 'Chiami la manutenzione e aspetti con la caldaia in esercizio', esito: 'SBAGLIATO', conseguenza: 'Con indicatore non funzionante non si può tenere la caldaia in esercizio — non si conosce il livello reale.' }
         ],
         risposta_corretta: 1,
@@ -959,21 +959,21 @@ const SCENARI = [
         id: 2,
         stato_impianto: {
           pressione: '7,8 bar',
-          livello: 'Minimo — LSHH intervenuto',
-          bruciatore: '🔴 Spento da LSHH',
+          livello: 'Minimo — LSLL intervenuto',
+          bruciatore: '🔴 Spento da LSLL',
           pompa: 'In marcia',
-          allarmi: ['🔴 LSHH intervenuto', '🔔 Conduttore patentato allertato — ETA 20 min']
+          allarmi: ['🔴 LSLL intervenuto', '🔔 Conduttore patentato allertato — ETA 20 min']
         },
-        situazione: 'Il LSHH è intervenuto automaticamente spegnendo il bruciatore. Il conduttore patentato è stato allertato e arriverà in 20 minuti. La pompa di alimento è in marcia. Il livello sembra stabile al minimo. Devi decidere le istruzioni da dare al personale in attesa.',
-        domanda: 'LSHH intervenuto, conduttore in arrivo tra 20 minuti. Cosa istruisci il personale di zona presidiata di fare nell\'attesa?',
+        situazione: 'L\'LSLL è intervenuto automaticamente spegnendo il bruciatore. Il conduttore patentato è stato allertato e arriverà in 20 minuti. La pompa di alimento è in marcia. Il livello sembra stabile al minimo. Devi decidere le istruzioni da dare al personale in attesa.',
+        domanda: 'LSLL intervenuto, conduttore in arrivo tra 20 minuti. Cosa istruisci il personale di zona presidiata di fare nell\'attesa?',
         opzioni: [
           { testo: 'Monitorare la pressione e il livello dal quadro remoto e comunicare ogni variazione al conduttore in arrivo', esito: 'CORRETTO', conseguenza: 'Il monitoraggio a distanza è nei limiti del personale non patentato. Comunicare le variazioni al conduttore in arrivo permette una gestione informata all\'arrivo. Non viene richiesta alcuna operazione sull\'impianto.' },
-          { testo: 'Riarmare il LSHH da remoto e riavviare il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Il riarmo del LSHH richiede verifica fisica della causa da parte del conduttore patentato. Riarmare remotamente senza verifica viola il D.M. 21.05.74 e può portare a riavvio con causa non identificata.' },
-          { testo: 'Aprire la valvola di reintegro acqua dal quadro remoto per alzare il livello', esito: 'SBAGLIATO', conseguenza: 'Con LSHH intervenuto la causa del basso livello è sconosciuta. Aggiungere acqua senza sapere perché il livello è sceso può mascherare una perdita grave o causare shock termico.' },
+          { testo: 'Riarmare l\'LSLL da remoto e riavviare il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Il riarmo dell\'LSLL richiede verifica fisica della causa da parte del conduttore patentato. Riarmare remotamente senza verifica viola il D.M. 21.05.74 e può portare a riavvio con causa non identificata.' },
+          { testo: 'Aprire la valvola di reintegro acqua dal quadro remoto per alzare il livello', esito: 'SBAGLIATO', conseguenza: 'Con LSLL intervenuto la causa del basso livello è sconosciuta. Aggiungere acqua senza sapere perché il livello è sceso può mascherare una perdita grave o causare shock termico.' },
           { testo: 'Entrare in sala caldaia e controllare visivamente la situazione', esito: 'PARZIALE', conseguenza: 'Il sopralluogo visivo non è operativo — guardare è diverso dal toccare. Se il personale ha formazione base di sicurezza può fare una ricognizione visiva per comunicare la situazione al conduttore, ma non deve operare.' }
         ],
         risposta_corretta: 0,
-        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43. In attesa del conduttore patentato il personale di zona presidiata deve solo monitorare e comunicare — non operare. Il LSHH richiede riarmo manuale con verifica fisica della causa: operazione riservata al conduttore patentato.'
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43. In attesa del conduttore patentato il personale di zona presidiata deve solo monitorare e comunicare — non operare. L\'LSLL richiede riarmo manuale con verifica fisica della causa: operazione riservata al conduttore patentato.'
       },
       {
         id: 3,
@@ -982,18 +982,18 @@ const SCENARI = [
           livello: 'Minimo stabile',
           bruciatore: 'Spento',
           pompa: 'In marcia',
-          allarmi: ['🔴 LSHH attivo', '📋 Conduttore arrivato — verifica in corso']
+          allarmi: ['🔴 LSLL attivo', '📋 Conduttore arrivato — verifica in corso']
         },
         situazione: 'Il conduttore patentato è arrivato. Ha verificato la causa del basso livello: una valvola di intercettazione sulla linea di alimento si era chiusa parzialmente per malfunzionamento. L\'ha riaperta. Il livello sta risalendo. Ora deve decidere se riavviare.',
         domanda: 'Causa identificata e rimossa, livello in risalita. Il conduttore può riavviare il generatore Art. 43?',
         opzioni: [
           { testo: 'Sì, immediatamente — la causa è risolta e il livello sta risalendo', esito: 'SBAGLIATO', conseguenza: 'Anche con causa identificata è necessario attendere che il livello raggiunga il valore minimo di avviamento prima di riavviare. Un riavvio precipitoso con livello al minimo può portare a un secondo blocco immediato.' },
           { testo: 'Sì, ma solo dopo che il livello ha raggiunto il valore minimo di avviamento, con documentazione completa sul registro: ora allarme, causa, azione correttiva, ora ripristino, firma', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Prima verificare livello al valore di avviamento, poi riavviare con purga obbligatoria. Documentazione completa sul registro giornaliero: obbligatoria per i generatori Art. 43.' },
-          { testo: 'No — dopo un blocco LSHH il generatore deve essere verificato dall\'INAIL prima del riavvio', esito: 'SBAGLIATO', conseguenza: 'La verifica INAIL non è richiesta per ogni blocco LSHH — solo in caso di danni strutturali o incidenti. Un blocco per valvola parzialmente chiusa non richiede verifica INAIL se non ci sono danni.' },
+          { testo: 'No — dopo un blocco LHLL il generatore deve essere verificato dall\'INAIL prima del riavvio', esito: 'SBAGLIATO', conseguenza: 'La verifica INAIL non è richiesta per ogni blocco LSLL — solo in caso di danni strutturali o incidenti. Un blocco per valvola parzialmente chiusa non richiede verifica INAIL se non ci sono danni.' },
           { testo: 'Sì, ma senza la purga obbligatoria — il generatore era già acceso, non è un avviamento da freddo', esito: 'SBAGLIATO', conseguenza: 'La purga è obbligatoria prima di ogni riaccensione del bruciatore, anche dopo un breve spegnimento. I gas possono accumularsi nella camera anche in pochi minuti.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43 + Art. 36 R.D. 824/1927. Dopo un blocco LSHH: 1) identificare e rimuovere la causa, 2) attendere livello al minimo di avviamento, 3) purga obbligatoria, 4) riavvio, 5) documentazione completa sul registro con firma del conduttore patentato. Il registro Art. 43 deve essere firmato settimanalmente e ogni anomalia documentata.'
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43 + Art. 36 R.D. 824/1927. Dopo un blocco LSLL: 1) identificare e rimuovere la causa, 2) attendere livello al minimo di avviamento, 3) purga obbligatoria, 4) riavvio, 5) documentazione completa sul registro con firma del conduttore patentato. Il registro Art. 43 deve essere firmato settimanalmente e ogni anomalia documentata.'
       }
     ]
   },
