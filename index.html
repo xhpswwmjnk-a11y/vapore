@@ -92,6 +92,9 @@ html,body{
 </div>
 
 <script>
+    if(sessionStorage.getItem('landingDone')) {
+      window.location.replace('app.html'); 
+}     
 const fill  = document.getElementById('bar-fill');
 const label = document.getElementById('pct-label');
 const DURATION = 5000; // ms
@@ -105,7 +108,8 @@ function animate(ts) {
   label.textContent = pct + '%';
   if (pct < 100) {
     if (document.referrer.includes('app.html')) {
-      window.location.replace('app.html');
+     sessionStorage.setItem('landingDone','1')) 
+      window.location.replace('app.html');    
   }
     requestAnimationFrame(animate);
   } else {
