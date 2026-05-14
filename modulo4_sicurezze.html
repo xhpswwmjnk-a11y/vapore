@@ -228,7 +228,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="toc-item" onclick="gotoSection('#t8')">8. Pressostati di regolazione</div>
     <div class="toc-item" onclick="gotoSection('#t9')">9. Pressostati di sicurezza (PSHH)</div>
     <div class="toc-item" onclick="gotoSection('#t10')">10. Livellostati di regolazione</div>
-    <div class="toc-item" onclick="gotoSection('#t11')">11. Livellostati di blocco (LSHH)</div>
+    <div class="toc-item" onclick="gotoSection('#t11')">11. Livellostati di blocco (LSLL)</div>
     <div class="toc-item" onclick="gotoSection('#t12')">12. Termostati</div>
     <div class="toc-item" onclick="gotoSection('#t13')">13. Logica di blocco — fail-safe</div>
     <div class="toc-item" onclick="gotoSection('#t14')">14. Sistemi di allarme</div>
@@ -276,7 +276,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <p>La sicurezza dei generatori di vapore si basa su tre livelli di protezione che devono agire in modo indipendente e sequenziale:</p>
     <ul>
       <li><strong>1° livello — Regolazione</strong>: dispositivi che mantengono i parametri operativi entro i limiti normali (pressostati e livellostati di regolazione, regolatori automatici). Intervengono continuamente durante il normale esercizio.</li>
-      <li><strong>2° livello — Blocco (sicurezza)</strong>: dispositivi che fermano il bruciatore quando i parametri superano i limiti di sicurezza (PSHH, LSHH). Intervengono solo in caso di anomalia grave. Riarmo <strong>manuale obbligatorio</strong>.</li>
+      <li><strong>2° livello — Blocco (sicurezza)</strong>: dispositivi che fermano il bruciatore quando i parametri superano i limiti di sicurezza (PSHH, LSLL). Intervengono solo in caso di anomalia grave. Riarmo <strong>manuale obbligatorio</strong>.</li>
       <li><strong>3° livello — Protezione fisica</strong>: valvole di sicurezza, dischi di rottura — scaricano l'eccesso di pressione meccanicamente, senza elettronica.</li>
     </ul>
     <div class="callout">
@@ -401,8 +401,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 
   <div class="teoria-block" id="t11">
-    <h3>11. Livellostato di Blocco (LSHH)</h3>
-    <p>Il <strong>livellostato di blocco (LSHH — Level Switch High High / Low Low)</strong> ferma il bruciatore quando il livello dell'acqua scende al di sotto del minimo consentito (o supera il massimo).</p>
+    <h3>11. Livellostato di Blocco (LSLL)</h3>
+    <p>Il <strong>livellostato di blocco (LSLL — Level Switch High High / Low Low)</strong> ferma il bruciatore quando il livello dell'acqua scende al di sotto del minimo consentito (o supera il massimo).</p>
     <p>È il dispositivo di sicurezza contro il pericolo più grave in caldaia: il <strong>surriscaldamento a secco</strong>. Senza acqua sufficiente, le superfici di riscaldamento si surriscaldano fino alla deformazione o alla rottura con conseguente rilascio violento di energia.</p>
     <p>Requisiti:</p>
     <ul>
@@ -432,7 +432,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <li>Mancanza tensione di alimentazione</li>
       <li>Spegnimento fiamma (fotocellula non vede la fiamma)</li>
       <li>Superamento pressione di sicurezza (PSHH)</li>
-      <li>Livello minimo acqua (LSHH)</li>
+      <li>Livello minimo acqua (LSLL)</li>
       <li>Mancanza gas/nafta (pressostato combustibile)</li>
       <li>Guasto ventilatore aria (pressostato aria)</li>
       <li>Anomalia nell'esecuzione della sequenza di avviamento</li>
@@ -563,7 +563,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <ul>
       <li>Pressione di esercizio: <strong>P ≤ 15 bar</strong></li>
       <li>Producibilità: <strong>≤ 3.000 kg/h</strong></li>
-      <li>Dispositivi di blocco automatici (PSHH e LSHH) funzionanti</li>
+      <li>Dispositivi di blocco automatici (PSHH e LSLL) funzionanti</li>
       <li>Allarmi ottico-acustici interni ed esterni in locale normalmente frequentato</li>
     </ul>
     <p>Obblighi gestionali:</p>
@@ -584,7 +584,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <li>Livello acqua</li>
       <li>Temperatura vapore (se presente surriscaldatore)</li>
       <li>Risultati analisi acque giornaliere (pH, conducibilità, durezza)</li>
-      <li>Test di funzionamento dei dispositivi di sicurezza (PSHH, LSHH, valvole)</li>
+      <li>Test di funzionamento dei dispositivi di sicurezza (PSHH, LSLL, valvole)</li>
       <li>Eventuali anomalie riscontrate e interventi eseguiti</li>
       <li>Firma del responsabile della rilevazione</li>
     </ul>
@@ -625,7 +625,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
   <div class="teoria-block" id="t28">
     <h3>28. Blocco per Basso Livello — Procedura</h3>
-    <p>Il blocco per basso livello è la situazione più critica in caldaia. La procedura corretta dopo l'intervento del LSHH:</p>
+    <p>Il blocco per basso livello è la situazione più critica in caldaia. La procedura corretta dopo l'intervento del LSLL:</p>
     <ul>
       <li><strong>1. Spegnere il bruciatore</strong> (se non già spento automaticamente dal LSHH)</li>
       <li><strong>2. Chiudere la valvola di presa vapore</strong> per isolare la caldaia dalla rete</li>
@@ -818,7 +818,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </ul>
     <div class="callout callout-green">
       <div class="callout-label">5 punti chiave del modulo</div>
-      <p>1. PSHH e LSHH: riarmo MANUALE obbligatorio — mai automatico<br>
+      <p>1. PSHH e LSLL: riarmo MANUALE obbligatorio — mai automatico<br>
       2. Valvole di sicurezza: min 2, scarico esterno se producibilità &gt;2 t/h<br>
       3. Porte locale caldaia: sempre ad apertura VERSO L'ESTERNO<br>
       4. Art. 43: funzionamento non presidiato solo con P≤15 bar e ≤3.000 kg/h<br>
@@ -917,14 +917,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <script>
 function gotoSection(id){const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 
-const FLASHCARDS=[
-  {q:"I tre livelli di protezione della sicurezza in caldaia",a:"1° Regolazione: pressostati/livellostati di regolazione (intervento continuo).\n2° Blocco (PSHH/LSHH): fermano il bruciatore in caso anomalia — riarmo MANUALE.\n3° Protezione fisica: valvole di sicurezza meccaniche — scaricano la pressione senza elettronica."},
+const FLASHCARDS
+  {q:"I tre livelli di protezione della sicurezza in caldaia",a:"1° Regolazione: pressostati/livellostati di regolazione (intervento continuo).\n2° Blocco (PSHH/LSLL): fermano il bruciatore in caso anomalia — riarmo MANUALE.\n3° Protezione fisica: valvole di sicurezza meccaniche — scaricano la pressione senza elettronica."},
   {q:"Quante valvole di sicurezza deve avere ogni generatore?",a:"Minimo 2 valvole. Eccezione: 1 sola se dimensionata per tutta la portata max e P≤6 bar o superficie≤10 m². Diametro minimo: 25 mm. Non intercettabili durante l'esercizio."},
   {q:"Normativa scarico valvole di sicurezza",a:"P > 1 bar: scarico convogliato in ALTO.\nProducibilità > 2 t/h: scarico obbligatoriamente ALL'ESTERNO del locale caldaia.\nIl tronchetto non può avere diametro inferiore all'orifizio della valvola."},
   {q:"Manometro — requisiti normativi fondamentali",a:"Fondo scala: 1,25-2× pressione di bollo. Segno rosso sulla pressione di bollo. Presa intercettabile per manutenzione. Collegato tramite sifone per proteggerlo dal vapore. Almeno 1 obbligatorio, visibile dal conduttore."},
   {q:"Indicatori di livello — quanti obbligatori e altezza minima",a:"Minimo 2, di cui uno a vetro. Altezza visibile minima: 150 mm, di cui max 40 mm sotto il livello minimo di caldaia."},
   {q:"PSHH — cos'è e requisiti fondamentali",a:"Pressostato di blocco (Pressure Switch High High): ferma il bruciatore se P supera il limite di sicurezza. RIARMO MANUALE obbligatorio. Elettricamente e meccanicamente indipendente dal pressostato di regolazione."},
-  {q:"LSHH — cos'è e prima manovra dopo il blocco",a:"Livellostato di blocco: ferma il bruciatore per basso livello acqua. Prima manovra: spegnere bruciatore + chiudere valvola di presa vapore. MAI aggiungere acqua fredda subito su caldaia calda — shock termico!"},
+  {q:"LSLL — cos'è e prima manovra dopo il blocco",a:"Livellostato di blocco: ferma il bruciatore per basso livello acqua. Prima manovra: spegnere bruciatore + chiudere valvola di presa vapore. MAI aggiungere acqua fredda subito su caldaia calda — shock termico!"},
   {q:"Principio fail-safe nei sistemi di blocco",a:"Qualsiasi guasto (mancanza tensione, filo rotto, cortocircuito) deve portare nella condizione SICURA = bruciatore spento. I blocchi devono agire direttamente sulla linea di potenza del bruciatore, non attraverso la logica PLC."},
   {q:"Art. 43 D.M. 21.05.74 — condizioni per funzionamento non presidiato",a:"P ≤ 15 bar + producibilità ≤ 3.000 kg/h + PSHH e LSHH funzionanti + allarmi ottico-acustici interni ed esterni in locale normalmente frequentato + registro giornaliero firmato settimanalmente."},
   {q:"Art. 39 D.M. 21.05.74 — condizioni per esonero bassa pressione",a:"P ≤ 1 bar + superficie ≤ 100 m² + producibilità ≤ 2.000 kg/h. ATTENZIONE: se potenzialità termica > 200.000 kcal/h serve comunque Patentino 1° Grado (Legge 615)."},
@@ -945,7 +945,7 @@ const QUESTIONS=[
   {q:"Quando lo scarico delle valvole di sicurezza deve essere convogliato all'esterno?",opts:["Sempre","Solo per caldaie >20 bar","Quando la producibilità è >2 t/h","Solo per nafta, non per gas"],c:2,expl:"Per producibilità superiori a 2 t/h lo scarico deve essere obbligatoriamente convogliato all'esterno del locale caldaia. 833 g/s di vapore a >100°C renderebbero la sala inaccessibile in pochi secondi."},
   {q:"Il fondo scala del manometro di una caldaia da 10 bar deve essere:",opts:["Esattamente 10 bar","Tra 12,5 e 20 bar","Tra 15 e 25 bar","Tra 20 e 30 bar"],c:1,expl:"Il fondo scala deve essere tra 1,25 e 2 volte la pressione di bollo: 1,25×10=12,5 bar (minimo) e 2×10=20 bar (massimo). La pressione di bollo (10 bar) deve essere segnata in rosso sulla scala."},
   {q:"Il PSHH (pressostato di sicurezza) deve avere riarmo:",opts:["Automatico, entro 60 secondi","Automatico solo se la pressione scende sotto il valore normale","Manuale obbligatorio — mai automatico","Automatico o manuale a scelta del costruttore"],c:2,expl:"Il riarmo del PSHH è SEMPRE manuale. Il conduttore deve intervenire fisicamente, identificare la causa del blocco, risolverla e solo allora resettare il dispositivo. Il riarmo automatico sarebbe pericoloso perché il sistema tornerebbe in servizio senza che la causa sia stata eliminata."},
-  {q:"Il LSHH interviene per:",opts:["Alta pressione","Basso livello dell'acqua nel corpo cilindrico","Alta temperatura del vapore","Mancanza di combustibile"],c:1,expl:"LSHH = Level Switch High High (o Low Low) — interviene per basso livello dell'acqua. È il dispositivo di sicurezza contro il surriscaldamento a secco delle superfici di riscaldamento, che è il pericolo più grave in caldaia dopo la sovrapressione."},
+  {q:"L\'LSLL interviene per:",opts:["Alta pressione","Basso livello dell'acqua nel corpo cilindrico","Alta temperatura del vapore","Mancanza di combustibile"],c:1,expl:"LSHH = Level Switch High High (o Low Low) — interviene per basso livello dell'acqua. È il dispositivo di sicurezza contro il surriscaldamento a secco delle superfici di riscaldamento, che è il pericolo più grave in caldaia dopo la sovrapressione."},
   {q:"Dopo un blocco per basso livello, la prima manovra corretta è:",opts:["Aggiungere subito acqua fredda per raffreddare la caldaia","Spegnere il bruciatore e chiudere la valvola di presa, poi alimentare acqua gradualmente","Aprire la valvola di sicurezza per abbassare la pressione","Riavviare il bruciatore dopo aver resettato il LSHH"],c:1,expl:"Prima: spegnere bruciatore + chiudere valvola di presa vapore. Poi attendere raffreddamento parziale. Poi alimentare acqua GRADUALMENTE. Aggiungere acqua fredda di colpo su metallo surriscaldato causa shock termico con possibili cricche o deformazioni irreversibili."},
   {q:"L'Art. 43 del D.M. 21.05.74 consente il funzionamento non presidiato solo se:",opts:["P ≤ 10 bar e producibilità ≤ 2.000 kg/h","P ≤ 15 bar e producibilità ≤ 3.000 kg/h con PSHH, LSHH e allarmi obbligatori","P ≤ 6 bar qualsiasi producibilità","Qualsiasi pressione se ci sono i dispositivi automatici"],c:1,expl:"Art. 43: P ≤ 15 bar + producibilità ≤ 3.000 kg/h + PSHH e LSHH funzionanti + allarmi ottico-acustici interni ed esterni in locale normalmente frequentato + registro giornaliero firmato settimanalmente da conduttore abilitato."},
   {q:"Le porte del locale caldaia devono aprirsi:",opts:["Verso l'interno per evitare accessi non autorizzati","Verso l'esterno — obbligatoriamente","In entrambe le direzioni (porte bidirezionali)","Non c'è prescrizione sul verso di apertura"],c:1,expl:"Le porte devono aprirsi VERSO L'ESTERNO. In caso di esplosione o incendio, la sovrappressione premette le porte verso l'esterno (quindi le apre), permettendo l'uscita. Porte verso l'interno sarebbero bloccate dalla sovrappressione, impedendo l'evacuazione."},
