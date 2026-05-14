@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Simulatore — VaporeLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080c18;--glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.12);--glass-border:rgba(255,255,255,0.1);--accent:#c0420a;--purple:#534AB7;--green:#1a7a3a;--text1:#f0f0f0;--text2:#b0b8c8;--text3:#606880;--adim:rgba(192,66,10,0.15);--orange:#fb923c;--red:#f87171;--lime:#4ade80}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--text1);font-family:'Geist',sans-serif}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(8,12,24,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border)}
+.back-btn{background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:8px 14px;border-radius:12px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;transition:.18s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{background:var(--glass2);color:var(--text1)}
+.header-title{font-family:'Instrument Serif',serif;font-size:20px;flex:1}
+.header-badge{font-family:'Geist Mono',monospace;font-size:10px;color:var(--lime);background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);padding:4px 10px;border-radius:20px;letter-spacing:1px}
+
+.main{max-width:740px;margin:0 auto;padding:24px 16px 80px}
+
+/* SCENARIO LIST */
+.list-intro{margin-bottom:24px}
+.list-title{font-family:'Instrument Serif',serif;font-size:30px;margin-bottom:8px}
+.list-sub{color:var(--text3);font-size:14px;line-height:1.6}
+.source-note{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 12px;background:rgba(83,74,183,0.08);border:1px solid rgba(83,74,183,0.25);border-radius:10px;font-size:11px;color:#a78bfa;font-family:'Geist Mono',monospace}
+
+.scenario-list{display:flex;flex-direction:column;gap:12px}
+.scenario-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:20px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:8px}
+.scenario-card:hover{background:var(--glass2);border-color:rgba(255,255,255,0.2);transform:translateY(-2px)}
+.sc-header{display:flex;align-items:center;gap:10px}
+.sc-cat{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--orange);text-transform:uppercase;flex:1}
+.sc-diff{font-size:11px;padding:3px 9px;border-radius:8px;font-family:'Geist Mono',monospace}
+.sc-diff.alta{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.25)}
+.sc-diff.media{background:rgba(251,146,60,0.1);color:var(--orange);border:1px solid rgba(251,146,60,0.25)}
+.sc-steps{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace}
+.sc-title{font-family:'Instrument Serif',serif;font-size:19px;color:var(--text1);line-height:1.3}
+.sc-fonte{font-size:11px;color:var(--text3);line-height:1.4}
+
+/* SIMULATION */
+#s-sim{display:none}
+.sim-header{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.sim-back{background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);padding:8px 14px;border-radius:12px;cursor:pointer;font-family:'Geist',sans-serif;font-size:13px;transition:.18s}
+.sim-back:hover{background:var(--glass2);color:var(--text1)}
+.sim-title{font-family:'Instrument Serif',serif;font-size:20px;flex:1}
+.sim-step-badge{font-family:'Geist Mono',monospace;font-size:11px;color:var(--orange);background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.25);padding:4px 10px;border-radius:12px}
+
+/* PROGRESS STEPS */
+.step-progress{display:flex;gap:6px;margin-bottom:20px}
+.step-dot{height:4px;flex:1;border-radius:4px;background:rgba(255,255,255,0.08);transition:all .3s}
+.step-dot.done{background:var(--lime)}
+.step-dot.current{background:var(--orange)}
+.step-dot.fail{background:var(--red)}
+
+/* IMPIANTO STATUS */
+.impianto-panel{background:rgba(8,16,36,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.impianto-panel-title{grid-column:1/-1;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:4px}
+.imp-item{display:flex;flex-direction:column;gap:3px}
+.imp-label{font-size:10px;color:var(--text3);font-family:'Geist Mono',monospace;letter-spacing:.5px;text-transform:uppercase}
+.imp-value{font-size:14px;font-family:'Geist Mono',monospace;font-weight:600;color:var(--text1)}
+.imp-value.ok{color:var(--lime)}
+.imp-value.warn{color:var(--orange)}
+.imp-value.danger{color:var(--red)}
+.alarms-wrap{grid-column:1/-1}
+.alarm-item{font-size:12px;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.04);margin-bottom:4px;font-family:'Geist Mono',monospace}
+
+/* CONTESTO */
+.contesto-box{background:rgba(83,74,183,0.06);border:1px solid rgba(83,74,183,0.2);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.contesto-label{font-size:10px;letter-spacing:1px;color:#a78bfa;font-family:'Geist Mono',monospace;text-transform:uppercase;margin-bottom:6px}
+.contesto-text{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* SITUAZIONE */
+.situazione-card{background:rgba(251,146,60,0.05);border:1px solid rgba(251,146,60,0.2);border-radius:18px;padding:20px;margin-bottom:16px}
+.sit-label{font-size:10px;letter-spacing:1px;color:var(--orange);font-family:'Geist Mono',monospace;text-transform:uppercase;margin-bottom:8px}
+.sit-text{font-size:15px;color:var(--text2);line-height:1.7}
+.domanda{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text1);margin-top:14px;line-height:1.4}
+
+/* OPZIONI */
+.opzioni{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.opzione{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .18s;font-size:14px;color:var(--text2);text-align:left;font-family:'Geist',sans-serif;display:flex;align-items:flex-start;gap:10px;width:100%}
+.opzione:hover:not([disabled]){background:var(--glass2);border-color:rgba(255,255,255,0.2);color:var(--text1)}
+.opzione[disabled]{pointer-events:none}
+.opzione.corretto{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.5);color:var(--lime)}
+.opzione.sbagliato{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.4);color:var(--red)}
+.opzione.parziale{background:rgba(251,146,60,0.1);border-color:rgba(251,146,60,0.4);color:var(--orange)}
+.opzione.disabilitato{opacity:.4}
+.opt-letter{width:24px;height:24px;min-width:24px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--text3);flex-shrink:0;margin-top:1px}
+.opzione.corretto .opt-letter{background:rgba(74,222,128,0.2);color:var(--lime)}
+.opzione.sbagliato .opt-letter{background:rgba(248,113,113,0.2);color:var(--red)}
+.opzione.parziale .opt-letter{background:rgba(251,146,60,0.2);color:var(--orange)}
+
+/* ESITO */
+.esito-box{border-radius:14px;padding:16px;margin-bottom:16px;display:none}
+.esito-box.show{display:block}
+.esito-box.corretto{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3)}
+.esito-box.sbagliato{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3)}
+.esito-box.parziale{background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.3)}
+.esito-header{font-size:13px;font-weight:700;margin-bottom:6px;font-family:'Geist Mono',monospace}
+.esito-conseguenza{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.esito-spiegazione{font-size:13px;color:var(--text3);line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)}
+.esito-fonte{font-size:11px;color:#a78bfa;margin-top:6px;font-family:'Geist Mono',monospace}
+
+/* NEXT */
+.btn-next-step{width:100%;padding:15px;background:var(--orange);border:none;border-radius:16px;color:#fff;font-family:'Geist',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:.18s;display:none}
+.btn-next-step.show{display:block}
+.btn-next-step:hover{opacity:.85}
+
+/* SCORE */
+.score-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.score-pill{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:6px 12px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
+.score-pill strong{font-size:14px;color:var(--text1)}
+.score-pill.g strong{color:var(--lime)}
+.score-pill.r strong{color:var(--red)}
+.score-pill.o strong{color:var(--orange)}
+
+/* RECAP */
+#s-recap{display:none}
+.recap-wrap{background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:28px;text-align:center;margin-bottom:20px}
+.recap-icon{font-size:52px;margin-bottom:12px}
+.recap-title{font-family:'Instrument Serif',serif;font-size:30px;margin-bottom:8px}
+.recap-sub{font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.6}
+.recap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.rc{background:rgba(255,255,255,0.04);border-radius:12px;padding:14px 8px;text-align:center}
+.rc-val{font-size:28px;font-weight:700;margin-bottom:4px}
+.rc-lbl{font-size:11px;color:var(--text3);font-family:'Geist Mono',monospace}
+.rc.g .rc-val{color:var(--lime)}
+.rc.r .rc-val{color:var(--red)}
+.rc.o .rc-val{color:var(--orange)}
+.recap-btns{display:flex;gap:10px}
+.btn-r{flex:1;padding:14px;border-radius:14px;font-family:'Geist',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:.18s;border:none}
+.btn-r.primary{background:var(--orange);color:#fff}
+.btn-r.primary:hover{opacity:.85}
+.btn-r.secondary{background:var(--glass);color:var(--text2);border:1px solid var(--glass-border)}
+.log-section{text-align:left;margin-top:20px}
+.log-title{font-size:11px;color:var(--text3);letter-spacing:1.5px;font-family:'Geist Mono',monospace;text-transform:uppercase;margin-bottom:12px}
+.log-item{border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:13px}
+.log-item.ok{background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.15);color:var(--lime)}
+.log-item.fail{background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);color:var(--red)}
+.log-item.partial{background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15);color:var(--orange)}
+
+/* OTP-GATE-CSS-START — cancella da questa riga fino a OTP-GATE-CSS-END per rimuovere il blocco */
+#otp-gate{position:fixed;inset:0;background:#080c18;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Geist',sans-serif}
+.otp-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center}
+.otp-top{font-size:52px;margin-bottom:14px}
+.otp-title{font-family:'Instrument Serif',serif;font-size:26px;color:#f0f0f0;margin-bottom:8px}
+.otp-wip{font-size:14px;color:#606880;line-height:1.7}
+/* Tab ADMIN fisso in basso al centro */
+.otp-admin-tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-bottom:none;border-radius:10px 10px 0 0;padding:7px 22px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:2px;color:#445566;cursor:pointer;transition:all .2s;user-select:none}
+.otp-admin-tab:hover{background:rgba(255,255,255,0.09);color:#8896b0}
+/* Pannello OTP: slide-up dal basso */
+.otp-panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:380px;background:#0e1220;border:1px solid rgba(255,255,255,0.1);border-bottom:none;border-radius:18px 18px 0 0;padding:28px 24px 32px;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:10000}
+.otp-panel.open{transform:translateX(-50%) translateY(0)}
+.otp-panel-title{font-family:'Instrument Serif',serif;font-size:20px;color:#f0f0f0;margin-bottom:4px}
+.otp-panel-sub{font-size:12px;color:#606880;margin-bottom:18px}
+.otp-input{width:100%;padding:13px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:#f0f0f0;font-family:'Geist Mono',monospace;font-size:22px;text-align:center;letter-spacing:8px;outline:none;margin-bottom:10px;transition:.18s}
+.otp-input:focus{border-color:#c0420a;background:rgba(192,66,10,0.07)}
+.otp-input::placeholder{letter-spacing:2px;font-size:13px;color:#445566}
+.otp-btn{width:100%;padding:13px;background:#c0420a;border:none;border-radius:12px;color:#fff;font-family:'Geist',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:.18s}
+.otp-btn:hover{opacity:.85}
+.otp-btn:disabled{opacity:.35;cursor:not-allowed}
+.otp-error{font-size:12px;color:#f87171;margin-top:8px;min-height:18px}
+.otp-timer{font-family:'Geist Mono',monospace;font-size:11px;color:#606880;margin-top:6px}
+/* OTP-GATE-CSS-END */
+
+/* INTRO-MODAL-START */
+#intro-overlay{
+  position:fixed;inset:0;z-index:8000;
+  background:rgba(4,6,14,0.88);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  animation:introFadeIn .35s ease;
+}
+@keyframes introFadeIn{from{opacity:0}to{opacity:1}}
+.intro-modal{
+  background:linear-gradient(160deg,rgba(16,20,40,0.98) 0%,rgba(8,12,24,0.98) 100%);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:22px;
+  padding:36px 30px 28px;
+  width:100%;max-width:480px;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+  animation:introSlideUp .4s cubic-bezier(.4,0,.2,1);
+}
+@keyframes introSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.intro-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);
+  border-radius:20px;padding:5px 12px;
+  font-family:'Geist Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;color:#f87171;text-transform:uppercase;
+  margin-bottom:18px;
+}
+.intro-icon{font-size:36px;margin-bottom:12px;display:block}
+.intro-title{
+  font-family:'Instrument Serif',serif;font-size:26px;
+  color:#f0f0f0;margin-bottom:14px;line-height:1.25;
+}
+.intro-body{
+  font-size:14px;color:#8896b0;line-height:1.75;
+  margin-bottom:22px;
+}
+.intro-body strong{color:#c8d4e8;font-weight:600}
+.intro-divider{
+  height:1px;background:rgba(255,255,255,0.07);
+  margin:20px 0;
+}
+.intro-check-wrap{
+  display:flex;align-items:flex-start;gap:12px;
+  cursor:pointer;margin-bottom:22px;
+  padding:14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  transition:all .18s;
+  user-select:none;
+}
+.intro-check-wrap:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15)}
+.intro-check-wrap.checked{background:rgba(74,222,128,0.07);border-color:rgba(74,222,128,0.3)}
+.intro-checkbox{
+  width:20px;height:20px;min-width:20px;
+  border-radius:6px;border:2px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.04);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;margin-top:1px;
+  font-size:12px;
+}
+.intro-check-wrap.checked .intro-checkbox{
+  background:#4ade80;border-color:#4ade80;color:#080c18;
+}
+.intro-check-label{font-size:13px;color:#8896b0;line-height:1.5}
+.intro-check-wrap.checked .intro-check-label{color:#c8d4e8}
+.intro-cta{
+  width:100%;padding:15px;
+  background:#c0420a;border:none;border-radius:14px;
+  color:#fff;font-family:'Geist',sans-serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  opacity:.35;pointer-events:none;
+  letter-spacing:.2px;
+}
+.intro-cta.active{opacity:1;pointer-events:auto}
+.intro-cta.active:hover{background:#a83508;transform:translateY(-1px)}
+.intro-cta.active:active{transform:translateY(0)}
+.intro-segnala{
+  margin-top:14px;text-align:center;
+  font-size:12px;color:#606880;
+}
+.intro-segnala a{color:#fb923c;text-decoration:none}
+.intro-segnala a:hover{text-decoration:underline}
+/* INTRO-MODAL-END */
+
+</style>
+</head>
+<body>
+<!-- OTP-GATE-HTML-START — cancella da questa riga fino a OTP-GATE-HTML-END per rimuovere il blocco -->
+
+<div id="otp-gate">
+
+  <!-- Schermata principale: visibile a tutti -->
+  <div class="otp-card">
+    <div class="otp-top">🚧</div>
+    <div class="otp-title">Pagina in costruzione</div>
+    <div class="otp-wip">Questa sezione non è ancora disponibile.<br>Torna presto!</div>
+  </div>
+
+  <!-- Tab ADMIN fisso in basso: cliccalo per aprire il pannello OTP -->
+  <div class="otp-admin-tab" id="otp-admin-tab" onclick="apriAdmin()">⚙ ADMIN</div>
+
+  <!-- Pannello OTP: visibile solo dopo click sul tab ADMIN -->
+  <div class="otp-panel" id="otp-panel">
+    <div class="otp-panel-title">Accesso Admin</div>
+    <div class="otp-panel-sub">Il codice OTP è stato inviato su Telegram.</div>
+    <input class="otp-input" id="otp-input" type="number" maxlength="6" placeholder="Codice OTP" autocomplete="off"/>
+    <button class="otp-btn" id="otp-btn" onclick="verificaOTP()">Accedi →</button>
+    <div class="otp-error" id="otp-error"></div>
+    <div class="otp-timer" id="otp-timer"></div>
+  </div>
+
+</div>
+
+<!-- OTP-GATE-HTML-END -->
+
+<!-- INTRO-MODAL-START — rimuovere questo div e il blocco CSS/JS corrispondenti per disattivare -->
+<div id="intro-overlay">
+  <div class="intro-modal">
+    <div class="intro-badge">⚠️ Avviso importante</div>
+    <span class="intro-icon">⚙️</span>
+    <div class="intro-title">Simulatore Operativo VaporeLab</div>
+    <div class="intro-body">
+      Gli scenari contenuti in questa sezione sono
+      <strong>puramente indicativi</strong> e hanno finalità didattiche.<br><br>
+      Sebbene basati su fonti normative ufficiali
+      (D.M. 21.05.74, R.D. 824/1927, Quaderno Bissolo),
+      <strong>non sostituiscono la verifica diretta delle fonti originali</strong>
+      né la formazione professionale certificata.<br><br>
+      In caso di inesattezze, procedure incomplete o suggerimenti di miglioramento,
+      ti invitiamo a <strong>segnalarle</strong> tramite il canale apposito.
+    </div>
+    <div class="intro-divider"></div>
+    <div class="intro-check-wrap" id="intro-check-wrap" onclick="toggleCheck()">
+      <div class="intro-checkbox" id="intro-checkbox"></div>
+      <div class="intro-check-label">Ho letto e compreso che i contenuti sono indicativi e richiedono verifica delle fonti ufficiali.</div>
+    </div>
+    <button class="intro-cta" id="intro-cta" onclick="chiudiIntro()">Ok, ho capito →</button>
+    <div class="intro-segnala">
+      Hai trovato un errore?
+      <a href="segnalazioni.html">Segnala un'inesattezza</a>
+    </div>
+  </div>
+</div>
+<!-- INTRO-MODAL-END -->
+
+
+
+
+<header class="header">
+  <a href="index.html" class="back-btn">← Home</a>
+  <div class="header-title">⚙️ Simulatore</div>
+  <div class="header-badge">CASCATA</div>
+</header>
+
+<main class="main">
+
+  <!-- LISTA SCENARI -->
+  <div id="s-list">
+    <div class="list-intro">
+      <div class="list-title">Simulatore a Cascata</div>
+      <div class="list-sub">Scenari operativi reali con decisioni collegate. Ogni scelta sbagliata cambia la situazione al passo successivo.</div>
+      <div class="source-note">📋 Fonte esclusiva: D.M. 21.05.74 · R.D. 824/1927 · Quaderno Bissolo</div>
+    </div>
+    <div class="scenario-list" id="scenario-list"></div>
+  </div>
+
+  <!-- SIMULAZIONE -->
+  <div id="s-sim">
+    <div class="sim-header">
+      <button class="sim-back" onclick="backToList()">← Scenari</button>
+      <div class="sim-title" id="sim-title"></div>
+      <div class="sim-step-badge" id="sim-step-badge">Step 1/3</div>
+    </div>
+
+    <div class="step-progress" id="step-progress"></div>
+    <div class="score-bar">
+      <div class="score-pill g"><span>✓</span><strong id="sc-ok">0</strong></div>
+      <div class="score-pill r"><span>✗</span><strong id="sc-ko">0</strong></div>
+      <div class="score-pill o"><span>~</span><strong id="sc-parz">0</strong></div>
+    </div>
+
+    <div class="impianto-panel" id="impianto-panel"></div>
+    <div class="contesto-box" id="contesto-box" style="display:none">
+      <div class="contesto-label">📋 Contesto iniziale</div>
+      <div class="contesto-text" id="contesto-text"></div>
+    </div>
+    <div class="situazione-card">
+      <div class="sit-label">🧑‍🔧 Situazione operativa</div>
+      <div class="sit-text" id="sit-text"></div>
+      <div class="domanda" id="domanda-text"></div>
+    </div>
+
+    <div class="opzioni" id="opzioni-wrap"></div>
+
+    <div class="esito-box" id="esito-box">
+      <div class="esito-header" id="esito-header"></div>
+      <div class="esito-conseguenza" id="esito-conseguenza"></div>
+      <div class="esito-spiegazione" id="esito-spiegazione"></div>
+      <div class="esito-fonte" id="esito-fonte"></div>
+    </div>
+
+    <button class="btn-next-step" id="btn-next-step" onclick="nextStep()">Prossimo passo →</button>
+  </div>
+
+  <!-- RECAP -->
+  <div id="s-recap">
+    <div class="recap-wrap">
+      <div class="recap-icon" id="r-icon">🏆</div>
+      <div class="recap-title" id="r-title">Scenario completato</div>
+      <div class="recap-sub" id="r-sub"></div>
+      <div class="recap-grid">
+        <div class="rc g"><div class="rc-val" id="r-ok">0</div><div class="rc-lbl">Corretti</div></div>
+        <div class="rc r"><div class="rc-val" id="r-ko">0</div><div class="rc-lbl">Sbagliati</div></div>
+        <div class="rc o"><div class="rc-val" id="r-parz">0</div><div class="rc-lbl">Parziali</div></div>
+      </div>
+      <div class="recap-btns">
+        <button class="btn-r secondary" onclick="backToList()">← Scenari</button>
+        <button class="btn-r primary" onclick="restartScenario()">Riprova</button>
+      </div>
+    </div>
+    <div class="log-section">
+      <div class="log-title">Registro decisioni</div>
+      <div id="decision-log"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* OTP-GATE-JS-START — cancella da questa riga fino a OTP-GATE-JS-END per rimuovere il blocco
+   Per disattivare senza cancellare: cambia OTP_ACTIVE = false
+   Sequenza di rimozione completa:
+     1. Cancella il blocco CSS  (OTP-GATE-CSS-START  → OTP-GATE-CSS-END)
+     2. Cancella il blocco HTML (OTP-GATE-HTML-START → OTP-GATE-HTML-END)
+     3. Cancella questo blocco  (OTP-GATE-JS-START   → OTP-GATE-JS-END)
+*/
+const OTP_ACTIVE  = false;           // false = blocco disattivato, pagina visibile a tutti
+const BOT_TOKEN   = '8674893871:AAEJeka1CdXjFZ1x-U6veWgplyXw-Lb0D1k';    // token bot Telegram (non esposto nella UI)
+const CHAT_ID     = '8604822312';   // chat ID admin (solo tu ricevi l'OTP)
+const OTP_TTL_MS  = 5 * 60 * 1000; // validità OTP in ms (default: 5 minuti)
+
+// ATTIVAZIONE ADMIN: click sul tab ADMIN in basso → apre pannello OTP
+function apriAdmin() {
+  document.getElementById('otp-panel').classList.add('open');
+  document.getElementById('otp-admin-tab').style.display = 'none';
+  inviaOTP();
+}
+
+let otpCorrente = null, otpTimestamp = null, otpTimer = null;
+
+async function inviaOTP() {
+  otpCorrente  = Math.floor(100000 + Math.random() * 900000);
+  otpTimestamp = Date.now();
+  const testo  = `🔐 *VaporeLab Simulatore*\n\nCodice OTP: *${otpCorrente}*\n⏱ Valido 5 minuti.`;
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: testo, parse_mode: 'Markdown' })
+    });
+  } catch(e) { console.warn('Telegram:', e); }
+  avviaTimer();
+}
+
+function avviaTimer() {
+  clearInterval(otpTimer);
+  const el = document.getElementById('otp-timer');
+  otpTimer = setInterval(() => {
+    const r = OTP_TTL_MS - (Date.now() - otpTimestamp);
+    if (r <= 0) { clearInterval(otpTimer); otpCorrente = null; el.textContent = 'Codice scaduto.'; }
+    else { const m = Math.floor(r/60000), s = Math.floor((r%60000)/1000).toString().padStart(2,'0'); el.textContent = `Valido ancora: ${m}:${s}`; }
+  }, 1000);
+}
+
+function verificaOTP() {
+  const val   = parseInt(document.getElementById('otp-input').value.trim());
+  const errEl = document.getElementById('otp-error');
+  const btn   = document.getElementById('otp-btn');
+  if (!otpCorrente) { errEl.textContent = 'Codice scaduto.'; return; }
+  if (val === otpCorrente && (Date.now() - otpTimestamp) < OTP_TTL_MS) {
+    clearInterval(otpTimer);
+    const gate = document.getElementById('otp-gate');
+    gate.style.transition = 'opacity .4s';
+    gate.style.opacity    = '0';
+    setTimeout(() => gate.remove(), 400);
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: CHAT_ID, text: '✅ Accesso Simulatore concesso.' })
+    }).catch(()=>{});
+  } else {
+    errEl.textContent = 'Codice errato o scaduto.';
+    btn.disabled = true;
+    setTimeout(() => { errEl.textContent = ''; btn.disabled = false; }, 2000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!OTP_ACTIVE) { const g = document.getElementById('otp-gate'); if(g) g.remove(); }
+  const inp = document.getElementById('otp-input');
+  if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') verificaOTP(); });
+});
+/* OTP-GATE-JS-END */
+
+
+
+// SCENARI A CASCATA — VaporeLab Simulatore
+// Fonte: D.M. 21.05.74, R.D. 824/1927, Quaderno Bissolo
+// Struttura: ogni scenario ha 3-5 step collegati causalmente
+// Se scegli male allo step N, lo step N+1 riflette le conseguenze
+
+const SCENARI = [
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 1: Basso livello durante l'esercizio
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S001',
+    titolo: 'Abbassamento del livello durante l\'esercizio',
+    categoria: 'Livello',
+    difficolta: 'Alta',
+    fonte: 'Quaderno Bissolo - Sezione EMERGENZA + D.M. 21.05.74',
+    contesto_iniziale: 'Caldaia in esercizio a 10 bar manometrici, producibilità 80%. Turno iniziato 2 ore fa. Tutto nella norma.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,2 bar',
+          livello: 'Minimo — appena visibile',
+          bruciatore: 'Acceso — 80%',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ LSHH — Basso livello']
+        },
+        situazione: 'Il LSHH è intervenuto spegnendo automaticamente il bruciatore. L\'indicatore mostra ancora un filo d\'acqua nella parte inferiore del vetro. La pompa di alimento è ancora in marcia.',
+        domanda: 'Il LSHH è appena intervenuto e vedi ancora acqua nell\'indicatore. Qual è la tua prima azione?',
+        opzioni: [
+          { testo: 'Resetti immediatamente il LSHH e riavvii il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Riavviare senza aver identificato la causa del basso livello porta a un secondo intervento del LSHH — e se la causa è una perdita, il livello continuerà a scendere.' },
+          { testo: 'Verifichi la causa del basso livello, chiudi la valvola di presa vapore e lasci spento il bruciatore', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Bruciatore spento, presa vapore chiusa, impianto in sicurezza. Ora puoi investigare la causa senza pressione sui tempi.' },
+          { testo: 'Aumenti la portata della pompa al massimo per recuperare velocemente il livello', esito: 'SBAGLIATO', conseguenza: 'Aumentare la portata senza sapere perché il livello è sceso può mascherare una perdita grave. Prima si identifica la causa.' },
+          { testo: 'Aggiungi acqua fredda direttamente dallo spurgo di fondo per raffreddare rapidamente', esito: 'SBAGLIATO', conseguenza: 'Lo spurgo di fondo rimuove acqua, non ne aggiunge. Confondere i sistemi in emergenza è pericoloso.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 1 (si vede ancora acqua): Bloccare il bruciatore (già intervenuto automaticamente) → chiudere la presa vapore → spegnere la pompa di alimento → verificare la causa. Il rearmo manuale del LSHH impone al conduttore questa verifica prima di qualsiasi riavvio.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '9,8 bar',
+          livello: 'Minimo stabile',
+          bruciatore: 'Spento',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ LSHH attivo', '🔍 Causa da identificare']
+        },
+        situazione: 'Hai chiuso la presa vapore e lasciato spento il bruciatore. Il livello si è stabilizzato al minimo. Ora devi capire perché il livello è sceso. Hai verificato: la pompa pompa regolarmente, non ci sono perdite visibili sulle tubazioni principali. L\'indicatore di livello non risponde ai test dei rubinetti di prova — dal rubinetto inferiore non esce acqua.',
+        domanda: 'L\'indicatore non risponde: dal rubinetto inferiore non esce acqua. Cosa concludi e cosa fai?',
+        opzioni: [
+          { testo: 'Il livello è nella norma — l\'indicatore funziona così', esito: 'SBAGLIATO', conseguenza: 'Un indicatore che non risponde ai rubinetti di prova non è affidabile. Non puoi conoscere il livello reale.' },
+          { testo: 'Il collegamento dell\'indicatore è ostruito — il livello reale potrebbe essere molto più basso di quello mostrato. Fermi la caldaia per ispezione.', esito: 'CORRETTO', conseguenza: 'Diagnosi corretta. Un indicatore con collegamento ostruito mostra un livello falso. Il livello reale potrebbe essere già sotto il focolare.' },
+          { testo: 'Resetti il LSHH e riavvii lentamente per vedere come reagisce il livello', esito: 'SBAGLIATO', conseguenza: 'Riavviare con indicatore non affidabile e causa non identificata è gravemente pericoloso.' },
+          { testo: 'Chiami la manutenzione e aspetti con la caldaia in esercizio', esito: 'SBAGLIATO', conseguenza: 'Con indicatore non funzionante non si può tenere la caldaia in esercizio — non si conosce il livello reale.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Quaderno Bissolo - Verifica indicatori. Dal rubinetto inferiore deve uscire acqua. Se non esce: il collegamento è ostruito e il livello mostrato è falso. Con un falso livello non si può operare in sicurezza. Fermata obbligatoria per ispezione e pulizia dei collegamenti.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '8,5 bar',
+          livello: 'Sconosciuto — indicatore non affidabile',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['🔴 Indicatore livello non affidabile', '🔴 Fermata per ispezione']
+        },
+        situazione: 'Hai fermato la caldaia. Dopo il raffreddamento parziale (T < 60°C, P = 0) apri il passo d\'uomo per l\'ispezione interna. Trovi che il focolare presenta una leggera deformazione sulla generatrice superiore — non una rottura, ma una deformazione plastica visibile.',
+        domanda: 'Trovi una deformazione plastica sul focolare. Cosa fai?',
+        opzioni: [
+          { testo: 'È piccola — sigilli e rimetti in servizio con pressione ridotta al 50%', esito: 'SBAGLIATO', conseguenza: 'Una deformazione plastica indica che il metallo ha superato il limite di snervamento. Il materiale è compromesso. Rimettere in servizio a qualsiasi pressione è illegale e pericoloso.' },
+          { testo: 'Rimetti in servizio e monitori la deformazione nel tempo per capire se peggiora', esito: 'SBAGLIATO', conseguenza: 'Una struttura in pressione con deformazione plastica non si monitora — si ferma. La deformazione non migliora da sola sotto pressione.' },
+          { testo: 'Tieni la caldaia ferma, non la rimetti assolutamente in servizio e contatti subito l\'INAIL per richiedere una verifica straordinaria', esito: 'CORRETTO', conseguenza: 'Procedura legalmente obbligatoria. Una caldaia con deformazione plastica non può essere rimessa in servizio senza verifica INAIL e, se necessario, riparazione certificata con nuova prova idraulica.' },
+          { testo: 'Chiudi il passo d\'uomo e fai ripartire la caldaia — la deformazione era già lì prima', esito: 'SBAGLIATO', conseguenza: 'Impossibile saperlo, e non è rilevante. Una deformazione trovata richiede fermata e verifica indipendentemente da quando si è formata.' }
+        ],
+        risposta_corretta: 2,
+        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 2 + D.M. 21.05.74. In caso di dubbio sulla resistenza strutturale della caldaia è obbligatorio richiedere verifica INAIL (ex ISPESL) prima di qualsiasi rimessa in servizio. Una deformazione plastica del focolare è un danno strutturale serio che richiede valutazione da parte di personale autorizzato.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 2: Perdita di fiamma durante l'esercizio
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S002',
+    titolo: 'Blocco bruciatore per mancanza fiamma',
+    categoria: 'Combustione',
+    difficolta: 'Media',
+    fonte: 'D.M. 21.05.74 + Quaderno Bissolo - Bruciatori',
+    contesto_iniziale: 'Caldaia a gas naturale in esercizio a 8 bar. Produzione normale. Il bruciatore si blocca improvvisamente.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '7,8 bar',
+          livello: 'Normale',
+          bruciatore: '🔴 BLOCCO — Mancanza fiamma',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Blocco bruciatore', '⚠️ Pressione in calo']
+        },
+        situazione: 'Il bruciatore si è bloccato per mancanza fiamma. La pressione sta scendendo lentamente. La centralina bruciatore è in stato di blocco — richiede riarmo manuale. È il primo blocco del turno.',
+        domanda: 'Il bruciatore è in blocco per mancanza fiamma. Cosa fai prima del riarmo?',
+        opzioni: [
+          { testo: 'Riarmi immediatamente la centralina e riavvii il bruciatore — ogni secondo di pressione persa è un problema', esito: 'PARZIALE', conseguenza: 'Il riarmo immediato senza verifica è possibile per il primo tentativo, ma devi prima attendere il tempo di ventilazione (60-120 sec dalla centralina) e verificare che non ci siano gas accumulati.' },
+          { testo: 'Attendi il tempo di ventilazione automatico della centralina (60-120 sec), poi verifichi che non ci siano odori di gas nella sala prima di riavviare', esito: 'CORRETTO', conseguenza: 'Procedura corretta. La centralina esegue automaticamente la pre-purga prima di ogni tentativo di riaccensione. Nel frattempo verifichi l\'assenza di gas nella sala.' },
+          { testo: 'Apri manualmente la valvola del gas e accendi con l\'accendino portatile', esito: 'SBAGLIATO', conseguenza: 'Azione gravemente pericolosa. Non si apre mai manualmente il gas su un bruciatore automatico in blocco. Rischio di esplosione.' },
+          { testo: 'Fermi completamente la caldaia e chiami il manutentore', esito: 'SBAGLIATO', conseguenza: 'Un singolo blocco per mancanza fiamma non richiede fermata immediata — richiede il tentativo di riavvio procedurale. La fermata è giustificata solo se i blocchi si ripetono.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + principi di sicurezza bruciatori. Dopo un blocco per mancanza fiamma la centralina richiede riarmo manuale. Prima del riarmo: verificare assenza odore di gas, attendere la ventilazione automatica. La centralina eseguirà la pre-purga automaticamente prima del tentativo di riaccensione.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '7,2 bar',
+          livello: 'Normale',
+          bruciatore: '🟡 Terzo blocco consecutivo',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Blocco ripetuto bruciatore', '⚠️ Pressione in calo significativo']
+        },
+        situazione: 'Hai eseguito due tentativi di riavvio procedurali. Il bruciatore è andato in blocco per mancanza fiamma per la terza volta. La pressione è scesa a 7,2 bar. Il terzo blocco attiva il "blocco definitivo" della centralina.',
+        domanda: 'Terzo blocco consecutivo. Blocco definitivo attivo. La pressione scende. Cosa fai?',
+        opzioni: [
+          { testo: 'Forzi il bypass della centralina per riavviare manualmente — la pressione non può scendere oltre', esito: 'SBAGLIATO', conseguenza: 'Bypassare i dispositivi di sicurezza è vietato dal D.M. 21.05.74 ed è reato penale. La perdita di pressione non giustifica mai la disabilitazione dei sistemi di sicurezza.' },
+          { testo: 'Attendi che la pressione scenda ancora e poi decidi', esito: 'SBAGLIATO', conseguenza: 'L\'attesa passiva senza azione non è corretta. Devi avvisare le utenze, investigare la causa del blocco ripetuto e avviare la caldaia di riserva se disponibile.' },
+          { testo: 'Identifichi la causa del blocco ripetuto (fotocellula sporca, pressione gas bassa, elettrodo consumato), avvisi le utenze del calo di vapore, attivi la caldaia di riserva se disponibile', esito: 'CORRETTO', conseguenza: 'Risposta operativa corretta. Tre blocchi consecutivi indicano un problema reale da diagnosticare. Le cause più comuni sono: fotocellula UV sporca, bassa pressione gas, elettrodo di accensione consumato.' },
+          { testo: 'Chiami il costruttore del bruciatore e aspetti le istruzioni', esito: 'PARZIALE', conseguenza: 'Chiamare il manutentore è corretto, ma non prima di aver avvisato le utenze e attivato la caldaia di riserva. L\'ordine di priorità è importante.' }
+        ],
+        risposta_corretta: 2,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Dispositivi di sicurezza. Il blocco definitivo della centralina non può essere bypassato. Le cause più frequenti di blocco ripetuto: 1) Fotocellula UV sporca (pulire con panno pulito a freddo). 2) Pressione gas bassa (verificare al contatore). 3) Elettrodo accensione consumato. 4) Valvola gas bloccata. La caldaia di riserva va attivata per mantenere il servizio alle utenze.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '6,5 bar',
+          livello: 'Normale',
+          bruciatore: '🔴 Fermo — causa: fotocellula UV sporca',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Bruciatore fermo', '📋 Manutenzione richiesta']
+        },
+        situazione: 'Hai diagnosticato: la fotocellula UV era sporca di fuliggine. L\'hai pulita correttamente. Il bruciatore è ripartito e la pressione sta risalendo. Devi completare la documentazione del turno.',
+        domanda: 'L\'anomalia è risolta. Come la registri sul registro giornaliero?',
+        opzioni: [
+          { testo: 'Non la annoti — era un problema minore risolto velocemente', esito: 'SBAGLIATO', conseguenza: 'Qualsiasi anomalia, anche risolta, deve essere annotata sul registro. Un pattern di blocchi frequenti della stessa fotocellula indica un problema sistemico (fuliggine eccessiva = combustione non ottimale).' },
+          { testo: 'Scrivi solo "bruciatore bloccato, risolto" senza dettagli', esito: 'PARZIALE', conseguenza: 'Troppo generico. Il registro deve permettere di ricostruire l\'evento con causa, azione e verifica.' },
+          { testo: 'Annoti: ora del blocco, numero di blocchi consecutivi, causa identificata (fotocellula UV sporca di fuliggine), azione correttiva (pulizia), verifica funzionale (riaccensione corretta), e firma', esito: 'CORRETTO', conseguenza: 'Documentazione completa e corretta. Permette al turno successivo di sapere cosa è successo e di monitorare se il problema si ripresenta.' },
+          { testo: 'Fotografi il registro del giorno precedente e copi il formato', esito: 'SBAGLIATO', conseguenza: 'Il registro deve essere compilato autonomamente per ogni evento. Copiare formati passati senza i dati reali è falsificazione.' }
+        ],
+        risposta_corretta: 2,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Registro giornaliero. Il registro deve riportare ogni anomalia con: ora, descrizione causa, azione correttiva, verifica esito. Una fotocellula che si sporca frequentemente segnala un problema di combustione (fuliggine = carbonio incombusto = eccesso aria insufficiente o atomizzazione scadente). Questo trend va segnalato al responsabile.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 3: Colpo d'ariete nella rete vapore
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S003',
+    titolo: 'Colpo d\'ariete alla messa in servizio di una linea vapore',
+    categoria: 'Distribuzione',
+    difficolta: 'Media',
+    fonte: 'Quaderno Bissolo + D.M. 21.05.74',
+    contesto_iniziale: 'Stai rimettendo in servizio una linea vapore rimasta ferma per 4 ore per manutenzione. La caldaia è a 10 bar.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 100%',
+          linea: '🔴 Fredda — ferma da 4 ore',
+          allarmi: []
+        },
+        situazione: 'La linea vapore è rimasta ferma per 4 ore. Si è raffreddata e la condensa si è accumulata nei punti bassi. Devi rimetterla in servizio aprendo la valvola principale di presa.',
+        domanda: 'Come apri la valvola principale per rimettere in servizio la linea fredda?',
+        opzioni: [
+          { testo: 'Apri completamente e velocemente — il vapore caldo scaccerà la condensa da solo', esito: 'SBAGLIATO', conseguenza: 'Aprire bruscamente una valvola su una linea fredda con condensa accumulata è la causa principale dei colpi d\'ariete. Il vapore caldo incontra la condensa fredda: condensazione istantanea, volume che si riduce di 1000 volte, colpo violento.' },
+          { testo: 'Apri prima i drenaggi manuali nei punti bassi per scaricare la condensa accumulata, poi apri la valvola lentamente e progressivamente', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Prima si svuota la condensa accumulata dai drenaggi, poi si introduce il vapore lentamente per preriscaldare la tubazione gradualmente.' },
+          { testo: 'Aspetti che la linea si riscaldi da sola prima di aprire la valvola', esito: 'SBAGLIATO', conseguenza: 'Una linea ferma non si riscalda da sola — rimane fredda. Bisogna introdurre il vapore con la procedura corretta.' },
+          { testo: 'Apri la valvola a metà e la lasci così per 10 minuti', esito: 'PARZIALE', conseguenza: 'Aprire a metà senza prima scaricare la condensa dai drenaggi porta comunque al colpo d\'ariete, anche se meno violento di un\'apertura totale.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Quaderno Bissolo - Colpo d\'ariete. Il colpo d\'ariete si verifica quando il vapore incontra sacche di condensa fredda: la condensazione istantanea riduce il volume di circa 1.000 volte creando un vuoto che l\'acqua riempie con velocità di 100-120 km/h. La prevenzione: aprire prima i drenaggi, poi introdurre il vapore lentamente.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '9,8 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          linea: '🟡 In preriscaldamento',
+          allarmi: ['⚠️ Colpi d\'ariete rilevati — sezione 3']
+        },
+        situazione: 'Nonostante la procedura, nella sezione 3 della linea si sentono colpi d\'ariete. Probabilmente uno scaricatore di condensa è guasto (bloccato chiuso) e ha accumulato condensa. I colpi sono forti e ricorrenti.',
+        domanda: 'Colpi d\'ariete in corso nella sezione 3. Cosa fai?',
+        opzioni: [
+          { testo: 'Aumenti la pressione della caldaia per "spingere" via la condensa con più forza', esito: 'SBAGLIATO', conseguenza: 'Aumentare la pressione aumenta la violenza dei colpi d\'ariete, non li riduce. I colpi possono danneggiare flange, valvole e supporti.' },
+          { testo: 'Chiudi la valvola principale, apri i drenaggi manuali della sezione 3, scarica la condensa, poi reintroduci il vapore lentamente', esito: 'CORRETTO', conseguenza: 'Procedura corretta. I colpi d\'ariete si arrestano solo rimuovendo la causa: la condensa accumulata. Chiudere, scaricare, poi riaprire lentamente.' },
+          { testo: 'Ignori i colpi — si autorisolvono quando la linea si riscalda', esito: 'SBAGLIATO', conseguenza: 'I colpi d\'ariete ripetuti danneggiano progressivamente flange, guarnizioni, valvole e supporti. Non si autorisolvono con lo scaricatore bloccato.' },
+          { testo: 'Chiami la manutenzione e aspetti senza fare nulla', esito: 'PARZIALE', conseguenza: 'Chiamare la manutenzione è corretto, ma nel frattempo devi chiudere la sezione per fermare i danni. L\'attesa passiva durante i colpi non è sicura.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Quaderno Bissolo - Colpo d\'ariete. I colpi d\'ariete si interrompono solo eliminando la condensa accumulata. Con uno scaricatore bloccato chiuso la condensa non defluisce e si accumula continuamente. Procedura: chiudi la sezione, apri i drenaggi manuali, scarica la condensa, verifica/sostituisci lo scaricatore, poi reintroduci vapore lentamente.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '9,5 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          linea: '🟢 In servizio — colpi cessati',
+          allarmi: ['📋 Scaricatore sez.3 da verificare']
+        },
+        situazione: 'Hai scaricato la condensa e la linea è tornata in servizio senza colpi. Hai identificato che lo scaricatore della sezione 3 è probabilmente bloccato chiuso. Devi decidere come procedere con la manutenzione.',
+        domanda: 'Lo scaricatore della sezione 3 è probabilmente guasto. Come verifichi e gestisci il problema?',
+        opzioni: [
+          { testo: 'Smontare lo scaricatore immediatamente con la linea in pressione per controllarlo', esito: 'SBAGLIATO', conseguenza: 'Smontare componenti con la linea in pressione è gravemente pericoloso. Il vapore a 184°C causerebbe ustioni gravissime.' },
+          { testo: 'Usi un rilevatore a ultrasuoni per verificare il funzionamento dello scaricatore senza fermata (strum. di manutenzione predittiva), poi pianifichi la sostituzione alla prossima fermata programmata', esito: 'CORRETTO', conseguenza: 'L\'ispezione con ultrasuoni permette di diagnosticare lo scaricatore senza ferrare la linea. Uno scaricatore bloccato chiuso emette un segnale continuo a bassa intensità. La sostituzione si pianifica alla prossima finestra di manutenzione.' },
+          { testo: 'Lasci tutto così — ora non ci sono colpi quindi è a posto', esito: 'SBAGLIATO', conseguenza: 'Lo scaricatore guasto continuerà ad accumulare condensa. I colpi d\'ariete si ripresenteranno ad ogni apertura della linea. Il problema deve essere risolto.' },
+          { testo: 'Bypassi lo scaricatore aprendo il bypass manuale e lo lasci aperto in permanenza', esito: 'PARZIALE', conseguenza: 'Il bypass aperto permette la condensa di scorrere ma anche il vapore vivo di passare — perdita energetica continua. È una soluzione temporanea accettabile solo per pochissime ore mentre si pianifica la sostituzione.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Principi di manutenzione predittiva + D.M. 21.05.74. Gli scaricatori di condensa si verificano con ultrasuoni senza fermata della linea. Uno scaricatore bloccato chiuso accumula condensa e causa colpi d\'ariete. Bloccato aperto: perde vapore vivo. La manutenzione predittiva con ultrasuoni ha payback immediato: 10 scaricatori guasti in un impianto medio = oltre 100.000€/anno di vapore perso.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 4: Consegna turno con anomalia nascosta
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S004',
+    titolo: 'Consegna turno con anomalia non comunicata',
+    categoria: 'Fattore Umano',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 + D.Lgs. 81/2008',
+    contesto_iniziale: 'Inizi il turno pomeridiano. Il collega del turno mattutino ha fretta di andarsene.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,1 bar',
+          livello: 'Apparentemente normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['📋 Consegna turno in corso']
+        },
+        situazione: 'Il collega ti dice "tutto ok" e sta già andando verso l\'uscita. Non hai ancora verificato fisicamente nulla. Il registro del suo turno è sul banco — non lo hai letto. Ti nota perplesso e dice "dai, non succede mai niente".',
+        domanda: 'Il collega sta per andarsene senza consegna fisica. Cosa fai?',
+        opzioni: [
+          { testo: 'Lo lasci andare — dice che è tutto ok e lui è esperto', esito: 'SBAGLIATO', conseguenza: 'La consegna verbale non è sufficiente. Se succede qualcosa nelle prossime ore per un\'anomalia del turno precedente, sei tu il responsabile da quando hai firmato. Senza verifica fisica non puoi sapere cosa è successo realmente.' },
+          { testo: 'Lo fermi: la consegna del turno richiede la verifica fisica congiunta prima della firma sul registro. Leggi il registro insieme a lui e verificate gli strumenti.', esito: 'CORRETTO', conseguenza: 'Procedura obbligatoria. La consegna del turno richiede verifica fisica congiunta. La firma sul registro trasferisce la responsabilità legale — firmare senza verifica significa accettare responsabilità di anomalie sconosciute.' },
+          { testo: 'Firmi il registro e poi fai tu la verifica da solo — è più veloce', esito: 'SBAGLIATO', conseguenza: 'Firmare prima di verificare significa accettare la responsabilità di qualsiasi situazione in atto, anche di quelle che il collega non ti ha comunicato.' },
+          { testo: 'Aspetti che se ne vada e poi verifichi — non vuoi creare tensioni', esito: 'SBAGLIATO', conseguenza: 'Le procedure di sicurezza non sono negoziabili per motivi sociali. La consegna fisica congiunta è obbligatoria.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Consegna del turno. La responsabilità legale della conduzione si trasferisce al momento della firma sul registro. La verifica fisica congiunta non è facoltativa: il conduttore entrante deve vedere con i propri occhi lo stato dell\'impianto e ricevere tutte le informazioni su anomalie in corso, dispositivi fuori servizio, lavori in atto.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '10,1 bar',
+          livello: 'Apparentemente normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ PSHH bypassato — non documentato nel registro']
+        },
+        situazione: 'Durante la verifica fisica congiunta scopri che il PSHH (pressostato di blocco alta pressione) è stato bypassato "temporaneamente" questa mattina per un intervento di manutenzione e non è stato rimesso in servizio. Non è annotato nel registro.',
+        domanda: 'Il PSHH è bypassato e non documentato. Cosa fai prima di firmare?',
+        opzioni: [
+          { testo: 'Firmi comunque — non è un problema grave, lo sistemi dopo', esito: 'SBAGLIATO', conseguenza: 'Prendere in consegna una caldaia con un dispositivo di sicurezza bypassato e non documentato significa assumersi la responsabilità di quella situazione. È una violazione grave del D.M. 21.05.74.' },
+          { testo: 'Non firmi fino a quando il PSHH non è rimesso in servizio e documentato correttamente nel registro, oppure hai l\'autorizzazione scritta del responsabile con piano di manutenzione definito', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Un dispositivo di sicurezza bypassato deve essere documentato formalmente con autorizzazione del responsabile e piano di ripristino. Non si accetta una caldaia in queste condizioni senza documentazione.' },
+          { testo: 'Rimetti tu stesso il PSHH in servizio senza documentare, poi firmi', esito: 'PARZIALE', conseguenza: 'Rimettere il PSHH è positivo, ma bisogna documentare sia il bypass non autorizzato del turno precedente sia il ripristino. Un bypass non documentato è una violazione da segnalare al responsabile.' },
+          { testo: 'Ignori il bypass e scrivi nel registro che hai trovato tutto normale', esito: 'SBAGLIATO', conseguenza: 'Falsificare il registro è reato penale. Scrivere che è tutto normale quando c\'è un dispositivo di sicurezza bypassato è una falsificazione documentale.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Dispositivi di sicurezza obbligatori. Il PSHH è un dispositivo di sicurezza obbligatorio. Il suo bypass deve essere autorizzato, documentato con motivazione e piano di ripristino. Non si può prendere in consegna una caldaia con dispositivi di sicurezza bypassati senza documentazione formale. Il conduttore ha il diritto-dovere di rifiutare la consegna in queste condizioni.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '10,1 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['✅ PSHH ripristinato e documentato', '📋 Consegna completata']
+        },
+        situazione: 'Hai ottenuto il ripristino del PSHH e la documentazione formale. Hai firmato la consegna. Il collega precedente ha annotato nel registro il bypass non autorizzato con sua firma. Hai preso servizio. Dopo 30 minuti la pressione sale a 10,8 bar — superiore al normale.',
+        domanda: 'Dopo 30 minuti dal tuo turno la pressione sale a 10,8 bar. Il pressostato di regolazione dovrebbe aver spento il bruciatore a 10,5 bar. Cosa fai?',
+        opzioni: [
+          { testo: 'Aspetti che il PSHH intervenga — è stato rimesso in servizio', esito: 'SBAGLIATO', conseguenza: 'Aspettare passivamente che un dispositivo di emergenza intervenga quando quello di regolazione non funziona non è la procedura corretta. Il conduttore deve agire proattivamente.' },
+          { testo: 'Spegni manualmente il bruciatore, verifichi il pressostato di regolazione (probabilmente guasto o mal tarato), ripristini la pressione normale, poi investighi la causa prima di riavviare', esito: 'CORRETTO', conseguenza: 'Il pressostato di regolazione è guasto o mal tarato — non ha spento il bruciatore a 10,5 bar come dovrebbe. Il conduttore interviene manualmente, spegne il bruciatore, stabilizza la pressione e identifica la causa prima di riavviare.' },
+          { testo: 'Apri la valvola di scarico manuale per abbassare la pressione rapidamente', esito: 'PARZIALE', conseguenza: 'Scaricare vapore abbassa la pressione ma non risolve il problema del pressostato guasto. Al riavvio il problema si ripresenterà.' },
+          { testo: 'Aspetti che la valvola di sicurezza intervenga — è stata testata la settimana scorsa', esito: 'SBAGLIATO', conseguenza: 'La valvola di sicurezza è l\'ultima linea di difesa, non uno strumento di regolazione. Permettere alla pressione di salire fino alla valvola di sicurezza ogni volta danneggia la sede e spreca vapore.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Pressostati. Il pressostato di regolazione spegne il bruciatore al set-point (es. 10,5 bar). Il PSHH è il secondo livello (es. 11 bar). Se il pressostato di regolazione non interviene al suo set-point è guasto o mal tarato. Il conduttore non deve aspettare il PSHH: deve intervenire manualmente e investigare la causa.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 5: Avviamento con strumentazione anomala
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S005',
+    titolo: 'Avviamento con indicatore di livello anomalo',
+    categoria: 'Avviamento',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 + Quaderno Bissolo',
+    contesto_iniziale: 'Stai avviando la caldaia dopo un fermo notturno. È mattina presto. Hai eseguito la pre-purga correttamente.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Mostra 60% — secondo indicatore: 35%',
+          bruciatore: 'Spento — pre-purga eseguita',
+          pompa: 'Spenta',
+          allarmi: ['⚠️ Discordanza tra i due indicatori di livello']
+        },
+        situazione: 'Prima di accendere il bruciatore noti che i due indicatori di livello mostrano valori diversi: il primo indica 60%, il secondo 35%. Una discordanza significativa. Il livello minimo di avviamento è 30%.',
+        domanda: 'I due indicatori mostrano valori diversi (60% vs 35%). Puoi avviare?',
+        opzioni: [
+          { testo: 'Sì — il livello più basso (35%) è comunque sopra il minimo (30%), quindi sei a posto', esito: 'SBAGLIATO', conseguenza: 'Non puoi avviare con strumentazione discordante. Non sai quale dei due indicatori è corretto. Se quello che mostra 60% è sbagliato e il livello reale è 35%, sei vicino al minimo. Se quello che mostra 35% è sbagliato e il livello è ancora più basso, sei in pericolo.' },
+          { testo: 'Sì — usi la media tra i due valori (47%) come riferimento', esito: 'SBAGLIATO', conseguenza: 'Non si fa la media di due strumenti discordanti. Bisogna identificare quale dei due è corretto, non mediare tra letture potenzialmente errate.' },
+          { testo: 'No — prima verifichi entrambi gli indicatori con i rubinetti di prova per identificare quale è corretto e quale è guasto, poi avvii solo con la certezza del livello reale', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Con due indicatori discordanti non si può conoscere il livello reale. La verifica con i rubinetti di prova è la procedura standard per identificare il guasto.' },
+          { testo: 'Avvii a bassa potenza e monitori il livello nei primi 5 minuti', esito: 'SBAGLIATO', conseguenza: 'Avviare con livello sconosciuto è pericoloso. Se il livello reale è già sotto il minimo, l\'avviamento del bruciatore porta immediatamente al surriscaldamento.' }
+        ],
+        risposta_corretta: 2,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Indicatori di livello obbligatori. La presenza di due indicatori serve proprio per la ridondanza e il controllo incrociato. Due indicatori discordanti indicano un guasto in uno dei due. Prima di avviare bisogna identificare quale è corretto. La verifica con i rubinetti di prova permette di diagnosticare il guasto senza aprire la caldaia.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Verificato: 35% reale — primo indicatore guasto',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['🔴 Indicatore 1 guasto — da riparare', '✅ Livello reale: 35%']
+        },
+        situazione: 'Hai verificato: il primo indicatore (60%) è guasto, il secondo (35%) è corretto. Il livello reale è 35%, sopra il minimo di avviamento. Il primo indicatore ha il rubinetto di collegamento vapore parzialmente ostruito.',
+        domanda: 'Il livello reale è 35%, sopra il minimo. Il primo indicatore è guasto. Puoi avviare?',
+        opzioni: [
+          { testo: 'Sì — hai un indicatore funzionante e il livello è sopra il minimo', esito: 'PARZIALE', conseguenza: 'Tecnicamente puoi avviare con un solo indicatore funzionante se è certificato, ma devi documentare formalmente il guasto del primo e pianificarne la riparazione prima possibile.' },
+          { testo: 'Sì, ma solo dopo aver documentato il guasto del primo indicatore nel registro, aver verificato che il secondo indicatore funzioni perfettamente e aver pianificato la riparazione urgente del primo', esito: 'CORRETTO', conseguenza: 'Il D.M. 21.05.74 richiede almeno 2 indicatori funzionanti. Con uno solo sei temporaneamente fuori norma. Puoi avviare in emergenza documentando la situazione, ma la riparazione deve essere prioritaria.' },
+          { testo: 'No — con un solo indicatore funzionante non puoi avviare per nessun motivo', esito: 'PARZIALE', conseguenza: 'Tecnicamente il D.M. richiede 2 indicatori, ma la fermata assoluta dipende dalla valutazione del responsabile. In alcuni contesti si può avviare temporaneamente documentando il guasto e pianificando la riparazione urgente.' },
+          { testo: 'Avvii e non documenti nulla per non creare problemi burocratici', esito: 'SBAGLIATO', conseguenza: 'Non documentare il guasto è falsificazione del registro — reato penale. Il guasto deve essere annotato obbligatoriamente.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 - Indicatori obbligatori. Il decreto richiede almeno 2 indicatori di livello per generatore. Un guasto temporaneo deve essere documentato formalmente. L\'avvio con documentazione del guasto e piano di riparazione urgente è generalmente accettabile per motivi operativi, ma il secondo indicatore deve essere in perfetto stato. Il guasto va comunicato al responsabile.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '4,2 bar',
+          livello: '52%',
+          bruciatore: 'Acceso — salita a regime',
+          pompa: 'In marcia',
+          allarmi: ['📋 Ind.1 guasto — manutenzione pianificata']
+        },
+        situazione: 'La caldaia è avviata e in fase di salita. La pressione è a 4,2 bar. Gli sfiati sono ancora aperti. Il livello sta salendo normalmente. Noti che il livello sale più velocemente del solito — potrebbe essere lo swell dell\'avviamento.',
+        domanda: 'Il livello sale più velocemente durante l\'avviamento. Cosa fai?',
+        opzioni: [
+          { testo: 'Apri subito lo spurgo di fondo per abbassare il livello prima che salga troppo', esito: 'SBAGLIATO', conseguenza: 'Lo spurgo di fondo non è la risposta allo swell. Aprirlo durante l\'avviamento rimuove acqua quando il livello potrebbe essere solo apparentemente alto per le bolle.' },
+          { testo: 'Riconosci lo swell di avviamento: il livello apparente sale per la formazione di bolle nell\'acqua riscaldata ma il livello reale non è cambiato significativamente. Attendi la stabilizzazione prima di intervenire sull\'alimentazione.', esito: 'CORRETTO', conseguenza: 'Corretta identificazione del fenomeno. Lo swell è normale durante l\'avviamento. Il livello apparente sale per le bolle. Se intervieni riducendo l\'alimentazione rischi un basso livello reale dopo lo swell.' },
+          { testo: 'Riduci la potenza del bruciatore per rallentare il riscaldamento e quindi lo swell', esito: 'PARZIALE', conseguenza: 'Ridurre il bruciatore rallenta il riscaldamento ma allunga l\'avviamento senza necessità se il livello è nella norma. Lo swell si gestisce attendendo la stabilizzazione, non rallentando l\'avviamento.' },
+          { testo: 'Chiudi gli sfiati per fermare il fenomeno', esito: 'SBAGLIATO', conseguenza: 'Gli sfiati si chiudono solo quando esce vapore continuo, indipendentemente dallo swell. Chiuderli prima che tutta l\'aria sia espulsa lascia aria non condensabile nel sistema.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Quaderno Bissolo - Fenomeni di esercizio. Lo swell è l\'innalzamento apparente del livello causato dalla formazione di bolle durante il riscaldamento. Il livello APPARENTE sale ma il livello REALE (massa d\'acqua) rimane stabile o sale leggermente. Il conduttore deve attendere la stabilizzazione prima di qualsiasi intervento sull\'alimentazione. Agire sul livello durante lo swell porta al rischio opposto: basso livello reale.'
+      }
+    ]
+  }
+
+,
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 6: Sovrapressione — Art. 17-18 D.M. 21.05.74
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S006',
+    titolo: 'Sovrapressione per pressostato di regolazione guasto',
+    categoria: 'Pressione',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 Art. 17-18 — Dispositivi di sicurezza contro la sovrapressione',
+    contesto_iniziale: 'Caldaia in esercizio a 10 bar. Producibilità 80%. Turno iniziato regolarmente. La domanda di vapore è costante.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '11,2 bar — in salita',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 100%',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ Pressione superiore al set-point di regolazione (10,5 bar)', '⚠️ Bruciatore non si è spento']
+        },
+        situazione: 'La pressione ha superato il set-point del pressostato di regolazione (10,5 bar) ma il bruciatore non si è spento automaticamente. La pressione continua a salire. Il PSHH è tarato a 12 bar.',
+        domanda: 'Il pressostato di regolazione non ha fermato il bruciatore — pressione in salita. Qual è la tua azione immediata?',
+        opzioni: [
+          { testo: 'Aspetti che intervenga il PSHH a 12 bar — è il dispositivo preposto alla situazione', esito: 'SBAGLIATO', conseguenza: 'Aspettare il PSHH significa lasciare che la pressione salga fino al limite di sicurezza. Il PSHH è la seconda linea di difesa, non la prima. Il conduttore deve intervenire proattivamente.' },
+          { testo: 'Spegni manualmente il bruciatore dal quadro, stabilizzi la pressione, poi identifichi il guasto al pressostato di regolazione prima di riavviare', esito: 'CORRETTO', conseguenza: 'Azione corretta secondo D.M. 21.05.74 Art. 17: il conduttore deve intervenire quando i dispositivi automatici non funzionano. Pressione stabilizzata, ora si può diagnosticare il guasto.' },
+          { testo: 'Apri la valvola di presa vapore al massimo per scaricare la pressione in eccesso alle utenze', esito: 'PARZIALE', conseguenza: 'Aprire le utenze riduce la pressione ma non risolve il problema: il bruciatore è ancora acceso. Con utenze già sature la pressione risalirebbe immediatamente.' },
+          { testo: 'Aumenti la portata della pompa di alimento per raffreddare il corpo cilindrico e abbassare la pressione', esito: 'SBAGLIATO', conseguenza: 'La pompa di alimento introduce acqua fredda — non abbassa la pressione significativamente e potrebbe causare shock termico. Non è la procedura corretta per la sovrapressione.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 17. Il conduttore deve intervenire manualmente quando il sistema automatico di regolazione non funziona. Il PSHH è la seconda linea di difesa — usarla come prima risposta è prassi scorretta e pericolosa. Il guasto del pressostato di regolazione deve essere documentato e corretto prima del riavvio.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '10,2 bar — stabile',
+          livello: 'Normale',
+          bruciatore: 'Spento manualmente',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Pressostato regolazione guasto — da riparare', '📋 Riavvio subordinato a riparazione']
+        },
+        situazione: 'Hai spento il bruciatore manualmente. La pressione si è stabilizzata a 10,2 bar. Hai diagnosticato che il pressostato di regolazione è guasto (contatto bloccato aperto). Il manutentore impiegherà 2 ore. Le utenze richiedono vapore. Hai il PSHH funzionante.',
+        domanda: 'Pressostato di regolazione guasto, 2 ore per la riparazione, utenze che richiedono vapore. Puoi riavviare il bruciatore in modalità manuale con sorveglianza diretta?',
+        opzioni: [
+          { testo: 'No — con un dispositivo di sicurezza guasto non si può mai riavviare la caldaia', esito: 'PARZIALE', conseguenza: 'Il pressostato di regolazione non è un dispositivo di sicurezza primario ma di regolazione. Con il PSHH funzionante e sorveglianza diretta continua, il riavvio temporaneo in modalità manuale può essere giustificato, ma richiede autorizzazione del responsabile e documentazione formale.' },
+          { testo: 'Sì, con sorveglianza diretta e continua del manometro, autorizzazione scritta del responsabile, documentazione del guasto sul registro e piano di riparazione entro 2 ore', esito: 'CORRETTO', conseguenza: 'Il D.M. 21.05.74 non vieta esplicitamente il funzionamento con pressostato di regolazione guasto se il PSHH è operativo e c\'è sorveglianza diretta continua. Ma richiede documentazione formale e responsabilità del conduttore.' },
+          { testo: 'Sì, basta monitorare la pressione ogni 15 minuti — il PSHH interviene se necessario', esito: 'SBAGLIATO', conseguenza: 'Monitoraggio ogni 15 minuti non è sorveglianza diretta e continua. Con pressostato guasto la pressione può salire al PSHH in pochi minuti. Non è accettabile come sorveglianza.' },
+          { testo: 'Bypass il pressostato guasto con un ponticello per far funzionare il bruciatore normalmente', esito: 'SBAGLIATO', conseguenza: 'Bypassare un dispositivo di controllo senza autorizzazione è vietato. Il D.M. 21.05.74 Art. 17 richiede che i dispositivi di regolazione siano funzionanti — un bypass non autorizzato è reato.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 17-18. Con PSHH funzionante e sorveglianza diretta continua, il funzionamento temporaneo con pressostato di regolazione guasto può essere autorizzato dal responsabile. Obbligatorio: documentazione sul registro, autorizzazione scritta, piano di riparazione entro tempi brevi.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '11,8 bar — PSHH intervenuto',
+          livello: 'Normale',
+          bruciatore: '🔴 Blocco PSHH',
+          pompa: 'In marcia',
+          allarmi: ['🔴 PSHH intervenuto — riarmo manuale obbligatorio', '🔴 Pressostato regolazione ancora guasto']
+        },
+        situazione: 'Durante la sorveglianza manuale ti sei distratto brevemente. La pressione ha raggiunto 11,8 bar e il PSHH è intervenuto fermando il bruciatore. Ora devi gestire la situazione con due dispositivi anomali: pressostato di regolazione guasto e PSHH scattato.',
+        domanda: 'PSHH intervenuto con pressostato di regolazione ancora guasto. Come procedi?',
+        opzioni: [
+          { testo: 'Riarmi il PSHH e riavvii immediatamente — il PSHH ha già fatto il suo lavoro', esito: 'SBAGLIATO', conseguenza: 'Riarmare il PSHH e riavviare immediatamente senza aver riparato il pressostato di regolazione riporta al problema iniziale. Il PSHH interverrà di nuovo immediatamente.' },
+          { testo: 'NON riarmare il PSHH — attendere la riparazione del pressostato di regolazione prima di qualsiasi riavvio. Documentare entrambi gli eventi sul registro con orario esatto', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Con due anomalie simultanee (pressostato guasto + PSHH scattato) la caldaia deve restare ferma fino alla riparazione. Il riarmo del PSHH senza aver riparato il pressostato ricreare il problema.' },
+          { testo: 'Riarmi il PSHH ma abbassa la pressione di esercizio a 8 bar come misura precauzionale', esito: 'SBAGLIATO', conseguenza: 'Abbassare la pressione di esercizio non risolve il problema del pressostato guasto. Il bruciatore si accende e si spegne ancora a discrezione del conduttore — non c\'è automazione di sicurezza.' },
+          { testo: 'Chiami l\'INAIL per richiedere una verifica straordinaria prima di procedere', esito: 'PARZIALE', conseguenza: 'L\'INAIL va informato dell\'intervento del PSHH ma la chiamata immediata non è obbligatoria per una sovrapressione temporanea. Obbligatoria invece la denuncia in caso di incidente con danni.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 17-19. Con pressostato di regolazione guasto e PSHH scattato, la caldaia deve restare ferma fino alla riparazione del pressostato. Il riarmo del PSHH è manuale per imporre questa verifica. Documentazione obbligatoria sul registro: orario, causa, azione, stato attuale.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 7: Funzionamento non presidiato — Art. 43 D.M. 21.05.74
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S007',
+    titolo: 'Anomalia durante funzionamento non presidiato (Art. 43)',
+    categoria: 'Normativa',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 Art. 43 — Generatori di vapore a funzionamento automatico non presidiato',
+    contesto_iniziale: 'Generatore a funzionamento automatico (Art. 43): P=8 bar, producibilità 2.000 kg/h. Il conduttore patentato ha firmato il registro settimanale. È notte — nessuno in sala caldaia. Sistema allarmi attivo verso zona presidiata.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '8,1 bar',
+          livello: 'Normale',
+          bruciatore: 'Automatico — in marcia',
+          pompa: 'In marcia',
+          allarmi: ['🔔 Allarme a distanza: BASSO LIVELLO — zona presidiata']
+        },
+        situazione: 'Scatta l\'allarme a distanza nella zona presidiata: basso livello sull\'impianto Art. 43. Il personale di zona presidiata riceve l\'allarme. Nessun conduttore patentato è presente in sala caldaia.',
+        domanda: 'Scatta l\'allarme di basso livello sul generatore Art. 43. Qual è la risposta corretta del personale di zona presidiata?',
+        opzioni: [
+          { testo: 'Ignorare l\'allarme — il sistema automatico gestisce autonomamente tutte le anomalie', esito: 'SBAGLIATO', conseguenza: 'Il D.M. 21.05.74 Art. 43 richiede che gli allarmi vengano ricevuti da zona normalmente presidiata e che il personale possa intervenire. Ignorare l\'allarme viola la norma e può portare a danni gravi.' },
+          { testo: 'Registrare l\'ora dell\'allarme e contattare immediatamente il conduttore patentato responsabile perché raggiunga l\'impianto', esito: 'CORRETTO', conseguenza: 'Procedura corretta Art. 43. Il personale di zona presidiata non deve intervenire sull\'impianto senza il conduttore patentato. Il compito è ricevere l\'allarme e allertare il responsabile patentato.' },
+          { testo: 'Raggiungere la sala caldaia e aumentare manualmente l\'alimentazione d\'acqua', esito: 'SBAGLIATO', conseguenza: 'Il personale non patentato non deve operare sul generatore. Intervenire senza patente adeguata è reato penale e potenzialmente pericoloso senza la formazione specifica.' },
+          { testo: 'Spegnere il generatore dal quadro remoto e attendere il conduttore', esito: 'PARZIALE', conseguenza: 'Lo spegnimento dal quadro remoto può essere accettabile se il sistema è configurato per questa procedura di emergenza. Ma va fatto solo se è previsto dalla procedura aziendale scritta — non improvvisato.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43. I generatori non presidiati richiedono: allarmi ottico-acustici verso zona presidiata + registro settimanale firmato da conduttore patentato. Il personale di zona presidiata deve ricevere l\'allarme e allertare il conduttore patentato — non operare autonomamente sull\'impianto.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '7,8 bar',
+          livello: 'Minimo — LSHH intervenuto',
+          bruciatore: '🔴 Spento da LSHH',
+          pompa: 'In marcia',
+          allarmi: ['🔴 LSHH intervenuto', '🔔 Conduttore patentato allertato — ETA 20 min']
+        },
+        situazione: 'Il LSHH è intervenuto automaticamente spegnendo il bruciatore. Il conduttore patentato è stato allertato e arriverà in 20 minuti. La pompa di alimento è in marcia. Il livello sembra stabile al minimo. Devi decidere le istruzioni da dare al personale in attesa.',
+        domanda: 'LSHH intervenuto, conduttore in arrivo tra 20 minuti. Cosa istruisci il personale di zona presidiata di fare nell\'attesa?',
+        opzioni: [
+          { testo: 'Monitorare la pressione e il livello dal quadro remoto e comunicare ogni variazione al conduttore in arrivo', esito: 'CORRETTO', conseguenza: 'Il monitoraggio a distanza è nei limiti del personale non patentato. Comunicare le variazioni al conduttore in arrivo permette una gestione informata all\'arrivo. Non viene richiesta alcuna operazione sull\'impianto.' },
+          { testo: 'Riarmare il LSHH da remoto e riavviare il bruciatore per non perdere pressione', esito: 'SBAGLIATO', conseguenza: 'Il riarmo del LSHH richiede verifica fisica della causa da parte del conduttore patentato. Riarmare remotamente senza verifica viola il D.M. 21.05.74 e può portare a riavvio con causa non identificata.' },
+          { testo: 'Aprire la valvola di reintegro acqua dal quadro remoto per alzare il livello', esito: 'SBAGLIATO', conseguenza: 'Con LSHH intervenuto la causa del basso livello è sconosciuta. Aggiungere acqua senza sapere perché il livello è sceso può mascherare una perdita grave o causare shock termico.' },
+          { testo: 'Entrare in sala caldaia e controllare visivamente la situazione', esito: 'PARZIALE', conseguenza: 'Il sopralluogo visivo non è operativo — guardare è diverso dal toccare. Se il personale ha formazione base di sicurezza può fare una ricognizione visiva per comunicare la situazione al conduttore, ma non deve operare.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43. In attesa del conduttore patentato il personale di zona presidiata deve solo monitorare e comunicare — non operare. Il LSHH richiede riarmo manuale con verifica fisica della causa: operazione riservata al conduttore patentato.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '7,5 bar',
+          livello: 'Minimo stabile',
+          bruciatore: 'Spento',
+          pompa: 'In marcia',
+          allarmi: ['🔴 LSHH attivo', '📋 Conduttore arrivato — verifica in corso']
+        },
+        situazione: 'Il conduttore patentato è arrivato. Ha verificato la causa del basso livello: una valvola di intercettazione sulla linea di alimento si era chiusa parzialmente per malfunzionamento. L\'ha riaperta. Il livello sta risalendo. Ora deve decidere se riavviare.',
+        domanda: 'Causa identificata e rimossa, livello in risalita. Il conduttore può riavviare il generatore Art. 43?',
+        opzioni: [
+          { testo: 'Sì, immediatamente — la causa è risolta e il livello sta risalendo', esito: 'SBAGLIATO', conseguenza: 'Anche con causa identificata è necessario attendere che il livello raggiunga il valore minimo di avviamento prima di riavviare. Un riavvio precipitoso con livello al minimo può portare a un secondo blocco immediato.' },
+          { testo: 'Sì, ma solo dopo che il livello ha raggiunto il valore minimo di avviamento, con documentazione completa sul registro: ora allarme, causa, azione correttiva, ora ripristino, firma', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Prima verificare livello al valore di avviamento, poi riavviare con purga obbligatoria. Documentazione completa sul registro giornaliero: obbligatoria per i generatori Art. 43.' },
+          { testo: 'No — dopo un blocco LSHH il generatore deve essere verificato dall\'INAIL prima del riavvio', esito: 'SBAGLIATO', conseguenza: 'La verifica INAIL non è richiesta per ogni blocco LSHH — solo in caso di danni strutturali o incidenti. Un blocco per valvola parzialmente chiusa non richiede verifica INAIL se non ci sono danni.' },
+          { testo: 'Sì, ma senza la purga obbligatoria — il generatore era già acceso, non è un avviamento da freddo', esito: 'SBAGLIATO', conseguenza: 'La purga è obbligatoria prima di ogni riaccensione del bruciatore, anche dopo un breve spegnimento. I gas possono accumularsi nella camera anche in pochi minuti.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43 + Art. 36 R.D. 824/1927. Dopo un blocco LSHH: 1) identificare e rimuovere la causa, 2) attendere livello al minimo di avviamento, 3) purga obbligatoria, 4) riavvio, 5) documentazione completa sul registro con firma del conduttore patentato. Il registro Art. 43 deve essere firmato settimanalmente e ogni anomalia documentata.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 8: Blackout elettrico — Art. 19 D.M. 21.05.74
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S008',
+    titolo: 'Blackout elettrico in sala caldaia',
+    categoria: 'Emergenza',
+    difficolta: 'Media',
+    fonte: 'D.M. 21.05.74 Art. 19-21 — Apparecchiature di alimentazione e sicurezza in caso di mancanza di energia',
+    contesto_iniziale: 'Caldaia in esercizio a 12 bar, producibilità 85%. Improvviso blackout elettrico totale della fabbrica inclusa la sala caldaia.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '12,0 bar',
+          livello: 'Normale — non verificabile (strumenti elettrici spenti)',
+          bruciatore: '🔴 Spento — mancanza corrente (fail-safe)',
+          pompa: '🔴 Pompa elettrica ferma',
+          allarmi: ['🔴 BLACKOUT TOTALE', '⚠️ Livello non verificabile da quadro', '⚠️ Pompa principale ferma']
+        },
+        situazione: 'Blackout totale: luci spente, quadro buio, bruciatore spento (fail-safe), pompa elettrica ferma. Hai una torcia. Il livello non è verificabile dagli strumenti elettronici. Gli indicatori di livello a vetro sono ancora leggibili con la torcia.',
+        domanda: 'Blackout totale. Prima azione del conduttore?',
+        opzioni: [
+          { testo: 'Resettare il quadro elettrico e tentare il riavvio del bruciatore con l\'energia di emergenza', esito: 'SBAGLIATO', conseguenza: 'Il ripristino elettrico non è la prima priorità. Prima di qualsiasi azione elettrica bisogna verificare lo stato dell\'impianto: livello e pressione sono le priorità immediate.' },
+          { testo: 'Verificare con la torcia il livello sugli indicatori a vetro e la pressione sul manometro meccanico — sono i tuoi unici strumenti affidabili in questo momento', esito: 'CORRETTO', conseguenza: 'Azione corretta. In caso di blackout gli indicatori di livello a vetro e il manometro meccanico (non elettronico) rimangono affidabili. Il conduttore deve conoscere lo stato reale dell\'impianto prima di qualsiasi altra decisione.' },
+          { testo: 'Chiudere immediatamente la valvola di presa vapore per isolare il generatore', esito: 'PARZIALE', conseguenza: 'Chiudere la presa vapore non è la prima azione — prima verifica, poi decisione. Con pressione stabile e livello normale non è necessario isolare immediatamente.' },
+          { testo: 'Evacuare la sala caldaia immediatamente — il blackout può indicare un incidente grave', esito: 'SBAGLIATO', conseguenza: 'L\'evacuazione è giustificata in caso di pericolo accertato (gas, incendio, strutture danneggiate). Un blackout ordinario non giustifica evacuazione — il conduttore deve restare e gestire l\'impianto.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 19-21. In caso di blackout il bruciatore si spegne per logica fail-safe. La prima azione è verificare lo stato dell\'impianto con gli strumenti meccanici disponibili (indicatori a vetro, manometro meccanico). Conoscere la situazione reale è prerequisito di qualsiasi decisione.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '11,8 bar — in leggero calo',
+          livello: 'Normale — verificato visivamente',
+          bruciatore: 'Spento',
+          pompa: '⚠️ Solo pompa diesel di riserva disponibile',
+          allarmi: ['🔴 Pompa elettrica principale ferma', '🔔 Pompa diesel di riserva — da avviare manualmente']
+        },
+        situazione: 'Hai verificato: livello normale, pressione 11,8 bar in calo lento. Il blackout è confermato — durata stimata 1-2 ore. La pompa elettrica principale è ferma. Hai a disposizione la pompa diesel di riserva che richiede avviamento manuale. Il D.M. 21.05.74 Art. 21 richiede almeno un mezzo di alimento indipendente dalla rete elettrica.',
+        domanda: 'Pompa elettrica ferma, blackout per 1-2 ore. Cosa fai per garantire l\'alimentazione dell\'acqua?',
+        opzioni: [
+          { testo: 'Nulla — con il bruciatore spento il livello non scende e la pompa non serve', esito: 'SBAGLIATO', conseguenza: 'Anche senza bruciatore la caldaia continua a cedere vapore alle utenze. Il livello scende. Senza alimentazione nelle prossime ore il livello potrebbe raggiungere il minimo.' },
+          { testo: 'Avvii la pompa diesel di riserva manualmente, verifichi che eroghi regolarmente e mantieni il livello nel range normale durante il blackout', esito: 'CORRETTO', conseguenza: 'Procedura corretta. D.M. 21.05.74 Art. 21: almeno un mezzo di alimento indipendente dalla rete elettrica obbligatorio. La pompa diesel è progettata per questa emergenza. Avviarla e verificarne il funzionamento è la risposta corretta.' },
+          { testo: 'Chiudi la valvola di presa vapore per fermare il consumo e preservare il livello senza pompare', esito: 'PARZIALE', conseguenza: 'Chiudere la presa vapore ferma il consumo ma interrompe anche il servizio alle utenze. È una soluzione accettabile solo se il blackout è brevissimo e le utenze possono aspettare.' },
+          { testo: 'Colleghi una pompa portatile al circuito di alimento per bypassare la pompa principale', esito: 'SBAGLIATO', conseguenza: 'Collegare pompe non certificate al circuito in pressione senza autorizzazione è pericoloso e viola le norme. La pompa diesel di riserva è la soluzione prevista dalla normativa.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 21. Il decreto richiede almeno due mezzi di alimentazione dell\'acqua, di cui almeno uno indipendente dalla rete elettrica. La pompa diesel è la risposta prevista dalla normativa per questo scenario. Deve essere testata settimanalmente proprio per garantire la disponibilità in emergenza.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '9,5 bar — in calo',
+          livello: 'Normale — pompa diesel in marcia',
+          bruciatore: 'Spento',
+          pompa: '🟢 Pompa diesel in marcia',
+          allarmi: ['⚠️ Pressione in calo per assenza bruciatore', '📋 Blackout durata: 45 minuti']
+        },
+        situazione: 'La pompa diesel mantiene il livello. Sono passati 45 minuti. La pressione è scesa a 9,5 bar per l\'assenza del bruciatore. Il gestore elettrico ha comunicato che il ripristino avverrà tra 20-30 minuti. Le utenze stanno riducendo il consumo. Devi decidere se intervenire sulla pressione.',
+        domanda: 'Pressione scesa a 9,5 bar con blackout in corso. Cosa fai?',
+        opzioni: [
+          { testo: 'Avvii il bruciatore con il generatore diesel di emergenza del quadro per mantenere la pressione', esito: 'CORRETTO', conseguenza: 'Se disponibile un generatore elettrico di emergenza per il bruciatore, avviarlo è la risposta corretta. Mantiene la pressione e il servizio alle utenze. Verificare prima che la sequenza di avvio (purga inclusa) sia completata correttamente.' },
+          { testo: 'Lasci scendere la pressione liberamente — le valvole di sicurezza scaricano se necessario', esito: 'SBAGLIATO', conseguenza: 'La pressione non sale — sta scendendo. Non c\'è rischio di intervento delle valvole di sicurezza. Ma lasciare scendere indefinitamente fino a pressione troppo bassa compromette il servizio e può richiedere un avviamento da freddo.' },
+          { testo: 'Esegui uno spurgo di superficie per ridurre il TDS e ottimizzare il sistema durante l\'attesa', esito: 'SBAGLIATO', conseguenza: 'Lo spurgo di superficie in questa situazione non è prioritario. Con pressione in calo e blackout in corso le priorità sono il mantenimento del livello e della pressione.' },
+          { testo: 'Monitori la pressione e prepari la sequenza di avviamento del bruciatore per quando tornerà la corrente', esito: 'CORRETTO', conseguenza: 'Se non disponibile generatore di emergenza per il bruciatore, questa è la risposta corretta: monitorare e prepararsi al riavvio ordinato al ripristino della corrente, con purga obbligatoria.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 19-21. La risposta ottimale dipende dalla dotazione impiantistica. Con generatore di emergenza: avvio del bruciatore con purga obbligatoria. Senza: monitoraggio e preparazione al riavvio. In entrambi i casi: livello garantito dalla pompa diesel, documentazione completa sul registro del blackout, ora, azioni, firma.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 9: Perdita di tenuta sul corpo cilindrico — Art. 20 D.M. 21.05.74
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S009',
+    titolo: 'Perdita di tenuta su flangia del corpo cilindrico',
+    categoria: 'Emergenza',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 Art. 20 — Condizioni che richiedono arresto immediato',
+    contesto_iniziale: 'Caldaia in esercizio a 10 bar. Durante la ronda di controllo il conduttore nota qualcosa di anomalo nella zona posteriore del generatore.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,1 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 75%',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ Sospetto sibilo dalla zona posteriore del generatore']
+        },
+        situazione: 'Durante la ronda senti un sibilo nella zona posteriore del generatore. Avvicinandoti cautamente (distanza di sicurezza) noti una piccola colonna di vapore che esce da una flangia del corpo cilindrico. La guarnizione è chiaramente deteriorata. La perdita sembra stabile per ora.',
+        domanda: 'Perdita di vapore da flangia del corpo cilindrico — stabile ma visibile. Prima azione?',
+        opzioni: [
+          { testo: 'Stringi i bulloni della flangia con una chiave mentre la caldaia è in pressione per fermare la perdita', esito: 'SBAGLIATO', conseguenza: 'Stringere bulloni su parti in pressione è VIETATO e pericoloso. La guarnizione deteriorata può cedere ulteriormente sotto la coppia dei bulloni. Rischio di esplosione immediata con vapore a 184°C.' },
+          { testo: 'Valuti l\'entità della perdita da distanza di sicurezza, avvisi immediatamente il responsabile e prepari la procedura di arresto ordinato senza avvicinarti alla zona di perdita', esito: 'CORRETTO', conseguenza: 'Procedura corretta secondo D.M. 21.05.74 Art. 20. Una perdita da parti in pressione richiede valutazione sicura, comunicazione al responsabile e arresto ordinato. Non si improvvisano riparazioni su parti in pressione.' },
+          { testo: 'Aumenti la portata della pompa di alimento per compensare la perdita d\'acqua e mantieni il livello', esito: 'SBAGLIATO', conseguenza: 'Compensare la perdita senza fermare la caldaia è pericoloso: la perdita potrebbe aumentare progressivamente portando a rottura catastrofica. Non è una soluzione — è un rinvio del problema.' },
+          { testo: 'Monitori la perdita per 30 minuti per valutare se si stabilizza prima di decidere', esito: 'SBAGLIATO', conseguenza: 'Una perdita da parti in pressione non si "aspetta". Può aumentare rapidamente e senza preavviso. Il D.M. 21.05.74 Art. 20 prevede arresto immediato in caso di perdite dalle parti in pressione.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 20. Le perdite dalle parti in pressione richiedono arresto ordinato del generatore. Non si eseguono riparazioni con caldaia in pressione — è vietato e pericoloso. La valutazione dalla distanza di sicurezza è necessaria prima di avvicinarsi alla zona di perdita.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '10,2 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Perdita flangia corpo cilindrico — zona posteriore', '📋 Arresto ordinato in corso']
+        },
+        situazione: 'Hai avvisato il responsabile. È stato deciso l\'arresto ordinato. Stai eseguendo la procedura. La perdita è rimasta stabile durante la valutazione. Devi decidere la sequenza corretta di arresto per una perdita da corpo cilindrico.',
+        domanda: 'Qual è la sequenza corretta di arresto ordinato per perdita da flangia del corpo cilindrico?',
+        opzioni: [
+          { testo: 'Spegni il bruciatore → chiudi la valvola di presa vapore → lascia scendere la pressione naturalmente → apri scarichi quando P=0 → poi intervenga la manutenzione', esito: 'CORRETTO', conseguenza: 'Sequenza corretta di arresto ordinato per perdita da parti in pressione. Spegnimento bruciatore, isolamento vapore, discesa pressione naturale senza aprire scarichi forzati, intervento manutenzione solo a P=0.' },
+          { testo: 'Apri lo spurgo di fondo per scaricare rapidamente la pressione, poi spegni il bruciatore', esito: 'SBAGLIATO', conseguenza: 'Aprire lo spurgo di fondo con perdita in corso riduce il livello e aumenta la tensione sulle parti in pressione. La sequenza corretta inizia sempre dallo spegnimento del bruciatore.' },
+          { testo: 'Mantieni la caldaia in esercizio e chiama la manutenzione — la riparazione si fa con la caldaia calda', esito: 'SBAGLIATO', conseguenza: 'Le riparazioni sulle parti in pressione si eseguono SEMPRE con caldaia ferma, a pressione zero e raffreddata. Nessuna norma consente interventi su parti in pressione durante l\'esercizio.' },
+          { testo: 'Spegni il bruciatore → forza il raffreddamento aprendo gli sfiati → apri i passi d\'uomo appena la pressione scende → esegui la riparazione', esito: 'SBAGLIATO', conseguenza: 'I passi d\'uomo si aprono SOLO a pressione = 0 e temperatura < 60°C. Forzare il raffreddamento con gli sfiati aperti su una caldaia con perdita può aumentare la perdita stessa.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 20 + R.D. 824/1927. Sequenza di arresto per perdita da parti in pressione: 1) Spegni bruciatore. 2) Chiudi presa vapore. 3) Lascia scendere P naturalmente (non forzare). 4) Apri scarichi solo quando P=0. 5) Attendi T<60°C prima di aprire passi d\'uomo. 6) Manutenzione esegue riparazione. 7) Prova idraulica prima della rimessa in servizio se la riparazione è sulle parti in pressione.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricato',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Caldaia ferma — in attesa di riparazione', '📋 Denuncia INAIL da valutare']
+        },
+        situazione: 'La caldaia è stata arrestata correttamente. La manutenzione ha ispezionato la flangia: la guarnizione era deteriorata per vecchiaia. Nessun danno strutturale al corpo cilindrico. La riparazione consiste nella sostituzione della guarnizione. Devi decidere il percorso normativo per la rimessa in servizio.',
+        domanda: 'Guarnizione sostituita su flangia del corpo cilindrico. Come si rimette in servizio il generatore?',
+        opzioni: [
+          { testo: 'Riempi di acqua e avvia direttamente — la sostituzione di una guarnizione è manutenzione ordinaria', esito: 'SBAGLIATO', conseguenza: 'La sostituzione di una guarnizione su parti in pressione del corpo cilindrico NON è manutenzione ordinaria. Richiede procedura normativa specifica prima della rimessa in servizio.' },
+          { testo: 'Esegui una prova idraulica a 1,5 × P_bollo prima della rimessa in servizio, con verifica INAIL se richiesto dal libretto matricolare', esito: 'CORRETTO', conseguenza: 'Procedura corretta. D.M. 21.05.74 + R.D. 824/1927: interventi sulle parti in pressione richiedono prova idraulica prima della rimessa in servizio. Il libretto matricolare indica se è necessaria la presenza INAIL.' },
+          { testo: 'Avvii gradualmente portando la pressione a 5 bar per 2 ore, poi al regime se non ci sono perdite', esito: 'SBAGLIATO', conseguenza: 'Una prova operativa graduale non sostituisce la prova idraulica prevista dalla normativa. La prova idraulica si esegue con acqua a pressione specifica per un tempo definito — non è un avviamento a regime lento.' },
+          { testo: 'Chiedi all\'INAIL di eseguire una verifica straordinaria prima di procedere', esito: 'PARZIALE', conseguenza: 'La verifica INAIL può essere richiesta per interventi significativi ma la prova idraulica con acqua è la procedura standard prevista dal D.M. 21.05.74. L\'INAIL valuterà se è necessaria la propria presenza in base alla entità dell\'intervento.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + R.D. 824/1927 Art. specifici sulle riparazioni. Qualsiasi intervento sulle parti in pressione del corpo cilindrico richiede prova idraulica prima della rimessa in servizio: 1,5 × P_bollo con acqua per almeno 30 minuti. L\'intervento va documentato nel libretto matricolare. A seconda dell\'entità potrebbe richiedere la presenza dell\'INAIL.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 10: Incendio in sala caldaia — D.Lgs. 81/2008 + D.M. 21.05.74
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S010',
+    titolo: 'Incendio in sala caldaia — nafta dal bruciatore',
+    categoria: 'Emergenza',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 Art. 20 + D.Lgs. 81/2008 — Procedure di emergenza antincendio',
+    contesto_iniziale: 'Caldaia a nafta in esercizio a 8 bar. Producibilità 70%. Turno pomeridiano. Conduttore solo in sala caldaia.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '8,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['🔴 INCENDIO — perdita nafta dal bruciatore', '🔴 Fiamme visibili zona bruciatore']
+        },
+        situazione: 'Si sviluppa un incendio nella zona del bruciatore a causa di una perdita di nafta su superficie calda. Le fiamme sono visibili ma ancora contenute. Hai un estintore a CO₂ a portata di mano. La caldaia è in pressione a 8 bar.',
+        domanda: 'Incendio al bruciatore a nafta. Sequenza di azioni immediata?',
+        opzioni: [
+          { testo: 'Usi l\'estintore a CO₂ sulle fiamme prima di qualsiasi altra azione', esito: 'SBAGLIATO', conseguenza: 'Prima di usare l\'estintore bisogna chiudere l\'alimentazione della nafta. Spegnere le fiamme senza chiudere il combustibile è inutile — la nafta continua ad alimentare l\'incendio.' },
+          { testo: 'Chiudi immediatamente la valvola di intercettazione della nafta → spegni il bruciatore → usa l\'estintore CO₂ o schiuma AFFF → chiama il 115 → evacua se necessario', esito: 'CORRETTO', conseguenza: 'Sequenza corretta. Prima eliminare il combustibile (chiudere la nafta), poi spegnere il bruciatore, poi usare l\'estintore, poi allertare i soccorsi. Senza togliere il combustibile qualsiasi estintore è temporaneo.' },
+          { testo: 'Chiami il 115 e evacui immediatamente senza tentare lo spegnimento', esito: 'PARZIALE', conseguenza: 'L\'evacuazione è corretta se le fiamme sono incontrollabili. Ma per un incendio iniziale e contenuto, la chiusura della nafta e l\'uso dell\'estintore PRIMA di evacuare è la risposta corretta — se sicuro farlo.' },
+          { testo: 'Usi l\'acqua degli scarichi idraulici vicini per spegnere le fiamme di nafta', esito: 'SBAGLIATO', conseguenza: 'MAI acqua su incendio di nafta. L\'acqua fa vaporizzare la nafta proiettandola in fiamme in tutte le direzioni, amplificando l\'incendio catastroficamente. Usare CO₂ o schiuma AFFF.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 20 + D.Lgs. 81/2008. Sequenza per incendio nafta bruciatore: 1) Chiudi valvola nafta (togli il combustibile). 2) Spegni bruciatore. 3) Estintore CO₂ o schiuma AFFF (MAI acqua su nafta). 4) Chiama 115. 5) Evacua se incontrollabile. La nafta è fuoco classe B — l\'acqua lo aggrava.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '7,8 bar',
+          livello: 'Normale',
+          bruciatore: '🔴 Spento — nafta intercettata',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Incendio — VVF allertati', '⚠️ Caldaia in pressione — da gestire con VVF presenti']
+        },
+        situazione: 'Hai chiuso la nafta e spento il bruciatore. Le fiamme sono state ridotte ma non completamente spente. I Vigili del Fuoco sono stati allertati e arriveranno in 5 minuti. La caldaia è ancora in pressione a 7,8 bar. I VVF chiederanno lo stato dell\'impianto.',
+        domanda: 'VVF in arrivo, caldaia ancora in pressione. Cosa comunichi ai VVF all\'arrivo?',
+        opzioni: [
+          { testo: 'Lo stato della caldaia: P_esercizio, combustibile intercettato, se ci sono rischi di perdita vapore o esplosione nelle zone interessate dall\'incendio', esito: 'CORRETTO', conseguenza: 'I VVF devono conoscere lo stato dell\'impianto per operare in sicurezza. Le informazioni chiave: pressione attuale, combustibile intercettato o no, posizione delle valvole principali, rischi di flash evaporation se le parti in pressione vengono danneggiate dall\'incendio.' },
+          { testo: 'Che possono usare acqua liberamente su tutta la zona — il metallo della caldaia regge alte temperature', esito: 'SBAGLIATO', conseguenza: 'I VVF non devono usare acqua sulla nafta residua. E il raffreddamento rapido del corpo cilindrico in pressione con acqua fredda può causare shock termico e cedimento. I VVF vanno informati dei rischi specifici.' },
+          { testo: 'Che devono spegnere prima la caldaia dal quadro e poi intervenire sul fuoco', esito: 'SBAGLIATO', conseguenza: 'I VVF non devono toccare il quadro della caldaia senza conoscere l\'impianto. Il conduttore rimane il riferimento tecnico per l\'impianto — i VVF gestiscono l\'incendio, il conduttore gestisce la caldaia.' },
+          { testo: 'Che l\'incendio è sotto controllo e possono andarsene — hai già gestito tutto', esito: 'SBAGLIATO', conseguenza: 'Anche se le fiamme sono ridotte, con nafta residua e caldaia in pressione i VVF devono completare l\'intervento e dichiarare la zona sicura. Non si mandano via i soccorsi senza la loro valutazione.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: D.Lgs. 81/2008 + procedure antincendio. Il conduttore è il riferimento tecnico per l\'impianto durante l\'intervento dei VVF. Deve comunicare: 1) Pressione attuale. 2) Combustibile intercettato. 3) Posizione valvole principali. 4) Rischi di flash evaporation. 5) Aree con vapore in pressione. Queste informazioni permettono ai VVF di operare in sicurezza.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '6,5 bar — in calo',
+          livello: 'Normale',
+          bruciatore: 'Spento',
+          pompa: 'Spenta — VVF hanno richiesto spegnimento utenze',
+          allarmi: ['📋 Incendio domato — zona interdetta', '📋 Perizia danni in corso', '📋 Denuncia INAIL obbligatoria']
+        },
+        situazione: 'L\'incendio è stato domato dai VVF. La caldaia è in raffreddamento. I danni sono limitati al bruciatore e alla zona circostante. I VVF hanno rilasciato il locale. Il tuo responsabile chiede se si può riavviare domani dopo aver riparato il bruciatore.',
+        domanda: 'Incendio domato, danni al bruciatore. Cosa è obbligatorio prima della rimessa in servizio?',
+        opzioni: [
+          { testo: 'Riparazione del bruciatore e collaudo del sistema antincendio — poi si può riavviare', esito: 'SBAGLIATO', conseguenza: 'La riparazione del bruciatore è necessaria ma non sufficiente. L\'incendio in sala caldaia richiede adempimenti normativi specifici prima della rimessa in servizio.' },
+          { testo: 'Denuncia all\'INAIL dell\'incidente + verifica INAIL del generatore prima della rimessa in servizio + riparazione certificata del bruciatore + aggiornamento del registro', esito: 'CORRETTO', conseguenza: 'Procedura obbligatoria. D.M. 21.05.74: un incidente in sala caldaia richiede denuncia INAIL, verifica del generatore da parte dell\'INAIL prima della rimessa in servizio. Nessun riavvio senza l\'autorizzazione dell\'INAIL.' },
+          { testo: 'Solo la riparazione del bruciatore da parte di un manutentore certificato — l\'INAIL va informato solo in caso di feriti', esito: 'SBAGLIATO', conseguenza: 'L\'INAIL va informato di qualsiasi incidente su generatori di vapore, anche senza feriti. La denuncia è obbligatoria per legge indipendentemente dalle conseguenze sulle persone.' },
+          { testo: 'Pulizia della sala caldaia e test del bruciatore a freddo — se i test sono ok si riavvia', esito: 'SBAGLIATO', conseguenza: 'I test interni non sostituiscono la verifica INAIL. Il generatore deve essere verificato dall\'ente preposto dopo un incidente — il proprietario non può auto-certificare la sicurezza post-incidente.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 20 + R.D. 824/1927. Dopo un incidente in sala caldaia: 1) Denuncia immediata all\'INAIL (entro poche ore). 2) Non toccare nulla fino all\'ispezione INAIL salvo ragioni di sicurezza immediata. 3) Verifica INAIL del generatore. 4) Riparazione certificata. 5) Prova idraulica se parti in pressione danneggiate. 6) Rimessa in servizio solo con autorizzazione INAIL. 7) Aggiornamento libretto matricolare.'
+      }
+    ]
+  }
+
+,
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 11: Acque — Corrosione progressiva da O₂
+  // Fonte: Circ. ANCC 30/81 + D.M. 21.05.74 + Quaderno Bissolo
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S011',
+    titolo: 'Corrosione progressiva da ossigeno disciolto — diagnosi e intervento',
+    categoria: 'Acque',
+    difficolta: 'Alta',
+    fonte: 'Circ. ANCC 30/81 + D.M. 21.05.74 + Quaderno Bissolo — Trattamento acque',
+    contesto_iniziale: 'Caldaia a tubi di fumo in esercizio da 3 anni. Turno mattutino. Durante l\'analisi acque quotidiana il conduttore rileva valori anomali.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 70%',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ O₂ disciolto acqua alimento: 380 μg/L (limite: <50 μg/L)', '⚠️ Ferro disciolto: 450 μg/L (limite: <200 μg/L)']
+        },
+        situazione: 'L\'analisi giornaliera rileva: O₂ disciolto nell\'acqua di alimento 380 μg/L (limite <50 μg/L), ferro disciolto 450 μg/L (limite <200 μg/L). Il degasatore è in funzione. Questi valori sono peggiori della settimana precedente.',
+        domanda: 'O₂ = 380 μg/L e ferro = 450 μg/L — entrambi fuori limite e peggiorati. Prima diagnosi?',
+        opzioni: [
+          { testo: 'Valori accettabili — le tolleranze sono larghe per le caldaie industriali robuste', esito: 'SBAGLIATO', conseguenza: 'I valori sono ampiamente fuori limite. O₂ > 50 μg/L causa pitting — corrosione localizzata invisibile dall\'esterno fino alla rottura improvvisa. Ferro elevato indica corrosione già in atto nelle tubazioni.' },
+          { testo: 'Segnale di allarme grave: O₂ elevato causa pitting nelle tubazioni, ferro elevato conferma corrosione in atto. Probabile malfunzionamento del degasatore o dello sfiato chiuso', esito: 'CORRETTO', conseguenza: 'Diagnosi corretta. O₂ elevato + ferro elevato = corrosione attiva in corso. Il degasatore non sta lavorando correttamente. La causa più comune: sfiato del degasatore parzialmente chiuso o ostruito.' },
+          { testo: 'Problema normale di stagione — l\'acqua di rete è più ossigenata in estate, si normalizza da sola', esito: 'SBAGLIATO', conseguenza: 'La variazione stagionale non giustifica O₂ di 380 μg/L con degasatore funzionante. Un degasatore efficiente porta O₂ sotto 10 μg/L indipendentemente dalla stagione.' },
+          { testo: 'Aumentare il dosaggio di idrazina per compensare l\'eccesso di O₂ senza intervenire sul degasatore', esito: 'PARZIALE', conseguenza: 'L\'idrazina riduce l\'O₂ residuo ma non compensa un degasatore guasto. Con O₂ = 380 μg/L servirebbero dosi di idrazina eccessive (cancerogena IARC 2A). Il problema primario è il degasatore.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Circ. ANCC 30/81 Tab. 1. Limiti acqua alimento caldaie a tubi di fumo: O₂ <50 μg/L, Fe <200 μg/L. O₂ elevato causa pitting — crateri invisibili che portano a rottura improvvisa. Ferro elevato è il tracciante della corrosione già in atto. Prima azione: verificare il degasatore.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['🔴 Sfiato degasatore: ostruito al 70%', '🔴 T_degasatore: 95°C (dovrebbe essere 105-130°C)']
+        },
+        situazione: 'Hai ispezionato il degasatore: lo sfiato è parzialmente ostruito da depositi calcarei e la temperatura di lavoro è scesa a 95°C invece dei 105-130°C previsti. Questo spiega l\'O₂ elevato — la degasazione è inefficace. La manutenzione può pulire lo sfiato in 30 minuti.',
+        domanda: 'Sfiato degasatore ostruito, T insufficiente, O₂ fuori limite. Cosa fai nell\'immediato e nel medio termine?',
+        opzioni: [
+          { testo: 'Pulizia immediata dello sfiato → verifica ripristino T a 105°C+ → rianalisi O₂ dopo 2 ore → dosaggio integrativo di DEHA o idrazina durante il ripristino', esito: 'CORRETTO', conseguenza: 'Sequenza corretta. La pulizia dello sfiato ripristina la degasazione. Il DEHA (meno tossico dell\'idrazina) protegge durante la transizione. La rianalisi a 2 ore verifica l\'efficacia dell\'intervento.' },
+          { testo: 'Fermi la caldaia per 24 ore per far lavorare il degasatore senza carico di produzione', esito: 'SBAGLIATO', conseguenza: 'La fermata non è necessaria né utile. Lo sfiato si pulisce con l\'impianto in esercizio e il degasatore riprende la normale funzione in pochi minuti dopo la pulizia.' },
+          { testo: 'Solo dosaggio massiccio di idrazina per compensare — la pulizia si fa al prossimo fermo programmato', esito: 'SBAGLIATO', conseguenza: 'Rimandare la pulizia mantiene la corrosione attiva per settimane o mesi. L\'idrazina a dosi eccessive è cancerogena e non risolve il problema strutturale. La pulizia immediata è la risposta corretta.' },
+          { testo: 'Sostituisci il degasatore intero — se lo sfiato è ostruito il degasatore è da rottamare', esito: 'SBAGLIATO', conseguenza: 'La sostituzione è eccessiva. Uno sfiato ostruito da calcare è manutenzione ordinaria — pulizia con acido citrico o meccanica. La sostituzione si considera solo se il degasatore ha danni strutturali.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: Quaderno Bissolo + Circ. ANCC 30/81. Lo sfiato del degasatore deve essere SEMPRE aperto durante il funzionamento (Legge di Henry: O₂ e CO₂ devono poter uscire). Un\'ostruzione al 70% riduce drasticamente l\'efficacia. Pulizia immediata + DEHA transitorio + rianalisi. La pulizia dello sfiato è manutenzione ordinaria eseguibile in esercizio.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['✅ O₂ post-intervento: 18 μg/L — rientrato nei limiti', '📋 Ispezione interna programmata: 6 mesi']
+        },
+        situazione: 'Dopo la pulizia dello sfiato e 2 ore di funzionamento regolare l\'O₂ è sceso a 18 μg/L. Il problema acuto è risolto. Tuttavia il ferro ancora elevato (280 μg/L) indica che la corrosione è stata attiva per settimane. Il prossimo fermo programmato è tra 6 mesi.',
+        domanda: 'O₂ rientrato. Il ferro ancora elevato indica corrosione passata. Come gestisci i prossimi 6 mesi?',
+        opzioni: [
+          { testo: 'Nessuna azione aggiuntiva — l\'O₂ è rientrato, il ferro si normalizza da solo', esito: 'SBAGLIATO', conseguenza: 'Il ferro elevato indica danni da pitting già avvenuti nelle tubazioni. Ignorare il problema rischia rottura improvvisa dei tubi. Il ferro deve essere monitorato fino al rientro e l\'ispezione interna è essenziale.' },
+          { testo: 'Monitoraggio ferro e O₂ giornaliero → dosaggio disperdente polimerico per mantenere ossidi in sospensione → ispezione interna anticipata se ferro resta >200 μg/L dopo 2 settimane', esito: 'CORRETTO', conseguenza: 'Piano corretto. I disperdenti polimerici mantengono gli ossidi di ferro in sospensione (rimovibili con spurgo di fondo) invece di depositarli. Il monitoraggio serrato verifica il trend. Se il ferro non scende in 2 settimane: ispezione anticipata obbligatoria.' },
+          { testo: 'Aumenti la frequenza degli spurghi di fondo a 4 volte al giorno per rimuovere il ferro accumulato', esito: 'PARZIALE', conseguenza: 'Gli spurghi di fondo rimuovono i fanghi depositati ma non i danni da pitting già avvenuti. Aumentare la frequenza degli spurghi aiuta ma non è sufficiente come unica azione — serve il monitoraggio e potenzialmente l\'ispezione anticipata.' },
+          { testo: 'Chiedi all\'INAIL di anticipare la verifica periodica per valutare i possibili danni da pitting', esito: 'CORRETTO', conseguenza: 'Con storia di O₂ elevato per settimane, richiedere anticipatamente la verifica INAIL è prudente e dimostra diligenza professionale. L\'INAIL può eseguire l\'ispezione interna con ultrasuoni per rilevare assottigliamenti localizzati da pitting.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: Circ. ANCC 30/81 + D.M. 21.05.74. Il pitting avvenuto nelle settimane di O₂ elevato richiede: 1) Monitoraggio serrato Fe e O₂. 2) Disperdenti polimerici per ossidi in sospensione. 3) Spurghi regolari. 4) Ispezione interna anticipata se Fe non scende. Il ferro elevato è il tracciante dei danni — non si ignora.'
+      },
+      {
+        id: 4,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Vuoto',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Ispezione interna INAIL in corso', '🔴 Pitting rilevato: 3 tubi con spessore ridotto del 35%']
+        },
+        situazione: 'Al fermo semestrale l\'ispezione interna INAIL con ultrasuoni ha rilevato 3 tubi fumogeni con spessore ridotto del 35% dal pitting da O₂. Il limite di accettabilità è riduzione massima del 30%. I 3 tubi superano il limite. L\'INAIL deve pronunciarsi sulla rimessa in servizio.',
+        domanda: 'INAIL rileva 3 tubi con pitting >30% di riduzione spessore. Cosa è obbligatorio?',
+        opzioni: [
+          { testo: 'Rimessa in servizio immediata — il 35% è solo di poco sopra il limite del 30%', esito: 'SBAGLIATO', conseguenza: 'Superare il limite normativo non ammette approssimazioni. I 3 tubi devono essere sostituiti prima della rimessa in servizio — non esiste una zona grigia sul superamento dei limiti strutturali.' },
+          { testo: 'Sostituzione obbligatoria dei 3 tubi fuori limite → riparazione certificata da costruttore o riparatore autorizzato → nuova prova idraulica → verifica INAIL → rimessa in servizio con verbale', esito: 'CORRETTO', conseguenza: 'Procedura obbligatoria D.M. 21.05.74. I tubi fuori limite vanno sostituiti da personale certificato, la riparazione va documentata nel libretto matricolare, seguita da prova idraulica e verifica INAIL prima della rimessa in servizio.' },
+          { testo: 'Ridurre la pressione di esercizio del 35% come misura compensativa temporanea', esito: 'SBAGLIATO', conseguenza: 'Ridurre la pressione non è una misura normativa accettabile per compensare difetti strutturali oltre il limite. I tubi vanno sostituiti — non si opera con strutture fuori specifica.' },
+          { testo: 'Tappare i 3 tubi fuori limite e continuare l\'esercizio con i tubi rimanenti', esito: 'SBAGLIATO', conseguenza: 'Tappare tubi fumogeni riduce la superficie di scambio e altera l\'equilibrio idraulico del percorso fumi. Non è una soluzione normativa — i tubi vanno sostituiti, non tappati.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + R.D. 824/1927. Tubi con riduzione di spessore oltre il limite normativo devono essere sostituiti da personale certificato. La sequenza: sostituzione → documentazione nel libretto → prova idraulica a 1,5×P_bollo → verifica INAIL → verbale positivo → rimessa in servizio. Tutto documentato nel libretto matricolare.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 12: Verifica INAIL — Manutenzione e registro
+  // Fonte: D.M. 21.05.74 Art. 30-36 R.D. 824/1927
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S012',
+    titolo: 'Verifica periodica INAIL — anomalie documentali e strutturali',
+    categoria: 'Normativa',
+    difficolta: 'Alta',
+    fonte: 'D.M. 21.05.74 + R.D. 824/1927 Art. 30-36 — Verifiche periodiche INAIL',
+    contesto_iniziale: 'Caldaia Cornovaglia in esercizio da 4 anni. Verifica biennale INAIL programmata per oggi. Il funzionario INAIL è arrivato in sala caldaia.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['📋 Verifica INAIL in corso — funzionario presente']
+        },
+        situazione: 'Il funzionario INAIL chiede il libretto matricolare per iniziare la verifica documentale. Tu non lo trovi immediatamente — il collega del turno precedente l\'ha spostato. Dopo 10 minuti lo trovi in un cassetto dell\'ufficio adiacente.',
+        domanda: 'Il libretto matricolare non era immediatamente disponibile in sala caldaia. Quali sono le conseguenze?',
+        opzioni: [
+          { testo: 'Nessuna conseguenza — l\'importante è che esiste ed è stato trovato entro la verifica', esito: 'SBAGLIATO', conseguenza: 'Il D.M. 21.05.74 richiede che il libretto matricolare sia SEMPRE disponibile in sala caldaia durante l\'esercizio, non "trovabile entro 10 minuti". La mancata disponibilità immediata è una non conformità documentale.' },
+          { testo: 'Non conformità documentale: il libretto deve essere sempre disponibile in sala caldaia. Il funzionario registra l\'anomalia nel verbale. Non blocca la verifica ma va corretto immediatamente', esito: 'CORRETTO', conseguenza: 'Risposta corretta. Il funzionario registra la non conformità nel verbale ma procede con la verifica. La responsabilità è del conduttore e del proprietario. Azione correttiva: definire una procedura aziendale per la custodia del libretto in sala caldaia.' },
+          { testo: 'La verifica viene sospesa e riprogrammata — senza libretto non si può iniziare', esito: 'PARZIALE', conseguenza: 'Il funzionario può sospendere la verifica se il libretto non è disponibile, ma di solito procede registrando la non conformità. La sospensione avviene solo se il libretto è completamente irreperibile.' },
+          { testo: 'Multa automatica di €5.000 per mancanza del libretto durante la verifica', esito: 'SBAGLIATO', conseguenza: 'La sanzione non è automatica né di importo fisso. Il funzionario registra la non conformità e il proprietario riceve prescrizione con termine per la regolarizzazione.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + R.D. 824/1927. Il libretto matricolare deve essere disponibile in sala caldaia durante l\'esercizio per consultazione del conduttore e dei verificatori. La sua assenza è una non conformità documentale registrata nel verbale INAIL. Azione correttiva: procedura aziendale per la custodia.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Svuotata per ispezione',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Ispezione interna in corso', '🔴 Registro giornaliero: 3 settimane senza firma conduttore']
+        },
+        situazione: 'La caldaia è stata svuotata per l\'ispezione interna. Il funzionario esamina il registro giornaliero e rileva che nelle ultime 3 settimane mancano le firme del conduttore patentato (la caldaia lavora in regime Art. 43). Il registro ha solo valori numerici compilati dall\'operatore di produzione non patentato.',
+        domanda: 'Registro Art. 43 senza firma del conduttore patentato per 3 settimane. Cosa comporta?',
+        opzioni: [
+          { testo: 'Nessun problema — l\'operatore di produzione ha compilato i valori numerici correttamente', esito: 'SBAGLIATO', conseguenza: 'Il D.M. 21.05.74 Art. 43 richiede firma SETTIMANALE del conduttore patentato sul registro — non solo compilazione dei valori. La firma del conduttore certifica la verifica della corretta conduzione e assume la responsabilità legale.' },
+          { testo: 'Violazione grave del D.M. 21.05.74 Art. 43: il regime di non presidio richiede firma settimanale del conduttore patentato. Il funzionario può prescrivere la sospensione del regime Art. 43 fino alla regolarizzazione', esito: 'CORRETTO', conseguenza: 'Risposta corretta. Tre settimane senza firma del conduttore patentato è violazione del regime Art. 43. Il funzionario INAIL può richiedere il ritorno al presidio continuativo fino alla verifica della corretta applicazione del regime.' },
+          { testo: 'Il conduttore firma retroattivamente le 3 settimane durante la visita INAIL per regolarizzare', esito: 'SBAGLIATO', conseguenza: 'La firma retroattiva è FALSIFICAZIONE del registro — reato penale aggiuntivo. Il registro deve essere firmato nella settimana di riferimento, non a posteriori.' },
+          { testo: 'La responsabilità è del datore di lavoro che non ha garantito la presenza del conduttore — non del conduttore', esito: 'SBAGLIATO', conseguenza: 'La responsabilità del conduttore è PERSONALE. Avrebbe dovuto firmare il registro settimanalmente o rifiutare di assumere la responsabilità del regime Art. 43 senza poterlo garantire.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 Art. 43. Il regime di funzionamento non presidiato richiede firma settimanale del conduttore patentato sul registro. Tre settimane senza firma: non conformità grave. Il funzionario può prescrivere il ritorno al presidio continuativo. La firma retroattiva è falsificazione del registro — reato penale.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Vuoto — ispezione interna in corso',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['⚠️ Ispezione interna: depositi calcarei 4 mm sui tubi fumogeni superiori', '⚠️ Focolare: segni di deformazione lieve nella zona superiore']
+        },
+        situazione: 'L\'ispezione interna rivela: 4 mm di calcare sui tubi fumogeni superiori (riduzione scambio termico) e una lieve deformazione del focolare nella zona superiore. La deformazione è di tipo superficiale — non attraversa lo spessore. Il funzionario deve decidere.',
+        domanda: 'Calcare 4 mm + lieve deformazione focolare. Cosa prescrive l\'INAIL?',
+        opzioni: [
+          { testo: 'Rimessa in servizio immediata — entrambe le anomalie sono lievi', esito: 'SBAGLIATO', conseguenza: 'La deformazione del focolare, anche se superficiale, richiede valutazione ingegneristica prima della rimessa in servizio. Il funzionario INAIL non può autorizzare la rimessa in servizio senza valutazione delle deformazioni.' },
+          { testo: 'Prescrizione di: decapaggio per rimozione calcare + analisi spessore del focolare con ultrasuoni + relazione tecnica del costruttore sulla deformazione → poi nuova verifica INAIL prima della rimessa in servizio', esito: 'CORRETTO', conseguenza: 'Procedura INAIL corretta. Il calcare richiede decapaggio chimico certificato. La deformazione del focolare richiede valutazione di spessore con ultrasuoni e parere del costruttore. Solo dopo: nuova verifica INAIL.' },
+          { testo: 'Solo il decapaggio del calcare — la deformazione è superficiale e non richiede azione', esito: 'SBAGLIATO', conseguenza: 'Qualsiasi deformazione del focolare richiede valutazione — anche se superficiale. La deformazione è un segnale di surriscaldamento passato (basso livello non documentato?). Ignorarla è un rischio non accettabile.' },
+          { testo: 'Demolizione e sostituzione del focolare — qualsiasi deformazione richiede sostituzione completa', esito: 'SBAGLIATO', conseguenza: 'La sostituzione del focolare è la misura estrema per danni strutturali gravi. Una lieve deformazione superficiale può essere valutata e accettata se la misura di spessore con ultrasuoni conferma integrità strutturale.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + R.D. 824/1927 Art. 30-36. L\'INAIL prescrive le azioni necessarie prima della rimessa in servizio. Calcare 4 mm: decapaggio obbligatorio. Deformazione focolare: valutazione spessore con ultrasuoni + parere costruttore + relazione tecnica. La rimessa in servizio avviene solo dopo verifica INAIL positiva su tutte le prescrizioni.'
+      },
+      {
+        id: 4,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Vuoto',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['✅ Decapaggio completato', '✅ Ultrasuoni: spessore focolare nella norma', '📋 Prova idraulica da eseguire']
+        },
+        situazione: 'Il decapaggio ha rimosso il calcare. L\'analisi ultrasuoni conferma lo spessore del focolare nella norma — la deformazione era solo superficiale. La relazione del costruttore certifica l\'integrità strutturale. Ora il funzionario INAIL richiede la prova idraulica prima di autorizzare la rimessa in servizio.',
+        domanda: 'Tutte le prescrizioni soddisfatte. Come si esegue correttamente la prova idraulica finale?',
+        opzioni: [
+          { testo: 'Riempire di acqua, portare alla pressione di esercizio (10 bar) per 30 minuti, poi ripartire', esito: 'SBAGLIATO', conseguenza: 'La prova idraulica non si esegue alla pressione di esercizio ma a 1,5 × pressione di BOLLO. La pressione di esercizio non è la stessa della pressione di bollo e non è la pressione di prova normativa.' },
+          { testo: 'Riempire completamente di acqua a temperatura ambiente → portare a 1,5 × pressione di bollo (15 bar) → mantenere per 30 minuti → ispezione visiva di tutto il corpo cilindrico con INAIL presente', esito: 'CORRETTO', conseguenza: 'Procedura corretta D.M. 21.05.74. Prova idraulica: acqua (non vapore), 1,5 × P_bollo, mantenuta 30 minuti, ispezione visiva con il funzionario INAIL presente. Esito positivo → verbale → rimessa in servizio autorizzata.' },
+          { testo: 'Prova con vapore a 1,5 × pressione di bollo — più veloce e rappresentativa delle condizioni reali', esito: 'SBAGLIATO', conseguenza: 'La prova idraulica si esegue SEMPRE con acqua — mai con vapore. L\'acqua è incomprimibile: in caso di cedimento non rilascia energia esplosiva. Il vapore compresso accumula energia che si libererebbe catastroficamente.' },
+          { testo: 'Riempire di acqua e portare alla pressione massima raggiungibile con la pompa di alimento — se regge è a posto', esito: 'SBAGLIATO', conseguenza: 'La pressione di prova non è "la massima raggiungibile" ma un valore normativo preciso: 1,5 × P_bollo. Una pressione diversa non ha valore legale e non soddisfa la normativa.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: D.M. 21.05.74 + R.D. 824/1927. Prova idraulica: acqua a T ambiente → 1,5 × P_bollo → 30 minuti → ispezione visiva (perdite, deformazioni visibili). Con P_bollo=10 bar → prova a 15 bar. Il funzionario INAIL deve essere presente. Esito positivo: verbale nel libretto matricolare → rimessa in servizio autorizzata.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+
+  {
+    id: 'S013',
+    titolo: 'Abbandono del servizio e conseguenze sulla patente',
+    categoria: 'Normativa',
+    difficolta: 'Media',
+    fonte: 'R.D. 824/1927 Art. 32 + D.M. 1° marzo 1974 Art. 3',
+    contesto_iniziale: 'Sei conduttore patentato di 2° grado in turno pomeridiano. Caldaia in esercizio a 8 bar, tutto regolare. Ricevi una chiamata urgente di famiglia e devi lasciare immediatamente.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '8,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 70%',
+          pompa: 'In marcia',
+          allarmi: ['📋 Situazione personale urgente — necessità di lasciare il turno']
+        },
+        situazione: 'Devi lasciare il turno per urgenza familiare. Il turno serale inizia tra 3 ore. Non c\'è un sostituto patentato disponibile nell\'immediato. L\'impianto funziona regolarmente.',
+        domanda: 'Urgenza personale durante il turno. Cosa prevede il R.D. 824/1927 Art. 32 riguardo all\'abbandono del servizio?',
+        opzioni: [
+          { testo: 'Puoi andare immediatamente — l\'urgenza familiare è causa di forza maggiore riconosciuta dalla norma', esito: 'PARZIALE', conseguenza: 'La forza maggiore è riconosciuta dall\'Art. 32 solo in casi eccezionali e documentabili. Ma "urgenza familiare" generica non costituisce automaticamente forza maggiore — dipende dalla gravità dell\'evento.' },
+          { testo: 'Devi dare preavviso di almeno 5 giorni prima di lasciare il servizio — salvo casi di forza maggiore documentata', esito: 'CORRETTO', conseguenza: 'Risposta corretta. R.D. 824/1927 Art. 32: il conduttore non può abbandonare il servizio senza preavviso di almeno 5 giorni, salvo forza maggiore. Lasciare senza sostituto espone alla sospensione della patente fino a 6 mesi.' },
+          { testo: 'Puoi andare se avvisi il responsabile di produzione per iscritto', esito: 'SBAGLIATO', conseguenza: 'L\'avviso al responsabile di produzione non sostituisce il preavviso di 5 giorni né garantisce la presenza di un sostituto patentato. La responsabilità del conduttore è verso la normativa, non solo verso il datore di lavoro.' },
+          { testo: 'Puoi spegnere la caldaia in modo ordinato e poi andarsene', esito: 'PARZIALE', conseguenza: 'La fermata ordinata è meglio dell\'abbandono con caldaia accesa, ma non elimina la violazione dell\'Art. 32 se non c\'è forza maggiore documentata. La fermata va comunicata e documentata sul registro.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 32. Il conduttore non può abbandonare il servizio senza preavviso di almeno 5 giorni, fermo restando quanto stabilito dal contratto di lavoro. Eccezione: casi di forza maggiore documentata. In caso di violazione: l\'Ispettorato del Lavoro può sospendere l\'abilitazione fino a 2 mesi, fino a 6 mesi in caso di recidiva o pericolo di infortunio, o revocarla.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '8,0 bar',
+          livello: 'Normale',
+          bruciatore: 'Acceso',
+          pompa: 'In marcia',
+          allarmi: ['📋 Forza maggiore: ricovero ospedaliero urgente familiare — documentato']
+        },
+        situazione: 'L\'urgenza è effettivamente un ricovero ospedaliero urgente documentabile — forza maggiore ai sensi dell\'Art. 32. Non c\'è un sostituto patentato disponibile nelle prossime 2 ore. Devi decidere come gestire la caldaia prima di partire.',
+        domanda: 'Forza maggiore documentata, nessun sostituto disponibile per 2 ore. Cosa fai con la caldaia?',
+        opzioni: [
+          { testo: 'Lasci la caldaia accesa e parti — è forza maggiore, l\'impianto funziona da solo', esito: 'SBAGLIATO', conseguenza: 'Una caldaia in pressione non può essere lasciata senza presidio, salvo rispetti i requisiti dell\'Art. 43 D.M. 21.05.74 (non presidiata). Una caldaia normale richiede presidio continuo — lasciarla senza conduttore è reato.' },
+          { testo: 'Esegui la fermata ordinata documentata, avvisi il responsabile e l\'INAIL dell\'interruzione forzata del servizio per forza maggiore, poi parti', esito: 'CORRETTO', conseguenza: 'Risposta corretta. Con forza maggiore documentata la fermata ordinata è la procedura giusta. La comunicazione al responsabile e la documentazione sul registro proteggono il conduttore da eventuali contestazioni successive.' },
+          { testo: 'Chiedi all\'operatore di produzione (non patentato) di sorvegliare la caldaia fino all\'arrivo del sostituto', esito: 'SBAGLIATO', conseguenza: 'R.D. 824/1927 Art. 27: il generatore deve essere assistito da persona con certificato di abilitazione. Un operatore non patentato non può assumere la conduzione — è reato per entrambi.' },
+          { testo: 'Abbassa la pressione al minimo e parti — la pressione bassa è meno pericolosa', esito: 'SBAGLIATO', conseguenza: 'Abbassare la pressione non elimina il pericolo e non rende lecito l\'abbandono. Una caldaia anche a bassa pressione richiede comunque il presidio del conduttore patentato.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 32 + Art. 27. Con forza maggiore documentata e nessun sostituto disponibile, la fermata ordinata è l\'unica soluzione lecita. La caldaia non può essere lasciata senza conduttore patentato. La documentazione della forza maggiore sul registro e la comunicazione al responsabile proteggono il conduttore da sanzioni.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricata — fermata ordinata',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Fermata documentata per forza maggiore', '📋 Rientro conduttore: giorno successivo']
+        },
+        situazione: 'Hai fermato la caldaia in modo ordinato e documentato tutto sul registro. Il giorno successivo rientri al lavoro. L\'azienda ha subito un danno economico per la mancata produzione. Il responsabile minaccia di segnalare il fatto all\'Ispettorato del Lavoro per abbandono del servizio.',
+        domanda: 'Il responsabile vuole segnalare l\'abbandono del servizio all\'Ispettorato. Quali sono le tue difese?',
+        opzioni: [
+          { testo: 'Nessuna difesa — hai comunque abbandonato il servizio senza preavviso', esito: 'SBAGLIATO', conseguenza: 'La forza maggiore documentata è una difesa legale esplicita prevista dall\'Art. 32. Non è abbandono ingiustificato se c\'è forza maggiore.' },
+          { testo: 'Presenti la documentazione della forza maggiore (ricovero ospedaliero), il registro con la fermata ordinata e la comunicazione tempestiva al responsabile — la norma esplicitamente esclude la forza maggiore dalle sanzioni', esito: 'CORRETTO', conseguenza: 'Difesa corretta. R.D. 824/1927 Art. 32 recita: "Salvo casi di forza maggiore". La documentazione della forza maggiore + fermata ordinata + comunicazione al responsabile costituisce una difesa completa.' },
+          { testo: 'Sostieni che non è tua responsabilità — l\'azienda avrebbe dovuto garantire un sostituto', esito: 'PARZIALE', conseguenza: 'La responsabilità dell\'azienda di garantire copertura dei turni è reale, ma non elimina quella personale del conduttore. La forza maggiore documentata è la difesa più forte — non l\'attribuzione di colpa all\'azienda.' },
+          { testo: 'Accetti la segnalazione e attendi la decisione dell\'Ispettorato senza presentare documentazione', esito: 'SBAGLIATO', conseguenza: 'Non presentare la documentazione della forza maggiore equivale a rinunciare alla propria difesa. L\'Ispettorato decide sulla base degli elementi presentati — la documentazione è fondamentale.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 32. La norma prevede esplicitamente "salvo casi di forza maggiore". La documentazione della forza maggiore (certificato ospedaliero), la fermata ordinata dell\'impianto e la comunicazione tempestiva al responsabile costituiscono la difesa completa. L\'Ispettorato valuta la forza maggiore caso per caso — la documentazione è determinante.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 14: Valvola sicurezza + manometro — R.D. 824/1927 Art. 16-17
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S014',
+    titolo: 'Valvola di sicurezza che apre sotto taratura e manometro discordante',
+    categoria: 'Sicurezza',
+    difficolta: 'Alta',
+    fonte: 'R.D. 824/1927 Art. 16 e Art. 17 — Valvole di sicurezza e manometri',
+    contesto_iniziale: 'Caldaia in esercizio. P_bollo = 12 bar. Turno mattutino. Durante il normale esercizio il conduttore nota due anomalie contemporanee.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,5 bar — manometro principale',
+          livello: 'Normale',
+          bruciatore: 'Acceso — 80%',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ Valvola sicurezza 1: aperta a 10,5 bar (tarata a 12 bar)', '⚠️ Manometro riserva: indica 9,8 bar (differenza 0,7 bar dal principale)']
+        },
+        situazione: 'La valvola di sicurezza numero 1 si è aperta a 10,5 bar invece dei 12 bar di taratura. Il manometro di riserva indica 9,8 bar mentre il principale indica 10,5 bar — differenza di 0,7 bar. Secondo l\'Art. 17 R.D. 824/1927 la tolleranza massima è 1/5 della pressione di bollo (12/5 = 2,4 bar). La differenza di 0,7 bar è dentro la tolleranza.',
+        domanda: 'Valvola di sicurezza che apre sotto taratura e due manometri discordanti. Prima azione?',
+        opzioni: [
+          { testo: 'Ignori la valvola — scarica vapore normalmente quindi funziona', esito: 'SBAGLIATO', conseguenza: 'Una valvola che apre a 10,5 bar invece di 12 bar non è "funzionante" — è fuori taratura. La molla si è indebolita o la sede è deteriorata. Una valvola che apre troppo presto priva l\'impianto del margine di sicurezza.' },
+          { testo: 'Spegni il bruciatore, fermi la caldaia e chiudi la valvola di presa vapore — con una valvola di sicurezza fuori taratura non puoi continuare l\'esercizio', esito: 'CORRETTO', conseguenza: 'Risposta corretta. R.D. 824/1927 Art. 16: le valvole devono essere caricate in modo da dare sfogo al vapore quando è raggiunta la pressione massima effettiva di lavoro (= taratura). Aprire sotto taratura è malfunzionamento che richiede fermata.' },
+          { testo: 'Abbassa la pressione di esercizio a 9 bar per evitare che la valvola apra di nuovo', esito: 'SBAGLIATO', conseguenza: 'Abbassare la pressione di esercizio non risolve il problema della valvola fuori taratura — la valvola deve essere ritarata. Operare con valvola malfunzionante non è lecito indipendentemente dalla pressione.' },
+          { testo: 'Verifichi prima la discordanza dei manometri con il manometro campione e poi decidi', esito: 'PARZIALE', conseguenza: 'La verifica con il manometro campione è corretta per i manometri, ma la valvola di sicurezza fuori taratura richiede fermata immediata indipendentemente dai manometri — sono due anomalie separate.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 16. Una valvola di sicurezza che apre a pressione inferiore alla taratura ha molla indebolita o sede deteriorata. Non garantisce la protezione alla pressione di bollo. Fermata obbligatoria. Ritaratura da parte di personale autorizzato con successiva piombatura e registrazione nel libretto matricolare.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricata',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Valvola sicurezza 1: da ritarare', '📋 Manometri: da verificare con campione']
+        },
+        situazione: 'Caldaia ferma. Il manutentore ha rilevato che la molla della valvola di sicurezza 1 si è indebolita — deve essere sostituita. Riguardo ai manometri: la differenza di 0,7 bar tra i due è dentro la tolleranza dell\'Art. 17 (max 1/5 di 12 bar = 2,4 bar). Ma per verificare quale dei due è corretto devi usare il manometro campione previsto dall\'Art. 18.',
+        domanda: 'Come verifichi quale manometro indica correttamente e come si esegue la verifica?',
+        opzioni: [
+          { testo: 'Fidi del manometro principale — è installato in posizione più visibile quindi è quello ufficiale', esito: 'SBAGLIATO', conseguenza: 'La posizione del manometro non determina quale sia corretto. Entrambi vanno confrontati con il manometro campione certificato — non si può decidere per posizione o convenienza.' },
+          { testo: 'Colleghi il manometro campione all\'apposita appendice prevista dall\'Art. 18 R.D. 824/1927 e confronti le indicazioni di entrambi i manometri con il campione certificato', esito: 'CORRETTO', conseguenza: 'Procedura corretta. R.D. 824/1927 Art. 18: ogni generatore deve avere un\'apposita appendice per l\'applicazione del manometro campione. Il confronto con il campione certificato identifica quale manometro è accurato e quale va riparato o sostituito.' },
+          { testo: 'Fai la media delle due letture — la realtà è nel mezzo', esito: 'SBAGLIATO', conseguenza: 'Non si fa la media di due strumenti di misura per determinare il valore reale. Il manometro campione è il riferimento certificato — non la media aritmetica.' },
+          { testo: 'Sostituisci entrambi i manometri per sicurezza senza verifica', esito: 'SBAGLIATO', conseguenza: 'Sostituire entrambi senza verifica è costoso e non necessario. Il confronto con il campione identifica esattamente quale dei due è fuori tolleranza — si sostituisce solo quello.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 17-18. Art. 17: tolleranza manometro = 1/5 della pressione di bollo (massimo 1 kg in più o 0,5 kg in meno). Art. 18: ogni generatore deve avere appendice con disco da 40 mm per il manometro campione. Il campione certificato è il riferimento assoluto. Se la differenza supera la tolleranza: riparare o sostituire il manometro fuori tolleranza. Art. 17 richiede anche un manometro di riserva per ogni generatore.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Pronta per rimessa in servizio',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['✅ Valvola sicurezza 1: molla sostituita, ritarata a 12 bar', '✅ Manometro secondario: sostituito (era fuori tolleranza di 0,7 bar)', '📋 Rimessa in servizio: procedura da definire']
+        },
+        situazione: 'Valvola di sicurezza ritarata a 12 bar con nuova molla. Manometro secondario sostituito — era quello errato. Il manutentore chiede se può rimettere in servizio direttamente o se ci vuole una procedura formale. La valvola di sicurezza ha una nuova piombatura. Il manometro sostituito è nuovo e certificato.',
+        domanda: 'Valvola ritarata e manometro sostituito. Come si rimette in servizio correttamente?',
+        opzioni: [
+          { testo: 'Rimessa in servizio immediata — le riparazioni sono state eseguite dal manutentore', esito: 'SBAGLIATO', conseguenza: 'La sostituzione della molla di una valvola di sicurezza e la nuova taratura devono essere documentate nel libretto matricolare prima della rimessa in servizio. Non si rimette in servizio senza documentazione.' },
+          { testo: 'Documenta nel registro giornaliero le riparazioni con data, ora e firma del manutentore — poi avvia con la procedura normale (purga, sfiati, salita graduale)', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Le riparazioni agli accessori di sicurezza vanno documentate. La valvola ha nuova piombatura che certifica la taratura. Il registro deve riportare l\'intervento. La rimessa in servizio segue la procedura normale di avviamento.' },
+          { testo: 'Richiedi verifica INAIL prima della rimessa in servizio — qualsiasi intervento sulle valvole richiede verifica', esito: 'SBAGLIATO', conseguenza: 'La sostituzione della molla e la ritaratura della valvola di sicurezza sono manutenzione ordinaria che non richiede verifica INAIL preventiva. La verifica INAIL è richiesta per interventi sulle parti in pressione del corpo cilindrico.' },
+          { testo: 'Esegui prova idraulica prima della rimessa in servizio perché la valvola è stata manomessa', esito: 'SBAGLIATO', conseguenza: 'La prova idraulica è richiesta per interventi sul corpo cilindrico (Art. 60 R.D. 824/1927), non per la sostituzione della molla di una valvola di sicurezza. La nuova piombatura certifica la corretta taratura.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 16 + Art. 69-71. La sostituzione della molla e la ritaratura della valvola di sicurezza sono manutenzione degli accessori — non interventi sul corpo cilindrico. Non richiedono prova idraulica né verifica INAIL preventiva. Richiedono: documentazione sul registro giornaliero + aggiornamento libretto matricolare + nuova piombatura (già eseguita). Rimessa in servizio con procedura normale di avviamento.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 15: Pompa alimento + indicatore livello — R.D. 824/1927 Art. 21-22
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S015',
+    titolo: 'Guasto pompa di alimento principale e indicatore di livello anomalo',
+    categoria: 'Sicurezza',
+    difficolta: 'Alta',
+    fonte: 'R.D. 824/1927 Art. 21 e Art. 22 — Apparecchi di alimentazione e indicatori di livello',
+    contesto_iniziale: 'Caldaia in esercizio a 10 bar. Producibilità 75%. Turno pomeridiano. Improvviso allarme pompa principale.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: 'Normale — 60%',
+          bruciatore: 'Acceso — 75%',
+          pompa: '🔴 Pompa principale ferma — guasto motore elettrico',
+          allarmi: ['🔴 Pompa alimento principale: GUASTO', '⚠️ Livello in lento calo']
+        },
+        situazione: 'La pompa di alimento principale si è fermata per guasto al motore elettrico. Il livello sta scendendo lentamente. Hai la pompa di riserva disponibile. Il R.D. 824/1927 Art. 21 richiede 2 apparecchi di alimentazione indipendenti, ciascuno capace di fornire almeno il doppio dell\'acqua necessaria.',
+        domanda: 'Pompa principale guasta, livello in calo. Prima azione?',
+        opzioni: [
+          { testo: 'Avvii subito la pompa di riserva — è esattamente per questo che esiste', esito: 'CORRETTO', conseguenza: 'Risposta corretta. R.D. 824/1927 Art. 21: i due apparecchi di alimentazione devono essere indipendenti in modo che in qualsiasi caso sia assicurato il funzionamento di uno di essi. La pompa di riserva esiste per questa emergenza — attivarla immediatamente è la procedura corretta.' },
+          { testo: 'Spegni il bruciatore e poi attivi la riserva — prima ferma la produzione di vapore', esito: 'PARZIALE', conseguenza: 'Spegnere prima il bruciatore non è necessario se la pompa di riserva può subentrare immediatamente. Il livello è ancora normale — c\'è tempo per attivare la riserva senza perdere il regime. Spegnere prima allunga inutilmente la procedura.' },
+          { testo: 'Aspetti 5 minuti per vedere se la pompa principale si riavvia da sola', esito: 'SBAGLIATO', conseguenza: 'Con livello in calo non si aspetta. Il livello può scendere al minimo in pochi minuti a piena produzione. La pompa di riserva si attiva immediatamente — non si aspetta il riavvio spontaneo di una pompa con guasto motore.' },
+          { testo: 'Riduci il carico del bruciatore al 30% per ridurre la produzione di vapore e guadagnare tempo', esito: 'PARZIALE', conseguenza: 'Ridurre il carico riduce il consumo di acqua ma non lo azzera. La pompa di riserva va attivata comunque. La riduzione del carico è una misura complementare, non sostitutiva.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 21. I due apparecchi di alimentazione devono essere indipendenti e ciascuno capace di fornire almeno il doppio dell\'acqua necessaria. La pompa di riserva è dimensionata per sostenere da sola tutta la produzione — attivarla immediatamente è la procedura corretta. Poi si documenta il guasto e si pianifica la riparazione.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '10,0 bar',
+          livello: '55% — pompa riserva in marcia',
+          bruciatore: 'Acceso — 75%',
+          pompa: '🟢 Pompa riserva in marcia — principale guasta',
+          allarmi: ['✅ Livello stabile con pompa riserva', '⚠️ Indicatore livello 2: non risponde ai rubinetti di prova']
+        },
+        situazione: 'La pompa di riserva funziona, il livello si è stabilizzato. Ora noti che l\'indicatore di livello numero 2 non risponde alla verifica con i rubinetti di prova: il rubinetto inferiore non dà acqua. Il R.D. 824/1927 Art. 22 richiede almeno 2 indicatori indipendenti. Con l\'indicatore 2 non affidabile, hai solo l\'indicatore 1.',
+        domanda: 'Pompa principale guasta + indicatore livello 2 non affidabile. Due anomalie contemporanee. Cosa fai?',
+        opzioni: [
+          { testo: 'Continui l\'esercizio con pompa riserva e indicatore 1 — hai ancora un mezzo di alimentazione e un indicatore funzionanti', esito: 'SBAGLIATO', conseguenza: 'Con pompa principale guasta E indicatore 2 non affidabile hai due anomalie simultanee agli accessori obbligatori. Il R.D. 824/1927 richiede 2 pompe e 2 indicatori. Operare con una sola pompa e un solo indicatore è al limite della legalità — richiede decisione immediata.' },
+          { testo: 'Fermi la caldaia in modo ordinato — con due accessori obbligatori fuori servizio non è sicuro continuare l\'esercizio', esito: 'CORRETTO', conseguenza: 'Risposta prudente e corretta. Con pompa principale guasta e indicatore livello 2 non affidabile, la ridondanza richiesta dal R.D. 824/1927 Art. 21 e Art. 22 è compromessa. La fermata ordinata è la scelta più sicura e normativa.' },
+          { testo: 'Continui solo se riduci il carico al 50% per margine di sicurezza aggiuntivo', esito: 'SBAGLIATO', conseguenza: 'Ridurre il carico non ripristina la ridondanza degli accessori obbligatori. Il R.D. 824/1927 richiede 2 pompe E 2 indicatori indipendenti — non una sola con carico ridotto.' },
+          { testo: 'Documenti entrambe le anomalie e decidi insieme al responsabile se continuare', esito: 'PARZIALE', conseguenza: 'La documentazione è corretta, ma la decisione di continuare o fermare non è del responsabile di produzione — è del conduttore patentato sulla base della normativa. Il responsabile non può autorizzare la violazione del R.D. 824/1927.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 21 e Art. 22. Entrambi richiedono ridondanza: 2 pompe indipendenti e 2 indicatori di livello indipendenti. Con una pompa guasta e un indicatore non affidabile, due degli accessori obbligatori sono fuori servizio contemporaneamente. La fermata ordinata è la risposta normativa corretta.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricata — fermata ordinata',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Manutenzione: riparazione pompa principale pianificata', '📋 Manutenzione: pulizia collegamento indicatore livello 2']
+        },
+        situazione: 'Hai fermato la caldaia in modo ordinato. La manutenzione ha riparato la pompa principale (sostituzione cuscinetti motore) e pulito il collegamento ostruito dell\'indicatore di livello 2. Prima di rimettere in servizio devi verificare che entrambi siano effettivamente funzionanti.',
+        domanda: 'Riparazioni eseguite. Come verifichi pompa e indicatore prima della rimessa in servizio?',
+        opzioni: [
+          { testo: 'Ti fidi del manutentore — se dice che funzionano, funzionano', esito: 'SBAGLIATO', conseguenza: 'Il conduttore ha la responsabilità della verifica operativa degli accessori prima di ogni avviamento. La dichiarazione del manutentore non sostituisce la verifica diretta da parte del conduttore patentato.' },
+          { testo: 'Verifichi la pompa di riserva facendola girare a secco e l\'indicatore con i rubinetti di prova prima di riempire la caldaia', esito: 'SBAGLIATO', conseguenza: 'Le pompe centrifughe non si fanno mai girare a secco — si danneggiano le guarnizioni meccaniche. La verifica della pompa si esegue con acqua nell\'impianto, non a secco.' },
+          { testo: 'Dopo il riempimento: testi la pompa principale facendola entrare in funzione con acqua, poi verifichi l\'indicatore 2 con i rubinetti di prova (deve uscire vapore dall\'inferiore se livello basso, acqua se livello normale)', esito: 'CORRETTO', conseguenza: 'Procedura corretta. La pompa si verifica con acqua nell\'impianto. L\'indicatore si verifica con i rubinetti di prova: rubinetto superiore → vapore (zona vapore), rubinetto inferiore → acqua (zona acqua). Solo con verifiche dirette positive si procede all\'avviamento.' },
+          { testo: 'Avvii direttamente e monitori i parametri nei primi 30 minuti per verificare il funzionamento', esito: 'SBAGLIATO', conseguenza: 'Il monitoraggio post-avviamento non sostituisce la verifica pre-avviamento. Se l\'indicatore 2 è ancora ostruito lo scopri solo quando serve — in emergenza. La verifica va fatta prima, non durante.' }
+        ],
+        risposta_corretta: 2,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 21-22 + Quaderno Bissolo. La verifica pre-avviamento è responsabilità del conduttore: 1) Pompa principale: test con acqua nell\'impianto. 2) Indicatore livello 2: rubinetti di prova — dal rubinetto superiore deve uscire vapore, dall\'inferiore acqua. Solo con entrambi verificati positivamente si può procedere all\'avviamento in sicurezza.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 16: Avaria grave — R.D. 824/1927 Art. 51
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S016',
+    titolo: 'Avaria grave — denuncia obbligatoria entro 24 ore',
+    categoria: 'Normativa',
+    difficolta: 'Alta',
+    fonte: 'R.D. 824/1927 Art. 51 — Denuncia di scoppio o gravi avarie',
+    contesto_iniziale: 'Caldaia in esercizio. Durante il turno si verifica un evento significativo che richiede la fermata d\'emergenza. Nessun ferito. Il generatore presenta danni visibili.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '0 bar — fermata emergenza',
+          livello: 'Sconosciuto',
+          bruciatore: '🔴 Spento — emergenza',
+          pompa: 'Spenta',
+          allarmi: ['🔴 Rottura tubo fumogeno — perdita vapore', '🔴 Fermata emergenza eseguita', '📋 Danni visibili al fascio tubiero']
+        },
+        situazione: 'Un tubo fumogeno si è rotto improvvisamente durante l\'esercizio. Hai eseguito la fermata d\'emergenza. La perdita di vapore è cessata. Nessun ferito. Il tubo rotto è chiaramente visibile dall\'apertura del cinerario. Si tratta di una gravi avaria ai sensi dell\'Art. 51 R.D. 824/1927.',
+        domanda: 'Rottura tubo fumogeno — gravi avaria. Cosa prevede l\'Art. 51 R.D. 824/1927?',
+        opzioni: [
+          { testo: 'Denuncia all\'INAIL entro 24 ore tramite lettera raccomandata o mezzo equipollente + non toccare nulla fino all\'ispezione', esito: 'CORRETTO', conseguenza: 'Risposta corretta. R.D. 824/1927 Art. 51: in caso di scoppio o gravi avarie, l\'utente deve fare denuncia entro 24 ore mediante lettera raccomandata o mezzo equipollente, sia all\'associazione (ora INAIL) che al Ministero. Il generatore non deve essere modificato fino all\'ispezione.' },
+          { testo: 'Denuncia entro 3 giorni lavorativi — 24 ore è solo per gli infortuni con feriti', esito: 'SBAGLIATO', conseguenza: 'L\'Art. 51 R.D. 824/1927 stabilisce 24 ore anche senza infortuni. La denuncia di gravi avarie è obbligatoria entro 24 ore indipendentemente dalla presenza di feriti.' },
+          { testo: 'Denuncia solo se ci sono feriti — senza infortuni la denuncia non è obbligatoria', esito: 'SBAGLIATO', conseguenza: 'Art. 51 R.D. 824/1927 recita esplicitamente: "anche se non determinanti infortunio". La gravi avaria va denunciata anche senza feriti.' },
+          { testo: 'Ripari il tubo rotto e poi denunci come manutenzione straordinaria — così eviti problemi con l\'INAIL', esito: 'SBAGLIATO', conseguenza: 'Riparare prima della denuncia è alterazione del corpo del reato — reato penale aggiuntivo. Il generatore deve restare nelle condizioni dell\'avaria fino all\'ispezione INAIL. Riparare prima è vietato e peggiora la situazione legale.' }
+        ],
+        risposta_corretta: 0,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 51. "Nei casi di scoppio o di gravi avarie di un apparecchio anche se non determinanti infortunio, l\'utente deve farne denuncia entro 24 ore, mediante lettera raccomandata od in altro modo equipollente, sia all\'associazione nazionale per il controllo sulla combustione che al ministero dell\'economia nazionale." Oggi: denuncia a INAIL e al Ministero del Lavoro.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricato',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['📋 Denuncia INAIL inviata — ore 14:30', '📋 Ispezione INAIL: domani mattina ore 9:00', '⚠️ Responsabile chiede di iniziare la riparazione oggi pomeriggio']
+        },
+        situazione: 'Hai denunciato l\'avaria all\'INAIL entro le 24 ore. L\'ispezione è fissata per domani mattina. Il responsabile di produzione chiede di iniziare la riparazione oggi pomeriggio perché la commessa è urgente. Vuole che ripari il tubo rotto prima dell\'ispezione.',
+        domanda: 'Responsabile chiede di iniziare le riparazioni prima dell\'ispezione INAIL di domani. Cosa fai?',
+        opzioni: [
+          { testo: 'Inizi la riparazione se il responsabile assume la responsabilità per iscritto', esito: 'SBAGLIATO', conseguenza: 'La responsabilità penale per alterazione del corpo del reato non è trasferibile con una firma su carta. Il conduttore che esegue la riparazione risponde penalmente insieme al responsabile che l\'ha ordinata.' },
+          { testo: 'Rifiuti categoricamente — il generatore non può essere toccato fino all\'ispezione INAIL, salvo ragioni di sicurezza immediata', esito: 'CORRETTO', conseguenza: 'Risposta corretta. Art. 51 R.D. 824/1927 + principi generali: dopo la denuncia di avaria il generatore deve essere lasciato nelle condizioni dell\'evento fino all\'ispezione INAIL. Modificarlo prima è alterazione del corpo del reato — reato penale.' },
+          { testo: 'Fotografate il danno con dettaglio e poi iniziate la riparazione — le foto sostituiscono l\'ispezione', esito: 'SBAGLIATO', conseguenza: 'Le fotografie non sostituiscono l\'ispezione fisica dell\'INAIL. Il funzionario deve esaminare direttamente il generatore nelle condizioni dell\'avaria — non solo fotografie.' },
+          { testo: 'Chiedete all\'INAIL di anticipare l\'ispezione a oggi pomeriggio — se vengono prima, poi potete riparare', esito: 'CORRETTO', conseguenza: 'Ottima soluzione. Chiedere all\'INAIL di anticipare l\'ispezione è il modo corretto per accelerare il processo nel rispetto della norma. Se l\'INAIL può venire prima, l\'ispezione viene eseguita e le riparazioni possono iniziare subito dopo.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 51 + principi penali. Il generatore non deve essere modificato fino all\'ispezione INAIL — alterarlo è alterazione del corpo del reato. La soluzione ottimale è chiedere all\'INAIL di anticipare l\'ispezione se c\'è urgenza produttiva. In ogni caso il generatore rimane intoccato fino all\'ispezione.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '0 bar',
+          livello: 'Scaricato',
+          bruciatore: 'Spento',
+          pompa: 'Spenta',
+          allarmi: ['✅ Ispezione INAIL completata', '📋 Prescrizioni INAIL: sostituzione 6 tubi + prova idraulica', '📋 R.D. 824/1927 Art. 60 lett. c): prova idraulica obbligatoria']
+        },
+        situazione: 'L\'ispezione INAIL ha rilevato che oltre al tubo rotto ci sono altri 5 tubi con corrosione avanzata. Prescrizione: sostituzione di 6 tubi totali. Secondo il R.D. 824/1927 Art. 60 lettera c) punto 6, la sostituzione di oltre 1/4 dei tubi fumogeni (quando tale quarto non sia inferiore a 6 tubi) richiede prova idraulica.',
+        domanda: 'INAIL prescrive sostituzione di 6 tubi. L\'Art. 60 c) punto 6 richiede prova idraulica se si sostituisce oltre 1/4 dei tubi fumogeni (minimo 6). Cosa prevede la procedura di rimessa in servizio?',
+        opzioni: [
+          { testo: 'Sostituzione dei 6 tubi → rimessa in servizio diretta — la prova idraulica è solo per il corpo cilindrico', esito: 'SBAGLIATO', conseguenza: 'Art. 60 c) punto 6 R.D. 824/1927 prevede esplicitamente la prova idraulica anche per sostituzione di oltre 1/4 dei tubi fumogeni quando tale quarto non sia inferiore a 6 tubi. Non è solo per il corpo cilindrico.' },
+          { testo: 'Sostituzione 6 tubi → prova idraulica a 1,5× P_bollo con INAIL presente → prova a caldo → registrazione nel libretto → rimessa in servizio con verbale positivo', esito: 'CORRETTO', conseguenza: 'Procedura corretta. R.D. 824/1927 Art. 60 c) 6 + Art. 62 + Art. 65. Sequenza: sostituzione tubi da riparatore autorizzato → prova idraulica → prova a caldo con INAIL → verbale positivo → aggiornamento libretto matricolare → rimessa in servizio.' },
+          { testo: 'Solo prova a caldo — la prova idraulica si evita se i tubi nuovi sono certificati dal fornitore', esito: 'SBAGLIATO', conseguenza: 'La certificazione del fornitore dei tubi non sostituisce la prova idraulica dell\'impianto assemblato. L\'Art. 60 R.D. 824/1927 richiede la prova idraulica dell\'apparecchio nel suo complesso dopo la sostituzione.' },
+          { testo: 'Prova idraulica eseguita dal manutentore senza INAIL — poi INAIL a posteriori valida i risultati', esito: 'SBAGLIATO', conseguenza: 'La prova idraulica dopo avaria rilevante si esegue con l\'INAIL presente o su sua disposizione. Non si esegue autonomamente e poi si chiede la validazione — la sequenza è inversa.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 60 c) punto 6 + Art. 62 + Art. 63 + Art. 65. La sostituzione di oltre 1/4 dei tubi fumogeni (quando almeno 6) richiede prova idraulica obbligatoria. Sequenza: 1) Sostituzione tubi da riparatore autorizzato. 2) Denuncia all\'INAIL ai sensi Art. 46. 3) Prova idraulica a 1,25× P_bollo (apparecchio usato) con INAIL presente. 4) Visita interna. 5) Prova a caldo. 6) Verbale positivo → libretto → rimessa in servizio.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENARIO 17: Batteria caldaie — R.D. 824/1927 Art. 24 + Art. 28
+  // ═══════════════════════════════════════════════════════════
+  {
+    id: 'S017',
+    titolo: 'Gestione batteria caldaie — locali separati e valvola chiusura automatica',
+    categoria: 'Normativa',
+    difficolta: 'Media',
+    fonte: 'R.D. 824/1927 Art. 24 e Art. 28 — Batteria di generatori e locali separati',
+    contesto_iniziale: 'Centrale termica con 3 caldaie in batteria su collettore vapore comune. Superficie riscaldata totale: 260 m². Pressione di esercizio: 8 bar. Il conduttore di turno gestisce tutte e tre.',
+    steps: [
+      {
+        id: 1,
+        stato_impianto: {
+          pressione: '8,0 bar — collettore comune',
+          livello: 'Normale su tutte e tre',
+          bruciatore: 'Caldaie 1 e 2 accese, Caldaia 3 di riserva',
+          pompa: 'In marcia su tutte',
+          allarmi: ['📋 Caldaia 3: locale separato, porta chiusa']
+        },
+        situazione: 'Le caldaie 1 e 2 sono nello stesso locale. La caldaia 3 è in un locale separato ma contiguo. Tutte e tre sono collegate allo stesso collettore vapore a 8 bar. La superficie riscaldata totale è 260 m² (>200 m²) e la pressione è 8 bar (>6 bar). Il R.D. 824/1927 Art. 24 richiede valvola di chiusura automatica.',
+        domanda: 'Batteria con S=260 m² e P=8 bar. L\'Art. 24 R.D. 824/1927 richiede cosa?',
+        opzioni: [
+          { testo: 'Nulla di speciale — la valvola di presa vapore manuale su ogni caldaia è sufficiente', esito: 'SBAGLIATO', conseguenza: 'Art. 24 R.D. 824/1927: negli impianti con superficie riscaldata totale >200 m² e pressione >6 bar deve essere applicata, DOPO la presa di vapore, una valvola automatica di chiusura. Non è una valvola manuale — deve essere automatica.' },
+          { testo: 'Una valvola automatica di chiusura vapore dopo la presa di ogni caldaia — obbligatoria per S>200 m² e P>6 bar', esito: 'CORRETTO', conseguenza: 'Risposta corretta. R.D. 824/1927 Art. 24: "Negli impianti di generatori isolati o in batteria di oltre 200 m² di superficie riscaldata complessiva e funzionanti a pressione superiore a 6 kg/cm² deve essere applicata, dopo la presa di vapore, una valvola automatica di chiusura." In caso di rottura su una caldaia la valvola automatica isola immediatamente.' },
+          { testo: 'Un conduttore aggiuntivo per la caldaia 3 nel locale separato — richiesto dall\'Art. 28', esito: 'PARZIALE', conseguenza: 'L\'Art. 28 richiede un conduttore patentato per ogni locale separato — ma questo dipende dall\'interpretazione. La valvola automatica dell\'Art. 24 è però il requisito principale per questa configurazione di batteria.' },
+          { testo: 'Una valvola di sicurezza supplementare sul collettore comune per la batteria', esito: 'SBAGLIATO', conseguenza: 'Le valvole di sicurezza sul collettore non sono previste dall\'Art. 24. L\'Art. 24 richiede specificamente una valvola automatica di CHIUSURA dopo la presa di vapore di ogni generatore.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 24. "Negli impianti di generatori isolati o in batteria di oltre 200 mq di superficie riscaldata complessiva e funzionanti a pressione superiore a 6 kg per cmq deve essere applicata, dopo la presa di vapore, una valvola automatica di chiusura." Con S=260 m² e P=8 bar entrambi i limiti sono superati → valvola automatica di chiusura obbligatoria su ogni caldaia della batteria.'
+      },
+      {
+        id: 2,
+        stato_impianto: {
+          pressione: '8,0 bar — collettore comune',
+          livello: 'Normale',
+          bruciatore: 'Caldaie 1 e 2 accese',
+          pompa: 'In marcia',
+          allarmi: ['📋 Art. 28: caldaia 3 locale separato — gestione conduttore']
+        },
+        situazione: 'La caldaia 3 è nel locale separato e oggi viene riavviata dopo un fermo. Sei il solo conduttore in turno e gestisci anche le caldaie 1 e 2 nel locale principale. Il responsabile dice che puoi gestire tutte e tre da solo. Il R.D. 824/1927 Art. 28 stabilisce che per ogni locale separato deve esservi un conduttore patentato.',
+        domanda: 'Caldaia 3 nel locale separato, sei l\'unico conduttore. Cosa prevede l\'Art. 28?',
+        opzioni: [
+          { testo: 'Puoi gestire tutte e tre — un solo conduttore per l\'intera centrale è sufficiente', esito: 'SBAGLIATO', conseguenza: 'R.D. 824/1927 Art. 28: "quando più generatori posti nel medesimo opificio funzionino in locali separati o distinti, siano pure contigui, per ogni locale deve esservi un conduttore patentato." La contiguità dei locali non fa eccezione.' },
+          { testo: 'Serve un conduttore patentato per ogni locale separato — con te nel locale principale, serve un secondo conduttore per il locale della caldaia 3', esito: 'CORRETTO', conseguenza: 'Risposta corretta. Art. 28 R.D. 824/1927 è esplicito: locali separati, anche se contigui, richiedono un conduttore per locale. La caldaia 3 nel locale separato richiede il suo conduttore patentato — non puoi gestire entrambi i locali da solo.' },
+          { testo: 'Puoi gestire entrambi i locali se installi un sistema di videosorveglianza per vedere la caldaia 3 dal locale principale', esito: 'SBAGLIATO', conseguenza: 'La videosorveglianza non è un sostituto del conduttore patentato presente nel locale. L\'Art. 28 richiede la "continua assistenza" fisica — non la sorveglianza remota.' },
+          { testo: 'Puoi gestire la caldaia 3 da solo se è in regime Art. 43 (non presidiata)', esito: 'PARZIALE', conseguenza: 'Il regime Art. 43 del D.M. 21.05.74 (non presidiato) è un\'opzione se i requisiti sono soddisfatti (P≤15 bar, producibilità≤3000 kg/h, allarmi a distanza). In questo caso potrebbe applicarsi — ma richiede verifica dei requisiti specifici, non è automatico.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 28. "Quando più generatori posti nel medesimo opificio funzionino in locali separati o distinti, siano pure contigui, per ogni locale deve esservi un conduttore patentato, a meno che sia prescritto un numero maggiore, con ordinanza motivata della Associazione nazionale per il controllo della combustione." La soluzione è: secondo conduttore per il locale caldaia 3, oppure regime Art. 43 se i requisiti sono soddisfatti.'
+      },
+      {
+        id: 3,
+        stato_impianto: {
+          pressione: '8,5 bar — caldaia 1',
+          livello: 'Normale',
+          bruciatore: 'Caldaia 1 accesa',
+          pompa: 'In marcia',
+          allarmi: ['⚠️ Caldaia 2: ferma per manutenzione', '📋 Collegamento caldaia 2 al collettore: da gestire']
+        },
+        situazione: 'La caldaia 2 è in manutenzione — fascio tubiero parzialmente smontato. Il collettore vapore comune è ancora collegato alla caldaia 2 in manutenzione attraverso la valvola di presa. Il manutentore sta lavorando sui tubi. Devi assicurarti che il vapore del collettore non possa raggiungere la caldaia 2 in manutenzione.',
+        domanda: 'Caldaia 2 in manutenzione con tubi smontati, collegata al collettore vapore. Come la isoli in sicurezza?',
+        opzioni: [
+          { testo: 'Basta chiudere la valvola di presa vapore della caldaia 2 — è sufficiente come isolamento', esito: 'SBAGLIATO', conseguenza: 'Una sola valvola chiusa non garantisce isolamento per manutenzione. Le valvole possono avere perdite di tenuta. Per manutenzione con personale che lavora all\'interno si richiede doppio sezionamento (doppia valvola) o cieco flangiato.' },
+          { testo: 'Chiudi la valvola di presa + inserisci un cieco flangiato certificato sul collegamento al collettore + apponi cartello LOTO sulla valvola + verifica assenza pressione prima dell\'ingresso del manutentore', esito: 'CORRETTO', conseguenza: 'Procedura corretta. Il doppio sezionamento (valvola + cieco flangiato) garantisce l\'isolamento fisico. Il LOTO impedisce manovre accidentali. La verifica dell\'assenza di pressione prima dell\'ingresso del personale è obbligatoria per D.Lgs. 81/2008.' },
+          { testo: 'Fermi anche la caldaia 1 per sicurezza — senza vapore nel collettore non c\'è rischio', esito: 'PARZIALE', conseguenza: 'Fermare la caldaia 1 elimina il vapore nel collettore ma interrompe il servizio alle utenze. Il cieco flangiato permette di mantenere la caldaia 1 in esercizio isolando in sicurezza la caldaia 2 in manutenzione.' },
+          { testo: 'Il manutentore si occupa dell\'isolamento — non è responsabilità del conduttore', esito: 'SBAGLIATO', conseguenza: 'L\'isolamento delle fonti di energia pericolose (vapore) è responsabilità condivisa tra il conduttore (che gestisce l\'impianto) e il manutentore. Il conduttore deve garantire che il vapore non raggiunga la zona di lavoro.' }
+        ],
+        risposta_corretta: 1,
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 24 + D.Lgs. 81/2008 (LOTO). Per manutenzione con personale all\'interno: 1) Chiudi valvola di presa. 2) Cieco flangiato certificato sul collegamento al collettore (doppio sezionamento). 3) LOTO su valvola e cieco. 4) Cartello "In manutenzione". 5) Verifica manometrica assenza pressione. 6) Solo allora il personale entra. Il cieco flangiato è l\'unica garanzia assoluta di isolamento fisico.'
+      }
+    ]
+  }
+
+];
+
+// ── ENGINE ─────────────────────────────────────────────────────
+let currentScenario = null;
+let currentStepIdx = 0;
+let scoreOk = 0, scoreKo = 0, scoreParz = 0;
+let decisionLog = [];
+let stepResults = [];
+let answered = false;
+
+// ── BUILD SCENARIO LIST ───────────────────────────────────────
+function buildList() {
+  const wrap = document.getElementById('scenario-list');
+  wrap.innerHTML = SCENARI.map((s, i) => `
+    <div class="scenario-card" onclick="startScenario(${i})">
+      <div class="sc-header">
+        <div class="sc-cat">${s.categoria}</div>
+        <div class="sc-diff ${s.difficolta.toLowerCase()}">${s.difficolta}</div>
+        <div class="sc-steps">${s.steps.length} step</div>
+      </div>
+      <div class="sc-title">${s.titolo}</div>
+      <div class="sc-fonte">📋 ${s.fonte}</div>
+    </div>
+  `).join('');
+}
+
+// ── START SCENARIO ────────────────────────────────────────────
+function startScenario(idx) {
+  currentScenario = SCENARI[idx];
+  currentStepIdx = 0;
+  scoreOk = 0; scoreKo = 0; scoreParz = 0;
+  decisionLog = [];
+  stepResults = [];
+  answered = false;
+
+  document.getElementById('s-list').style.display = 'none';
+  document.getElementById('s-sim').style.display = 'block';
+  document.getElementById('s-recap').style.display = 'none';
+  document.getElementById('sim-title').textContent = currentScenario.titolo;
+
+  // Build step progress dots
+  const prog = document.getElementById('step-progress');
+  prog.innerHTML = currentScenario.steps.map(() => '<div class="step-dot"></div>').join('');
+
+  renderStep();
+}
+
+// ── RENDER STEP ───────────────────────────────────────────────
+function renderStep() {
+  answered = false;
+  const s = currentScenario;
+  const step = s.steps[currentStepIdx];
+  const total = s.steps.length;
+
+  document.getElementById('sim-step-badge').textContent = `Step ${currentStepIdx + 1}/${total}`;
+  document.getElementById('sc-ok').textContent = scoreOk;
+  document.getElementById('sc-ko').textContent = scoreKo;
+  document.getElementById('sc-parz').textContent = scoreParz;
+
+  // Step progress
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.className = 'step-dot';
+    if (i < currentStepIdx) d.classList.add(stepResults[i] === 'CORRETTO' ? 'done' : stepResults[i] === 'PARZIALE' ? 'done' : 'fail');
+    else if (i === currentStepIdx) d.classList.add('current');
+  });
+
+  // Contesto iniziale solo allo step 1
+  const contBox = document.getElementById('contesto-box');
+  if (currentStepIdx === 0) {
+    contBox.style.display = 'block';
+    document.getElementById('contesto-text').textContent = s.contesto_iniziale;
+  } else {
+    contBox.style.display = 'none';
+  }
+
+  // Impianto status
+  const imp = step.stato_impianto;
+  const impPanel = document.getElementById('impianto-panel');
+  const statusItems = Object.entries(imp)
+    .filter(([k]) => k !== 'allarmi')
+    .map(([k, v]) => {
+      const isDanger = v.includes('🔴') || v.includes('BLOCCO') || v.includes('Sconosciuto');
+      const isWarn = v.includes('⚠️') || v.includes('🟡') || v.includes('Minimo');
+      const isOk = v.includes('✅') || v.includes('🟢') || v.includes('Normale');
+      const cls = isDanger ? 'danger' : isWarn ? 'warn' : isOk ? 'ok' : '';
+      const label = {'pressione':'Pressione','livello':'Livello','bruciatore':'Bruciatore','pompa':'Pompa','linea':'Linea vapore'}[k] || k;
+      return `<div class="imp-item"><div class="imp-label">${label}</div><div class="imp-value ${cls}">${v}</div></div>`;
+    }).join('');
+
+  const alarms = imp.allarmi || [];
+  const alarmsHtml = alarms.length ? `<div class="alarms-wrap">${alarms.map(a => `<div class="alarm-item">${a}</div>`).join('')}</div>` : '';
+
+  impPanel.innerHTML = '<div class="impianto-panel-title">📊 Stato impianto</div>' + statusItems + alarmsHtml;
+
+  // Situazione
+  document.getElementById('sit-text').textContent = step.situazione;
+  document.getElementById('domanda-text').textContent = step.domanda;
+
+  // Opzioni
+  const letters = ['A','B','C','D'];
+  const wrap = document.getElementById('opzioni-wrap');
+  wrap.innerHTML = step.opzioni.map((o, i) => `
+    <button class="opzione" onclick="answer(${i})">
+      <span class="opt-letter">${letters[i]}</span>${o.testo}
+    </button>
+  `).join('');
+
+  // Reset esito e pulsante
+  document.getElementById('esito-box').className = 'esito-box';
+  document.getElementById('btn-next-step').className = 'btn-next-step';
+  const isLast = currentStepIdx >= s.steps.length - 1;
+  document.getElementById('btn-next-step').textContent = isLast ? 'Vedi risultato →' : 'Prossimo passo →';
+}
+
+// ── ANSWER ────────────────────────────────────────────────────
+function answer(chosen) {
+  if (answered) return;
+  answered = true;
+
+  const step = currentScenario.steps[currentStepIdx];
+  const opzione = step.opzioni[chosen];
+  const esito = opzione.esito;
+
+  // Style buttons
+  document.querySelectorAll('.opzione').forEach((btn, i) => {
+    if (i === chosen) {
+      const cls = esito === 'CORRETTO' ? 'corretto' : esito === 'PARZIALE' ? 'parziale' : 'sbagliato';
+      btn.classList.add(cls);
+    } else {
+      btn.classList.add('disabilitato');
+    }
+    btn.disabled = true;
+  });
+
+  // Score
+  if (esito === 'CORRETTO') scoreOk++;
+  else if (esito === 'PARZIALE') scoreParz++;
+  else scoreKo++;
+
+  stepResults[currentStepIdx] = esito;
+  decisionLog.push({ step: currentStepIdx + 1, domanda: step.domanda, scelta: opzione.testo, esito, conseguenza: opzione.conseguenza });
+
+  // Update score display
+  document.getElementById('sc-ok').textContent = scoreOk;
+  document.getElementById('sc-ko').textContent = scoreKo;
+  document.getElementById('sc-parz').textContent = scoreParz;
+
+  // Show esito
+  const esitoBox = document.getElementById('esito-box');
+  const cls = esito === 'CORRETTO' ? 'corretto' : esito === 'PARZIALE' ? 'parziale' : 'sbagliato';
+  const icon = esito === 'CORRETTO' ? '✅' : esito === 'PARZIALE' ? '⚠️' : '❌';
+  esitoBox.className = 'esito-box show ' + cls;
+  document.getElementById('esito-header').textContent = icon + ' ' + esito;
+  document.getElementById('esito-conseguenza').textContent = opzione.conseguenza;
+  document.getElementById('esito-spiegazione').textContent = step.spiegazione;
+  document.getElementById('esito-fonte').textContent = '📋 ' + currentScenario.fonte;
+
+  // Show next button
+  document.getElementById('btn-next-step').className = 'btn-next-step show';
+
+  // Update step dots
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    if (i === currentStepIdx) {
+      d.className = 'step-dot ' + (esito === 'CORRETTO' ? 'done' : esito === 'PARZIALE' ? 'done' : 'fail');
+    }
+  });
+}
+
+// ── NEXT STEP ─────────────────────────────────────────────────
+function nextStep() {
+  if (currentStepIdx >= currentScenario.steps.length - 1) {
+    showRecap();
+    return;
+  }
+  currentStepIdx++;
+  renderStep();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ── RECAP ─────────────────────────────────────────────────────
+function showRecap() {
+  document.getElementById('s-sim').style.display = 'none';
+  document.getElementById('s-recap').style.display = 'block';
+
+  const total = currentScenario.steps.length;
+  const pct = Math.round(scoreOk / total * 100);
+
+  document.getElementById('r-icon').textContent = pct >= 80 ? '🏆' : pct >= 60 ? '✅' : '📚';
+  document.getElementById('r-title').textContent = pct >= 80 ? 'Turno gestito correttamente' : pct >= 60 ? 'Buona gestione, con margini di miglioramento' : 'Ripassare le procedure';
+  document.getElementById('r-sub').textContent = `Scenario: ${currentScenario.titolo}. Fonte: ${currentScenario.fonte}.`;
+  document.getElementById('r-ok').textContent = scoreOk;
+  document.getElementById('r-ko').textContent = scoreKo;
+  document.getElementById('r-parz').textContent = scoreParz;
+
+  // Decision log
+  const log = document.getElementById('decision-log');
+  log.innerHTML = decisionLog.map(d => {
+    const cls = d.esito === 'CORRETTO' ? 'ok' : d.esito === 'PARZIALE' ? 'partial' : 'fail';
+    const icon = d.esito === 'CORRETTO' ? '✅' : d.esito === 'PARZIALE' ? '⚠️' : '❌';
+    return `<div class="log-item ${cls}"><strong>Step ${d.step}:</strong> ${icon} ${d.esito}<br><small style="opacity:.8">${d.scelta}</small></div>`;
+  }).join('');
+
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function restartScenario() {
+  const idx = SCENARI.indexOf(currentScenario);
+  document.getElementById('s-recap').style.display = 'none';
+  startScenario(idx);
+}
+
+function backToList() {
+  document.getElementById('s-sim').style.display = 'none';
+  document.getElementById('s-recap').style.display = 'none';
+  document.getElementById('s-list').style.display = 'block';
+}
+
+buildList();
+
+
+/* INTRO-MODAL-START */
+function toggleCheck() {
+  const wrap = document.getElementById('intro-check-wrap');
+  const box  = document.getElementById('intro-checkbox');
+  const cta  = document.getElementById('intro-cta');
+  const on   = wrap.classList.toggle('checked');
+  box.textContent  = on ? '✓' : '';
+  cta.classList.toggle('active', on);
+}
+function chiudiIntro() {
+  const ov = document.getElementById('intro-overlay');
+  ov.style.transition = 'opacity .35s';
+  ov.style.opacity    = '0';
+  setTimeout(() => ov.remove(), 360);
+}
+/* INTRO-MODAL-END */
+
+</script>
+</body>
+</html>
