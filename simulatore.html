@@ -327,7 +327,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text1);font-family:'G
     <div class="list-intro">
       <div class="list-title">Simulatore a Cascata</div>
       <div class="list-sub">Scenari operativi reali con decisioni collegate. Ogni scelta sbagliata cambia la situazione al passo successivo.</div>
-      <div class="source-note">📋 Fonte esclusiva: D.M. 21.05.74 · R.D. 824/1927 · Quaderno Bissolo</div>
+      <div class="source-note">📋 Fonte esclusiva: D.M. 21.05.74 · R.D. 824/1927 </div>
     </div>
     <div class="scenario-list" id="scenario-list"></div>
   </div>
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // SCENARI A CASCATA — VaporeLab Simulatore
-// Fonte: D.M. 21.05.74, R.D. 824/1927, Quaderno Bissolo
+// Fonte: D.M. 21.05.74, R.D. 824/1927, 
 // Struttura: ogni scenario ha 3-5 step collegati causalmente
 // Se scegli male allo step N, lo step N+1 riflette le conseguenze
 
@@ -486,7 +486,7 @@ const SCENARI = [
     titolo: 'Abbassamento del livello durante l\'esercizio',
     categoria: 'Livello',
     difficolta: 'Alta',
-    fonte: 'Quaderno Bissolo - Sezione EMERGENZA + D.M. 21.05.74',
+    fonte: 'D.M. 21.05.74',
     contesto_iniziale: 'Caldaia in esercizio a 10 bar manometrici, producibilità 80%. Turno iniziato 2 ore fa. Tutto nella norma.',
     steps: [
       {
@@ -507,7 +507,7 @@ const SCENARI = [
           { testo: 'Aggiungi acqua fredda direttamente dallo spurgo di fondo per raffreddare rapidamente', esito: 'SBAGLIATO', conseguenza: 'Lo spurgo di fondo rimuove acqua, non ne aggiunge. Confondere i sistemi in emergenza è pericoloso.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 1 (si vede ancora acqua): Bloccare il bruciatore (già intervenuto automaticamente) → chiudere la presa vapore → spegnere la pompa di alimento → verificare la causa. Il rearmo manuale dell\'LSLL impone al conduttore questa verifica prima di qualsiasi riavvio.'
+        spiegazione: 'Fonte: Emergenza caso 1 (si vede ancora acqua): Bloccare il bruciatore (già intervenuto automaticamente) → chiudere la presa vapore → spegnere la pompa di alimento → verificare la causa. Il rearmo manuale dell\'LSLL impone al conduttore questa verifica prima di qualsiasi riavvio.'
       },
       {
         id: 2,
@@ -527,7 +527,7 @@ const SCENARI = [
           { testo: 'Chiami la manutenzione e aspetti con la caldaia in esercizio', esito: 'SBAGLIATO', conseguenza: 'Con indicatore non funzionante non si può tenere la caldaia in esercizio — non si conosce il livello reale.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Verifica indicatori. Dal rubinetto inferiore deve uscire acqua. Se non esce: il collegamento è ostruito e il livello mostrato è falso. Con un falso livello non si può operare in sicurezza. Fermata obbligatoria per ispezione e pulizia dei collegamenti.'
+        spiegazione: 'Fonte: Verifica indicatori. Dal rubinetto inferiore deve uscire acqua. Se non esce: il collegamento è ostruito e il livello mostrato è falso. Con un falso livello non si può operare in sicurezza. Fermata obbligatoria per ispezione e pulizia dei collegamenti.'
       },
       {
         id: 3,
@@ -547,7 +547,7 @@ const SCENARI = [
           { testo: 'Chiudi il passo d\'uomo e fai ripartire la caldaia — la deformazione era già lì prima', esito: 'SBAGLIATO', conseguenza: 'Impossibile saperlo, e non è rilevante. Una deformazione trovata richiede fermata e verifica indipendentemente da quando si è formata.' }
         ],
         risposta_corretta: 2,
-        spiegazione: 'Fonte: Quaderno Bissolo - Emergenza caso 2 + D.M. 21.05.74. In caso di dubbio sulla resistenza strutturale della caldaia è obbligatorio richiedere verifica INAIL (ex ISPESL) prima di qualsiasi rimessa in servizio. Una deformazione plastica del focolare è un danno strutturale serio che richiede valutazione da parte di personale autorizzato.'
+        spiegazione: 'Fonte: Emergenza caso 2 + D.M. 21.05.74. In caso di dubbio sulla resistenza strutturale della caldaia è obbligatorio richiedere verifica INAIL (ex ISPESL) prima di qualsiasi rimessa in servizio. Una deformazione plastica del focolare è un danno strutturale serio che richiede valutazione da parte di personale autorizzato.'
       }
     ]
   },
@@ -560,7 +560,7 @@ const SCENARI = [
     titolo: 'Blocco bruciatore per mancanza fiamma',
     categoria: 'Combustione',
     difficolta: 'Media',
-    fonte: 'D.M. 21.05.74 + Quaderno Bissolo - Bruciatori',
+    fonte: 'D.M. 21.05.74',
     contesto_iniziale: 'Caldaia a gas naturale in esercizio a 8 bar. Produzione normale. Il bruciatore si blocca improvvisamente.',
     steps: [
       {
@@ -634,7 +634,7 @@ const SCENARI = [
     titolo: 'Colpo d\'ariete alla messa in servizio di una linea vapore',
     categoria: 'Distribuzione',
     difficolta: 'Media',
-    fonte: 'Quaderno Bissolo + D.M. 21.05.74',
+    fonte: 'D.M. 21.05.74',
     contesto_iniziale: 'Stai rimettendo in servizio una linea vapore rimasta ferma per 4 ore per manutenzione. La caldaia è a 10 bar.',
     steps: [
       {
@@ -655,7 +655,7 @@ const SCENARI = [
           { testo: 'Apri la valvola a metà e la lasci così per 10 minuti', esito: 'PARZIALE', conseguenza: 'Aprire a metà senza prima scaricare la condensa dai drenaggi porta comunque al colpo d\'ariete, anche se meno violento di un\'apertura totale.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Colpo d\'ariete. Il colpo d\'ariete si verifica quando il vapore incontra sacche di condensa fredda: la condensazione istantanea riduce il volume di circa 1.000 volte creando un vuoto che l\'acqua riempie con velocità di 100-120 km/h. La prevenzione: aprire prima i drenaggi, poi introdurre il vapore lentamente.'
+        spiegazione: 'Fonte: Il colpo d\'ariete si verifica quando il vapore incontra sacche di condensa fredda: la condensazione istantanea riduce il volume di circa 1.000 volte creando un vuoto che l\'acqua riempie con velocità di 100-120 km/h. La prevenzione: aprire prima i drenaggi, poi introdurre il vapore lentamente.'
       },
       {
         id: 2,
@@ -675,7 +675,7 @@ const SCENARI = [
           { testo: 'Chiami la manutenzione e aspetti senza fare nulla', esito: 'PARZIALE', conseguenza: 'Chiamare la manutenzione è corretto, ma nel frattempo devi chiudere la sezione per fermare i danni. L\'attesa passiva durante i colpi non è sicura.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Colpo d\'ariete. I colpi d\'ariete si interrompono solo eliminando la condensa accumulata. Con uno scaricatore bloccato chiuso la condensa non defluisce e si accumula continuamente. Procedura: chiudi la sezione, apri i drenaggi manuali, scarica la condensa, verifica/sostituisci lo scaricatore, poi reintroduci vapore lentamente.'
+        spiegazione: 'Fonte: I colpi d\'ariete si interrompono solo eliminando la condensa accumulata. Con uno scaricatore bloccato chiuso la condensa non defluisce e si accumula continuamente. Procedura: chiudi la sezione, apri i drenaggi manuali, scarica la condensa, verifica/sostituisci lo scaricatore, poi reintroduci vapore lentamente.'
       },
       {
         id: 3,
@@ -782,7 +782,7 @@ const SCENARI = [
     titolo: 'Avviamento con indicatore di livello anomalo',
     categoria: 'Avviamento',
     difficolta: 'Alta',
-    fonte: 'D.M. 21.05.74 + Quaderno Bissolo',
+    fonte: 'D.M. 21.05.74',
     contesto_iniziale: 'Stai avviando la caldaia dopo un fermo notturno. È mattina presto. Hai eseguito la pre-purga correttamente.',
     steps: [
       {
@@ -843,7 +843,7 @@ const SCENARI = [
           { testo: 'Chiudi gli sfiati per fermare il fenomeno', esito: 'SBAGLIATO', conseguenza: 'Gli sfiati si chiudono solo quando esce vapore continuo, indipendentemente dallo swell. Chiuderli prima che tutta l\'aria sia espulsa lascia aria non condensabile nel sistema.' }
         ],
         risposta_corretta: 1,
-        spiegazione: 'Fonte: Quaderno Bissolo - Fenomeni di esercizio. Lo swell è l\'innalzamento apparente del livello causato dalla formazione di bolle durante il riscaldamento. Il livello APPARENTE sale ma il livello REALE (massa d\'acqua) rimane stabile o sale leggermente. Il conduttore deve attendere la stabilizzazione prima di qualsiasi intervento sull\'alimentazione. Agire sul livello durante lo swell porta al rischio opposto: basso livello reale.'
+        spiegazione: 'Fonte: Fenomeni di esercizio. Lo swell è l\'innalzamento apparente del livello causato dalla formazione di bolle durante il riscaldamento. Il livello APPARENTE sale ma il livello REALE (massa d\'acqua) rimane stabile o sale leggermente. Il conduttore deve attendere la stabilizzazione prima di qualsiasi intervento sull\'alimentazione. Agire sul livello durante lo swell porta al rischio opposto: basso livello reale.'
       }
     ]
   }
@@ -1224,14 +1224,14 @@ const SCENARI = [
 
   // ═══════════════════════════════════════════════════════════
   // SCENARIO 11: Acque — Corrosione progressiva da O₂
-  // Fonte: Circ. ANCC 30/81 + D.M. 21.05.74 + Quaderno Bissolo
+  // Fonte: Circ. ANCC 30/81 + D.M. 21.05.74
   // ═══════════════════════════════════════════════════════════
   {
     id: 'S011',
     titolo: 'Corrosione progressiva da ossigeno disciolto — diagnosi e intervento',
     categoria: 'Acque',
     difficolta: 'Alta',
-    fonte: 'Circ. ANCC 30/81 + D.M. 21.05.74 + Quaderno Bissolo — Trattamento acque',
+    fonte: 'Circ. ANCC 30/81 + D.M. 21.05.74',
     contesto_iniziale: 'Caldaia a tubi di fumo in esercizio da 3 anni. Turno mattutino. Durante l\'analisi acque quotidiana il conduttore rileva valori anomali.',
     steps: [
       {
@@ -1272,7 +1272,7 @@ const SCENARI = [
           { testo: 'Sostituisci il degasatore intero — se lo sfiato è ostruito il degasatore è da rottamare', esito: 'SBAGLIATO', conseguenza: 'La sostituzione è eccessiva. Uno sfiato ostruito da calcare è manutenzione ordinaria — pulizia con acido citrico o meccanica. La sostituzione si considera solo se il degasatore ha danni strutturali.' }
         ],
         risposta_corretta: 0,
-        spiegazione: 'Fonte: Quaderno Bissolo + Circ. ANCC 30/81. Lo sfiato del degasatore deve essere SEMPRE aperto durante il funzionamento (Legge di Henry: O₂ e CO₂ devono poter uscire). Un\'ostruzione al 70% riduce drasticamente l\'efficacia. Pulizia immediata + DEHA transitorio + rianalisi. La pulizia dello sfiato è manutenzione ordinaria eseguibile in esercizio.'
+        spiegazione: 'Fonte: Circ. ANCC 30/81. Lo sfiato del degasatore deve essere SEMPRE aperto durante il funzionamento (Legge di Henry: O₂ e CO₂ devono poter uscire). Un\'ostruzione al 70% riduce drasticamente l\'efficacia. Pulizia immediata + DEHA transitorio + rianalisi. La pulizia dello sfiato è manutenzione ordinaria eseguibile in esercizio.'
       },
       {
         id: 3,
@@ -1628,7 +1628,7 @@ const SCENARI = [
           { testo: 'Avvii direttamente e monitori i parametri nei primi 30 minuti per verificare il funzionamento', esito: 'SBAGLIATO', conseguenza: 'Il monitoraggio post-avviamento non sostituisce la verifica pre-avviamento. Se l\'indicatore 2 è ancora ostruito lo scopri solo quando serve — in emergenza. La verifica va fatta prima, non durante.' }
         ],
         risposta_corretta: 2,
-        spiegazione: 'Fonte: R.D. 824/1927 Art. 21-22 + Quaderno Bissolo. La verifica pre-avviamento è responsabilità del conduttore: 1) Pompa principale: test con acqua nell\'impianto. 2) Indicatore livello 2: rubinetti di prova — dal rubinetto superiore deve uscire vapore, dall\'inferiore acqua. Solo con entrambi verificati positivamente si può procedere all\'avviamento in sicurezza.'
+        spiegazione: 'Fonte: R.D. 824/1927 Art. 21-22. La verifica pre-avviamento è responsabilità del conduttore: 1) Pompa principale: test con acqua nell\'impianto. 2) Indicatore livello 2: rubinetti di prova — dal rubinetto superiore deve uscire vapore, dall\'inferiore acqua. Solo con entrambi verificati positivamente si può procedere all\'avviamento in sicurezza.'
       }
     ]
   },
